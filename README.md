@@ -81,7 +81,7 @@ Future image storage buckets:
 - `product-images`
 - `submission-images`
 
-The sell/trade form sends submission details and attached photos to Discord. Supported photo types are JPG, PNG, WebP, GIF, HEIC, and HEIF, up to 8 photos, 8 MB each, and 24 MB total.
+The sell/trade form sends submission details and attached photos to Discord. Supported photo types are JPG, PNG, WebP, GIF, HEIC, and HEIF, up to 8 photos, 8 MB each, and 24 MB total. The phone QR opens a photo-only upload page tied to the desktop form session; phone photos are held temporarily in memory until the main form is submitted.
 
 ## Scanner Integration
 

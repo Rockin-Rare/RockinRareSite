@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { clearPhotoSession, getPhotoSession } from "@/lib/sell-trade-photo-sessions";
 import type { SellTradeSubmission } from "@/lib/types";
 
 type SellTradeRequest = Omit<SellTradeSubmission, "createdAt">;
@@ -102,7 +103,7 @@ function escapeDiscordMentions(value: string) {
     .replace(/@everyone/g, "@\u200beveryone")
     .replace(/@here/g, "@\u200bhere")
     .replace(/<@/g, "<@\u200b")
-      .replace(/<@&/g, "<@&\u200b");
+    .replace(/<@&/g, "<@&\u200b");
 }
 
 function isAllowedOrigin(request: Request) {
@@ -147,6 +148,16 @@ function validateFiles(files: File[]) {
   return "";
 }
 
+function getSessionFiles(fields: Record<string, unknown>) {
+  const sessionId = cleanString(fields.photoSession, 80);
+  if (!/^[a-zA-Z0-9-]{16,80}$/.test(sessionId)) {
+    return { sessionId: "", files: [] as File[] };
+  }
+
+  const files = getPhotoSession(sessionId).map((photo) => new File([photo.bytes], photo.name, { type: photo.type }));
+  return { sessionId, files };
+}
+
 export async function POST(request: Request) {
   if (!isAllowedOrigin(request)) {
     return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
@@ -168,7 +179,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid submission payload." }, { status: 400 });
   }
 
-  const { fields, files } = parsed;
+  const { fields } = parsed;
+  const sessionFiles = getSessionFiles(fields);
+  const files = [...parsed.files, ...sessionFiles.files];
+
+  if (files.length > maxFiles) {
+    return NextResponse.json({ error: `Upload ${maxFiles} photos or fewer.` }, { status: 400 });
+  }
+
   const fileError = validateFiles(files);
 
   if (fileError) {
@@ -239,9 +257,9 @@ export async function POST(request: Request) {
     .join("\n");
 
   const webhookPayload = {
-      username: "Rockin Rare Site",
-      content: limitDiscordContent(content),
-      allowed_mentions: { parse: [] }
+    username: "Rockin Rare Site",
+    content: limitDiscordContent(content),
+    allowed_mentions: { parse: [] }
   };
   const discordBody = new FormData();
   discordBody.append("payload_json", JSON.stringify(webhookPayload));
@@ -256,6 +274,10 @@ export async function POST(request: Request) {
 
   if (!discordResponse.ok) {
     return NextResponse.json({ error: "Unable to send submission." }, { status: 502 });
+  }
+
+  if (sessionFiles.sessionId) {
+    clearPhotoSession(sessionFiles.sessionId);
   }
 
   return NextResponse.json({ ok: true }, { status: 201 });

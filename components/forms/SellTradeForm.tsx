@@ -77,6 +77,7 @@ export function SellTradeForm() {
     payload.append("conditionEstimate", form.conditionEstimate);
     payload.append("message", form.message);
     payload.append("company", String(currentFormData.get("company") ?? ""));
+    payload.append("photoSession", String(currentFormData.get("photoSession") ?? ""));
     files.forEach((file) => payload.append("photos", file));
 
     setIsSubmitting(true);

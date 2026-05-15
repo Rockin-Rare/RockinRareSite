@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from "react";
 
+type PhonePhoto = {
+  id: string;
+  name: string;
+  size: number;
+};
+
 const maxFiles = 8;
 const maxFileSizeMb = 8;
 
@@ -17,14 +23,30 @@ export function FileUploadPlaceholder({
   onFilesSelected: (files: File[]) => void;
 }) {
   const [mode, setMode] = useState<"computer" | "phone">("computer");
+  const [photoSession, setPhotoSession] = useState("");
+  const [phonePhotos, setPhonePhotos] = useState<PhonePhoto[]>([]);
   const [uploadUrl, setUploadUrl] = useState("");
 
   useEffect(() => {
-    setUploadUrl(`${window.location.origin}/sell-trade?upload=phone`);
-    if (new URLSearchParams(window.location.search).get("upload") === "phone") {
-      setMode("phone");
-    }
+    const session = crypto.randomUUID();
+    setPhotoSession(session);
+    setUploadUrl(`${window.location.origin}/sell-trade/photos/${session}`);
   }, []);
+
+  useEffect(() => {
+    if (!photoSession) return;
+
+    async function pollPhonePhotos() {
+      const response = await fetch(`/api/sell-trade/photos?session=${encodeURIComponent(photoSession)}`);
+      const result = (await response.json().catch(() => ({}))) as { photos?: PhonePhoto[] };
+      setPhonePhotos(result.photos ?? []);
+    }
+
+    pollPhonePhotos();
+    const intervalId = window.setInterval(pollPhonePhotos, 3000);
+
+    return () => window.clearInterval(intervalId);
+  }, [photoSession]);
 
   const qrCodeUrl = uploadUrl
     ? `https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=12&data=${encodeURIComponent(uploadUrl)}`
@@ -32,6 +54,7 @@ export function FileUploadPlaceholder({
 
   return (
     <div className="grid gap-3 rounded-2xl border border-vault-border bg-vault-secondary p-5">
+      <input name="photoSession" type="hidden" value={photoSession} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <span className="text-sm font-semibold text-vault-text">Photos</span>
         <div className="inline-flex rounded-xl border border-vault-border bg-vault-card p-1">
@@ -77,18 +100,18 @@ export function FileUploadPlaceholder({
             <div className="h-[180px] w-[180px] rounded-lg bg-vault-elevated" />
           )}
           <div>
-            <p className="text-sm font-semibold text-vault-text">Open this form on your phone</p>
-            <p className="mt-2 text-sm leading-6 text-vault-secondaryText">Use the phone camera to add collection photos and submit from the phone.</p>
+            <p className="text-sm font-semibold text-vault-text">Scan to add photos from your phone</p>
+            <p className="mt-2 text-sm leading-6 text-vault-secondaryText">The QR opens a photo-only upload page. Photos added there will appear here automatically.</p>
           </div>
         </div>
       )}
 
-      {files.length > 0 ? (
+      {files.length > 0 || phonePhotos.length > 0 ? (
         <div className="grid gap-2 rounded-xl border border-vault-border bg-vault-card p-4">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-xs font-semibold uppercase text-vault-gold">{files.length} selected</span>
+            <span className="text-xs font-semibold uppercase text-vault-gold">{files.length + phonePhotos.length} selected</span>
             <button className="text-xs font-semibold text-vault-secondaryText hover:text-vault-highlight" onClick={() => onFilesSelected([])} type="button">
-              Clear
+              Clear computer photos
             </button>
           </div>
           <ul className="grid gap-1 text-xs text-vault-secondaryText">
@@ -96,6 +119,12 @@ export function FileUploadPlaceholder({
               <li className="flex justify-between gap-3" key={`${file.name}-${file.size}`}>
                 <span className="truncate">{file.name}</span>
                 <span className="shrink-0 text-vault-muted">{formatFileSize(file.size)}</span>
+              </li>
+            ))}
+            {phonePhotos.map((photo) => (
+              <li className="flex justify-between gap-3" key={photo.id}>
+                <span className="truncate">{photo.name} · phone</span>
+                <span className="shrink-0 text-vault-muted">{formatFileSize(photo.size)}</span>
               </li>
             ))}
           </ul>
