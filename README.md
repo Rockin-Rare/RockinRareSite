@@ -8,7 +8,7 @@ V1 legitimacy-first website for Rockin Rare Collectibles, a collector-first trad
 - TypeScript
 - Tailwind CSS
 - Supabase-ready data and storage placeholders
-- Discord webhook sell/trade intake notifications
+- Discord webhook contact and sell/trade notifications
 - Vercel-ready deployment
 
 ## Run Locally
@@ -34,11 +34,12 @@ Copy `.env.example` to `.env.local` and set the values you need:
 
 ```bash
 DISCORD_SELL_TRADE_WEBHOOK_URL=
+DISCORD_CONTACT_WEBHOOK_URL=
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 ```
 
-The sell/trade form works locally without a webhook, but submissions are only delivered to Discord when `DISCORD_SELL_TRADE_WEBHOOK_URL` is set. Supabase values are optional placeholders for future product data work.
+The sell/trade and contact forms work locally without webhooks, but submissions are only delivered to Discord when `DISCORD_SELL_TRADE_WEBHOOK_URL` and `DISCORD_CONTACT_WEBHOOK_URL` are set. Supabase values are optional placeholders for future product data work.
 
 ## Current V1 Features
 
@@ -46,7 +47,7 @@ The sell/trade form works locally without a webhook, but submissions are only de
 - Inventory catalog with client-side search, filters, sorting, sold states, and empty states
 - Product detail pages for all mock products
 - Sell / Trade intake form with photo uploads, phone QR option, validation, and Discord webhook route
-- Contact form with validation and success state
+- Contact form with validation and Discord webhook route
 - About and FAQ pages
 - Typed mock product data that imitates scanner output
 - Supabase schema draft and safe client placeholders
@@ -95,7 +96,7 @@ Scanner app -> inventory database -> admin review -> published website catalog.
 
 1. Push the project to a Git repository.
 2. Import the repo into Vercel.
-3. Set `DISCORD_SELL_TRADE_WEBHOOK_URL` for sell/trade intake notifications.
+3. Set `DISCORD_SELL_TRADE_WEBHOOK_URL` and `DISCORD_CONTACT_WEBHOOK_URL` for form notifications.
 4. Deploy with the default Next.js build command: `npm run build`.
 
 ## Future Roadmap

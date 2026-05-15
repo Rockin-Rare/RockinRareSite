@@ -4,7 +4,6 @@ import { FormEvent, useState } from "react";
 import { FormInput } from "@/components/forms/FormInput";
 import { FormTextarea } from "@/components/forms/FormTextarea";
 import { Button } from "@/components/ui/Button";
-import type { ContactSubmission } from "@/lib/types";
 
 type FormState = {
   name: string;
@@ -14,18 +13,27 @@ type FormState = {
 };
 
 const initialState: FormState = { name: "", email: "", subject: "", message: "" };
+const maxLengths = {
+  name: 120,
+  email: 254,
+  subject: 160,
+  message: 3000
+};
 
 export function ContactForm() {
   const [form, setForm] = useState(initialState);
   const [errors, setErrors] = useState<Partial<FormState>>({});
+  const [submitError, setSubmitError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   function update(key: keyof FormState, value: string) {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setSubmitError("");
     const nextErrors: Partial<FormState> = {};
     if (!form.name.trim()) nextErrors.name = "Name is required.";
     if (!form.email.trim()) nextErrors.email = "Email is required.";
@@ -35,11 +43,33 @@ export function ContactForm() {
 
     if (Object.keys(nextErrors).length > 0) return;
 
-    const payload: ContactSubmission = { ...form, createdAt: new Date().toISOString() };
-    console.log("Contact submission", payload);
-    // TODO: Submit to a contact API route or Supabase contact_submissions table.
-    setSubmitted(true);
-    setForm(initialState);
+    const formData = new FormData(event.currentTarget);
+    const payload = {
+      ...form,
+      company: String(formData.get("company") ?? "")
+    };
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const result = (await response.json().catch(() => ({}))) as { error?: string };
+
+      if (!response.ok) {
+        throw new Error(result.error || "Message failed. Please try again.");
+      }
+
+      setSubmitted(true);
+      setForm(initialState);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Message failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   if (submitted) {
@@ -53,11 +83,27 @@ export function ContactForm() {
 
   return (
     <form className="grid gap-4 rounded-2xl border border-vault-border bg-vault-card p-5 shadow-vault" onSubmit={handleSubmit} noValidate>
-      <FormInput error={errors.name} label="Name" onChange={(event) => update("name", event.target.value)} value={form.name} />
-      <FormInput error={errors.email} inputMode="email" label="Email" onChange={(event) => update("email", event.target.value)} type="text" value={form.email} />
-      <FormInput label="Subject" onChange={(event) => update("subject", event.target.value)} value={form.subject} />
-      <FormTextarea error={errors.message} label="Message" onChange={(event) => update("message", event.target.value)} value={form.message} />
-      <Button type="submit">Send Message</Button>
+      <input aria-hidden="true" autoComplete="off" className="hidden" name="company" tabIndex={-1} type="text" />
+      <FormInput error={errors.name} label="Name" maxLength={maxLengths.name} onChange={(event) => update("name", event.target.value)} value={form.name} />
+      <FormInput
+        error={errors.email}
+        inputMode="email"
+        label="Email"
+        maxLength={maxLengths.email}
+        onChange={(event) => update("email", event.target.value)}
+        type="text"
+        value={form.email}
+      />
+      <FormInput label="Subject" maxLength={maxLengths.subject} onChange={(event) => update("subject", event.target.value)} value={form.subject} />
+      <FormTextarea error={errors.message} label="Message" maxLength={maxLengths.message} onChange={(event) => update("message", event.target.value)} value={form.message} />
+      {submitError ? (
+        <p className="rounded-xl border border-vault-error/30 bg-vault-error/10 px-4 py-3 text-sm text-vault-error" role="alert">
+          {submitError}
+        </p>
+      ) : null}
+      <Button disabled={isSubmitting} type="submit">
+        {isSubmitting ? "Sending..." : "Send Message"}
+      </Button>
     </form>
   );
 }
