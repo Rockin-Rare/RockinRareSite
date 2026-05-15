@@ -45,7 +45,7 @@ The sell/trade form works locally without a webhook, but submissions are only de
 - Home page with trust-first brand positioning and inventory preview
 - Inventory catalog with client-side search, filters, sorting, sold states, and empty states
 - Product detail pages for all mock products
-- Sell / Trade intake form with validation and Discord webhook route
+- Sell / Trade intake form with photo uploads, phone QR option, validation, and Discord webhook route
 - Contact form with validation and success state
 - About and FAQ pages
 - Typed mock product data that imitates scanner output
@@ -81,7 +81,7 @@ Future image storage buckets:
 - `product-images`
 - `submission-images`
 
-The sell/trade form currently sends submission details to Discord. Photo upload storage can be added later if the intake workflow needs actual image attachments instead of file names.
+The sell/trade form sends submission details and attached photos to Discord. Supported photo types are JPG, PNG, WebP, GIF, HEIC, and HEIF, up to 8 photos, 8 MB each, and 24 MB total.
 
 ## Scanner Integration
 
@@ -105,5 +105,5 @@ Scanner app -> inventory database -> admin review -> published website catalog.
 - Admin dashboard
 - External listing sync
 - Direct checkout with Stripe
-- Photo upload support for sell/trade submissions
+- Stored photo archive for sell/trade submissions
 - SEO collection buying pages

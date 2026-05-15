@@ -6,7 +6,6 @@ import { FormInput } from "@/components/forms/FormInput";
 import { FormSelect } from "@/components/forms/FormSelect";
 import { FormTextarea } from "@/components/forms/FormTextarea";
 import { Button } from "@/components/ui/Button";
-import type { SellTradeSubmission } from "@/lib/types";
 
 type FormState = {
   name: string;
@@ -66,20 +65,26 @@ export function SellTradeForm() {
 
     if (Object.keys(nextErrors).length > 0) return;
 
-    const formData = new FormData(event.currentTarget);
-    const payload: Omit<SellTradeSubmission, "createdAt"> & { company: string } = {
-      ...form,
-      imageUrls: files.map((file) => file.name),
-      company: String(formData.get("company") ?? "")
-    };
+    const currentFormData = new FormData(event.currentTarget);
+    const payload = new FormData();
+    payload.append("name", form.name);
+    payload.append("email", form.email);
+    payload.append("phone", form.phone);
+    payload.append("preferredContactMethod", form.preferredContactMethod);
+    payload.append("description", form.description);
+    payload.append("franchise", form.franchise);
+    payload.append("approximateQuantity", form.approximateQuantity);
+    payload.append("conditionEstimate", form.conditionEstimate);
+    payload.append("message", form.message);
+    payload.append("company", String(currentFormData.get("company") ?? ""));
+    files.forEach((file) => payload.append("photos", file));
 
     setIsSubmitting(true);
 
     try {
       const response = await fetch("/api/sell-trade", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: payload
       });
 
       const result = (await response.json().catch(() => ({}))) as { error?: string };

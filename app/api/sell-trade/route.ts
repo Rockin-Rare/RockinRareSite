@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import type { SellTradeSubmission } from "@/lib/types";
 
 type SellTradeRequest = Omit<SellTradeSubmission, "createdAt">;
+type ParsedRequest = {
+  fields: Record<string, unknown>;
+  files: File[];
+};
 
 const contactMethods = new Set(["Email", "Phone", "Instagram"]);
 const maxLengths = {
@@ -16,6 +20,10 @@ const maxLengths = {
   imageUrl: 160
 };
 const maxImageUrls = 12;
+const maxFiles = 8;
+const maxFileSizeBytes = 8 * 1024 * 1024;
+const maxTotalFileSizeBytes = 24 * 1024 * 1024;
+const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/heic", "image/heif"]);
 const rateLimitWindowMs = 10 * 60 * 1000;
 const rateLimitMax = 5;
 const rateLimits = new Map<string, { count: number; resetAt: number }>();
@@ -37,6 +45,28 @@ function cleanStringArray(value: unknown) {
     .filter((item): item is string => typeof item === "string")
     .map((item) => item.trim().slice(0, maxLengths.imageUrl))
     .filter(Boolean);
+}
+
+async function parseRequest(request: Request): Promise<ParsedRequest | null> {
+  const contentType = request.headers.get("content-type") || "";
+
+  if (contentType.includes("multipart/form-data")) {
+    const formData = await request.formData();
+    const fields = Object.fromEntries(formData.entries());
+    const files = formData
+      .getAll("photos")
+      .filter((value): value is File => value instanceof File && value.size > 0)
+      .slice(0, maxFiles);
+
+    return { fields, files };
+  }
+
+  if (contentType.includes("application/json")) {
+    const body = await request.json();
+    return isObject(body) ? { fields: body, files: [] } : null;
+  }
+
+  return null;
 }
 
 function getClientIp(request: Request) {
@@ -95,6 +125,28 @@ function formatField(label: string, value: string | string[] | undefined) {
   return value ? `**${label}:** ${escapeDiscordMentions(value)}` : "";
 }
 
+function validateFiles(files: File[]) {
+  let totalSize = 0;
+
+  for (const file of files) {
+    totalSize += file.size;
+
+    if (!allowedImageTypes.has(file.type)) {
+      return "Photos must be JPG, PNG, WebP, GIF, HEIC, or HEIF images.";
+    }
+
+    if (file.size > maxFileSizeBytes) {
+      return "Each photo must be 8 MB or smaller.";
+    }
+  }
+
+  if (totalSize > maxTotalFileSizeBytes) {
+    return "Photo uploads must be 24 MB total or smaller.";
+  }
+
+  return "";
+}
+
 export async function POST(request: Request) {
   if (!isAllowedOrigin(request)) {
     return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
@@ -104,36 +156,43 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Too many submissions. Please try again later." }, { status: 429 });
   }
 
-  let body: unknown;
+  let parsed: ParsedRequest | null;
 
   try {
-    body = await request.json();
+    parsed = await parseRequest(request);
   } catch {
-    return NextResponse.json({ error: "Invalid JSON payload." }, { status: 400 });
-  }
-
-  if (!isObject(body)) {
     return NextResponse.json({ error: "Invalid submission payload." }, { status: 400 });
   }
 
-  if (cleanString(body.company, 200)) {
+  if (!parsed || !isObject(parsed.fields)) {
+    return NextResponse.json({ error: "Invalid submission payload." }, { status: 400 });
+  }
+
+  const { fields, files } = parsed;
+  const fileError = validateFiles(files);
+
+  if (fileError) {
+    return NextResponse.json({ error: fileError }, { status: 400 });
+  }
+
+  if (cleanString(fields.company, 200)) {
     return NextResponse.json({ ok: true }, { status: 202 });
   }
 
-  const contactMethod = cleanString(body.preferredContactMethod, 20);
+  const contactMethod = cleanString(fields.preferredContactMethod, 20);
   const submission: SellTradeRequest = {
-    name: cleanString(body.name, maxLengths.name),
-    email: cleanString(body.email, maxLengths.email),
-    phone: cleanString(body.phone, maxLengths.phone),
+    name: cleanString(fields.name, maxLengths.name),
+    email: cleanString(fields.email, maxLengths.email),
+    phone: cleanString(fields.phone, maxLengths.phone),
     preferredContactMethod: contactMethods.has(contactMethod)
       ? (contactMethod as SellTradeRequest["preferredContactMethod"])
       : "Email",
-    description: cleanString(body.description, maxLengths.description),
-    franchise: cleanString(body.franchise, maxLengths.franchise),
-    approximateQuantity: cleanString(body.approximateQuantity, maxLengths.approximateQuantity),
-    conditionEstimate: cleanString(body.conditionEstimate, maxLengths.conditionEstimate),
-    imageUrls: cleanStringArray(body.imageUrls),
-    message: cleanString(body.message, maxLengths.message)
+    description: cleanString(fields.description, maxLengths.description),
+    franchise: cleanString(fields.franchise, maxLengths.franchise),
+    approximateQuantity: cleanString(fields.approximateQuantity, maxLengths.approximateQuantity),
+    conditionEstimate: cleanString(fields.conditionEstimate, maxLengths.conditionEstimate),
+    imageUrls: files.length > 0 ? files.map((file) => file.name.slice(0, maxLengths.imageUrl)) : cleanStringArray(fields.imageUrls),
+    message: cleanString(fields.message, maxLengths.message)
   };
 
   if (!submission.name) {
@@ -179,14 +238,20 @@ export async function POST(request: Request) {
     .filter(Boolean)
     .join("\n");
 
-  const discordResponse = await fetch(webhookUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+  const webhookPayload = {
       username: "Rockin Rare Site",
       content: limitDiscordContent(content),
       allowed_mentions: { parse: [] }
-    })
+  };
+  const discordBody = new FormData();
+  discordBody.append("payload_json", JSON.stringify(webhookPayload));
+  files.forEach((file, index) => {
+    discordBody.append(`files[${index}]`, file, file.name);
+  });
+
+  const discordResponse = await fetch(webhookUrl, {
+    method: "POST",
+    body: discordBody
   });
 
   if (!discordResponse.ok) {
