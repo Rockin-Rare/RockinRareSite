@@ -32,18 +32,31 @@ const initialState: FormState = {
   message: ""
 };
 
+const maxLengths = {
+  name: 120,
+  email: 254,
+  phone: 40,
+  description: 3000,
+  approximateQuantity: 120,
+  conditionEstimate: 120,
+  message: 2000
+};
+
 export function SellTradeForm() {
   const [form, setForm] = useState(initialState);
   const [files, setFiles] = useState<File[]>([]);
   const [errors, setErrors] = useState<Partial<FormState>>({});
+  const [submitError, setSubmitError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setSubmitError("");
     const nextErrors: Partial<FormState> = {};
     if (!form.name.trim()) nextErrors.name = "Name is required.";
     if (!form.email.trim()) nextErrors.email = "Email is required.";
@@ -53,16 +66,36 @@ export function SellTradeForm() {
 
     if (Object.keys(nextErrors).length > 0) return;
 
-    const payload: SellTradeSubmission = {
+    const formData = new FormData(event.currentTarget);
+    const payload: Omit<SellTradeSubmission, "createdAt"> & { company: string } = {
       ...form,
       imageUrls: files.map((file) => file.name),
-      createdAt: new Date().toISOString()
+      company: String(formData.get("company") ?? "")
     };
-    console.log("Sell/trade submission", payload);
-    // TODO: Upload files to Supabase Storage, then create a sell_trade_submissions row.
-    setSubmitted(true);
-    setFiles([]);
-    setForm(initialState);
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/sell-trade", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const result = (await response.json().catch(() => ({}))) as { error?: string };
+
+      if (!response.ok) {
+        throw new Error(result.error || "Submission failed. Please try again.");
+      }
+
+      setSubmitted(true);
+      setFiles([]);
+      setForm(initialState);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Submission failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   if (submitted) {
@@ -76,12 +109,21 @@ export function SellTradeForm() {
 
   return (
     <form className="grid gap-4 rounded-2xl border border-vault-border bg-vault-card p-5 shadow-vault" onSubmit={handleSubmit} noValidate>
+      <input aria-hidden="true" autoComplete="off" className="hidden" name="company" tabIndex={-1} type="text" />
       <div className="grid gap-4 md:grid-cols-2">
-        <FormInput error={errors.name} label="Name" onChange={(event) => update("name", event.target.value)} value={form.name} />
-        <FormInput error={errors.email} inputMode="email" label="Email" onChange={(event) => update("email", event.target.value)} type="text" value={form.email} />
+        <FormInput error={errors.name} label="Name" maxLength={maxLengths.name} onChange={(event) => update("name", event.target.value)} value={form.name} />
+        <FormInput
+          error={errors.email}
+          inputMode="email"
+          label="Email"
+          maxLength={maxLengths.email}
+          onChange={(event) => update("email", event.target.value)}
+          type="text"
+          value={form.email}
+        />
       </div>
       <div className="grid gap-4 md:grid-cols-2">
-        <FormInput label="Phone optional" onChange={(event) => update("phone", event.target.value)} value={form.phone} />
+        <FormInput label="Phone optional" maxLength={maxLengths.phone} onChange={(event) => update("phone", event.target.value)} value={form.phone} />
         <FormSelect
           label="Preferred contact method"
           onChange={(event) => update("preferredContactMethod", event.target.value as FormState["preferredContactMethod"])}
@@ -92,6 +134,7 @@ export function SellTradeForm() {
       <FormTextarea
         error={errors.description}
         label="What are you selling/trading?"
+        maxLength={maxLengths.description}
         onChange={(event) => update("description", event.target.value)}
         value={form.description}
       />
@@ -104,20 +147,29 @@ export function SellTradeForm() {
         />
         <FormInput
           label="Approximate quantity"
+          maxLength={maxLengths.approximateQuantity}
           onChange={(event) => update("approximateQuantity", event.target.value)}
           placeholder="Example: 30 singles, 2 slabs"
           value={form.approximateQuantity}
         />
         <FormInput
           label="Condition estimate"
+          maxLength={maxLengths.conditionEstimate}
           onChange={(event) => update("conditionEstimate", event.target.value)}
           placeholder="Near mint, mixed, sealed..."
           value={form.conditionEstimate}
         />
       </div>
       <FileUploadPlaceholder files={files} onFilesSelected={setFiles} />
-      <FormTextarea label="Message" onChange={(event) => update("message", event.target.value)} value={form.message} />
-      <Button type="submit">Submit Collection Details</Button>
+      <FormTextarea label="Message" maxLength={maxLengths.message} onChange={(event) => update("message", event.target.value)} value={form.message} />
+      {submitError ? (
+        <p className="rounded-xl border border-vault-error/30 bg-vault-error/10 px-4 py-3 text-sm text-vault-error" role="alert">
+          {submitError}
+        </p>
+      ) : null}
+      <Button disabled={isSubmitting} type="submit">
+        {isSubmitting ? "Submitting..." : "Submit Collection Details"}
+      </Button>
     </form>
   );
 }

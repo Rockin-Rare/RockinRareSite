@@ -8,6 +8,7 @@ V1 legitimacy-first website for Rockin Rare Collectibles, a collector-first trad
 - TypeScript
 - Tailwind CSS
 - Supabase-ready data and storage placeholders
+- Discord webhook sell/trade intake notifications
 - Vercel-ready deployment
 
 ## Run Locally
@@ -29,21 +30,22 @@ npm run build
 
 ## Environment Variables
 
-Copy `.env.example` to `.env.local` when Supabase is ready:
+Copy `.env.example` to `.env.local` and set the values you need:
 
 ```bash
+DISCORD_SELL_TRADE_WEBHOOK_URL=
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 ```
 
-The site does not require these values for v1. Supabase clients return `null` when env vars are missing.
+The sell/trade form works locally without a webhook, but submissions are only delivered to Discord when `DISCORD_SELL_TRADE_WEBHOOK_URL` is set. Supabase values are optional placeholders for future product data work.
 
 ## Current V1 Features
 
 - Home page with trust-first brand positioning and inventory preview
 - Inventory catalog with client-side search, filters, sorting, sold states, and empty states
 - Product detail pages for all mock products
-- Sell / Trade intake form with validation and success state
+- Sell / Trade intake form with validation and Discord webhook route
 - Contact form with validation and success state
 - About and FAQ pages
 - Typed mock product data that imitates scanner output
@@ -79,7 +81,7 @@ Future image storage buckets:
 - `product-images`
 - `submission-images`
 
-The sell/trade form includes TODO comments for uploading submission photos before creating a `sell_trade_submissions` row.
+The sell/trade form currently sends submission details to Discord. Photo upload storage can be added later if the intake workflow needs actual image attachments instead of file names.
 
 ## Scanner Integration
 
@@ -93,7 +95,7 @@ Scanner app -> inventory database -> admin review -> published website catalog.
 
 1. Push the project to a Git repository.
 2. Import the repo into Vercel.
-3. Set Supabase environment variables later when production data is connected.
+3. Set `DISCORD_SELL_TRADE_WEBHOOK_URL` for sell/trade intake notifications.
 4. Deploy with the default Next.js build command: `npm run build`.
 
 ## Future Roadmap
@@ -103,5 +105,5 @@ Scanner app -> inventory database -> admin review -> published website catalog.
 - Admin dashboard
 - External listing sync
 - Direct checkout with Stripe
-- Email notifications for sell/trade submissions
+- Photo upload support for sell/trade submissions
 - SEO collection buying pages

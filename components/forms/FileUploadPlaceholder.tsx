@@ -11,7 +11,7 @@ export function FileUploadPlaceholder({
     <label className="grid cursor-pointer gap-3 rounded-2xl border border-dashed border-vault-border bg-vault-secondary p-5 text-center transition hover:border-vault-gold">
       <span className="text-sm font-semibold text-vault-text">Upload photos placeholder</span>
       <span className="text-sm text-vault-secondaryText">
-        Choose front, back, sealed product, or collection overview photos. Files are not uploaded in v1.
+        Choose front, back, sealed product, or collection overview photos. File names are included in the Discord submission for now.
       </span>
       <input
         className="sr-only"
