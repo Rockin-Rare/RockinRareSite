@@ -37,6 +37,14 @@ DISCORD_SELL_TRADE_WEBHOOK_URL=
 DISCORD_CONTACT_WEBHOOK_URL=
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_SITE_URL=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+STRIPE_SHIPPING_RATE_ID=
+STRIPE_TAX_ENABLED=
+DISCORD_SALES_WEBHOOK_URL=
+CARD_INTAKE_SALES_WEBHOOK_URL=
+CARD_INTAKE_SALES_WEBHOOK_TOKEN=
 ```
 
 The sell/trade and contact forms work locally without webhooks, but submissions are only delivered to Discord when `DISCORD_SELL_TRADE_WEBHOOK_URL` and `DISCORD_CONTACT_WEBHOOK_URL` are set. Supabase values are optional placeholders for future product data work.
@@ -52,7 +60,7 @@ The sell/trade and contact forms work locally without webhooks, but submissions 
 - Typed mock product data that imitates scanner output
 - Supabase schema draft and safe client placeholders
 
-No checkout, payment flow, user accounts, or admin dashboard are implemented in v1.
+Direct checkout is implemented with Stripe Checkout. User accounts and an admin dashboard are not implemented in v1.
 
 ## Inventory Data
 
@@ -66,12 +74,54 @@ Set `INVENTORY_SOURCE=mock` to force the local mock catalog for QA, screenshots,
 - `getFeaturedProducts()`
 - `getRelatedProducts(product)`
 
+Commerce metadata is optional on incoming product records. If Card Intake Router does not provide these fields, the website derives safe defaults:
+
+- `sku` falls back to `scanId` or `id`
+- `sitePrice` falls back to `price`
+- `primaryChannel` is inferred from category, price, and external listing platform
+- `checkoutEnabled` defaults to true for available/listed items and false for coming soon items
+
+Supported commerce fields:
+
+```bash
+sku
+sitePrice
+ebayPrice
+tcgplayerPrice
+primaryChannel # site | ebay | tcgplayer | multi | hold
+checkoutEnabled
+reservedUntil
+soldAt
+soldChannel
+```
+
 Required website env vars:
 
 ```bash
 CARD_INTAKE_API_BASE_URL=
 CARD_INTAKE_API_TOKEN=
 ```
+
+## Stripe Checkout
+
+Set these values to enable direct website checkout:
+
+```bash
+NEXT_PUBLIC_SITE_URL=https://your-domain.example
+STRIPE_SECRET_KEY=sk_live_or_test...
+STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_SHIPPING_RATE_ID=shr_...
+STRIPE_TAX_ENABLED=true
+DISCORD_SALES_WEBHOOK_URL=
+```
+
+Checkout sessions are created through `POST /api/checkout`. Stripe should send webhooks to:
+
+```text
+/api/stripe/webhook
+```
+
+The webhook handles `checkout.session.completed` and `checkout.session.expired`. When `CARD_INTAKE_SALES_WEBHOOK_URL` is configured, completed and expired checkout events are posted to that URL so Card Intake Router can mark the item sold or release future reservations.
 
 ## Replacing Mock Data With Supabase
 
@@ -105,6 +155,6 @@ Scanner app -> inventory database -> admin review -> published website catalog.
 - Supabase image uploads
 - Admin dashboard
 - External listing sync
-- Direct checkout with Stripe
+- Automated eBay delisting after direct Stripe sale
 - Stored photo archive for sell/trade submissions
 - SEO collection buying pages

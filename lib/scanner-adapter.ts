@@ -30,6 +30,7 @@ export function normalizeScannerProduct(raw: RawScannerProduct): Product {
   return {
     id: raw.scanId,
     slug: slugify(`${raw.detectedName}-${raw.scanId}`),
+    sku: raw.scanId,
     name: raw.detectedName,
     category: raw.category ?? "single",
     franchise: raw.franchise ?? "Unknown",
@@ -38,6 +39,7 @@ export function normalizeScannerProduct(raw: RawScannerProduct): Product {
     language: raw.language,
     condition: raw.estimatedCondition ?? "Unknown",
     price: raw.estimatedPrice,
+    sitePrice: raw.estimatedPrice,
     quantity: 1,
     status,
     publicStatus,

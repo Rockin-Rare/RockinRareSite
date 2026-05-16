@@ -23,7 +23,7 @@ export async function getCardIntakeProducts(): Promise<Product[]> {
   }
 
   const payload = (await response.json()) as PublicInventoryResponse;
-  return payload.products ?? [];
+  return (payload.products ?? []).map(normalizePublicProduct);
 }
 
 export async function getCardIntakeProductBySlug(slug: string): Promise<Product | undefined> {
@@ -41,7 +41,16 @@ export async function getCardIntakeProductBySlug(slug: string): Promise<Product 
   }
 
   const payload = (await response.json()) as { product?: Product };
-  return payload.product;
+  return payload.product ? normalizePublicProduct(payload.product) : undefined;
+}
+
+function normalizePublicProduct(product: Product): Product {
+  return {
+    ...product,
+    sku: product.sku ?? product.scanId ?? product.id,
+    sitePrice: product.sitePrice ?? product.price,
+    checkoutEnabled: product.checkoutEnabled ?? product.publicStatus !== "coming_soon"
+  };
 }
 
 function authHeaders() {

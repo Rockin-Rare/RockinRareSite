@@ -12,9 +12,14 @@ export type PublicProductStatus = "available" | "listed" | "sold" | "coming_soon
 
 export type ProductCategory = "single" | "sealed" | "slab" | "bundle" | "bulk" | "accessory";
 
+export type SalesChannel = "site" | "ebay" | "tcgplayer" | "multi" | "hold";
+
+export type SoldChannel = "site" | "ebay" | "tcgplayer" | "in_person" | "other";
+
 export type Product = {
   id: string;
   slug: string;
+  sku?: string;
   name: string;
   category: ProductCategory;
   franchise: string;
@@ -34,9 +39,14 @@ export type Product = {
   gradeCompany?: "PSA" | "BGS" | "CGC" | "TAG" | "Other";
   grade?: string;
   price?: number;
+  sitePrice?: number;
+  ebayPrice?: number;
+  tcgplayerPrice?: number;
   quantity?: number;
   status: ProductStatus;
   publicStatus: PublicProductStatus;
+  primaryChannel?: SalesChannel;
+  checkoutEnabled?: boolean;
   description?: string;
   conditionNotes?: string;
   imageUrls: string[];
@@ -46,6 +56,9 @@ export type Product = {
   actualPhoto: boolean;
   conditionReviewed: boolean;
   scanId?: string;
+  reservedUntil?: string;
+  soldAt?: string;
+  soldChannel?: SoldChannel;
   createdAt: string;
   updatedAt: string;
 };
