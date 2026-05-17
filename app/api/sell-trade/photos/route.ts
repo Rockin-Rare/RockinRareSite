@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createId } from "@/lib/id";
 import { getPhotoSession, setPhotoSession, summarizePhotos, type StoredPhoto } from "@/lib/sell-trade-photo-sessions";
 
 const maxFiles = 8;
@@ -74,7 +75,7 @@ export async function POST(request: Request) {
 
   const uploadedPhotos: StoredPhoto[] = await Promise.all(
     files.map(async (file) => ({
-      id: crypto.randomUUID(),
+      id: createId(),
       name: file.name,
       type: file.type,
       size: file.size,
