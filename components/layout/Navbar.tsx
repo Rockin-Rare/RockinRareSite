@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { BrandLogo } from "@/components/layout/BrandLogo";
 import { Button } from "@/components/ui/Button";
 
 const navLinks = [
@@ -19,10 +20,7 @@ export function Navbar() {
     <header className="sticky top-0 z-50 border-b border-vault-border/80 bg-vault-bg/86 backdrop-blur-xl">
       <div className="mx-auto flex h-20 max-w-[1200px] items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link className="flex items-center gap-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-vault-highlight" href="/">
-          <span className="grid h-10 w-10 place-items-center rounded-xl border border-vault-gold/40 bg-vault-gold/10 text-vault-highlight">
-            RR
-          </span>
-          <span className="text-base font-black text-vault-text sm:text-lg">Rockin Rare Collectibles</span>
+          <BrandLogo compact mark="gem" />
         </Link>
         <nav className="hidden items-center gap-7 md:flex" aria-label="Primary navigation">
           {navLinks.map((link) => (

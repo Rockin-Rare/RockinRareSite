@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandLogo } from "@/components/layout/BrandLogo";
 import { Container } from "@/components/layout/Container";
 
 export function Footer() {
@@ -8,12 +9,7 @@ export function Footer() {
     <footer className="mt-20 border-t border-vault-border bg-vault-secondary/70">
       <Container className="grid gap-10 py-12 md:grid-cols-[1.5fr_1fr_1fr]">
         <div>
-          <div className="flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-xl border border-vault-gold/40 bg-vault-gold/10 text-sm font-black text-vault-highlight">
-              RR
-            </span>
-            <span className="font-black text-vault-text">Rockin Rare Collectibles</span>
-          </div>
+          <BrandLogo compact mark="gem" />
           <p className="mt-4 max-w-md text-sm leading-6 text-vault-secondaryText">
             Collector-first trading cards, sealed product, slabs, and rare finds with real photos, clear condition notes,
             and secure packaging. Southern California based.

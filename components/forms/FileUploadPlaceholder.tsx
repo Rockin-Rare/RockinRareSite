@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createId } from "@/lib/id";
 
 type PhonePhoto = {
   id: string;
@@ -28,7 +29,7 @@ export function FileUploadPlaceholder({
   const [uploadUrl, setUploadUrl] = useState("");
 
   useEffect(() => {
-    const session = crypto.randomUUID();
+    const session = createId();
     setPhotoSession(session);
     setUploadUrl(`${window.location.origin}/sell-trade/photos/${session}`);
   }, []);

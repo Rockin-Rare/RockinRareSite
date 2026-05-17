@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Container } from "@/components/layout/Container";
 import { CategoryCard } from "@/components/marketing/CategoryCard";
 import { FeaturedInventory } from "@/components/marketing/FeaturedInventory";
@@ -35,6 +36,18 @@ export default async function HomePage() {
             We&apos;re building a cleaner way to buy and sell collectibles with real product photos, transparent condition
             notes, and secure packaging from people who actually care about the hobby.
           </p>
+          <div className="mt-7 flex items-center gap-4">
+            <Image
+              alt="Rockin Rare Collectibles rock hand logo"
+              className="h-16 w-16 rounded-lg border border-vault-gold/40 bg-black object-cover shadow-gold"
+              height={128}
+              src="/brand/rockin-rare-logo.jpg"
+              width={128}
+            />
+            <p className="max-w-md text-sm font-medium leading-6 text-vault-secondaryText">
+              Southern California based, with a focus on Pokemon, rare finds, sealed product, and collector bundles.
+            </p>
+          </div>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button href="/inventory">Shop Current Inventory</Button>
             <Button href="/sell-trade" variant="secondary">
