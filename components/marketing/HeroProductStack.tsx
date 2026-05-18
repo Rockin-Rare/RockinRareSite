@@ -2,21 +2,21 @@ import type { Product } from "@/lib/types";
 
 const heroCards = [
   {
-    label: "Showpiece Single",
-    title: "Vintage Holo Spotlight",
-    meta: "Chase cards, clean fronts, collector appeal",
+    label: "Featured Card",
+    title: "Vault Spotlight",
+    meta: "Rotating singles, slabs, and collector favorites",
     tone: "from-[#f2c76e] via-[#b8572f] to-[#16191f]"
   },
   {
-    label: "Sealed Heat",
-    title: "Japanese Drops",
-    meta: "Sealed product and themed batches",
+    label: "Fresh Pick",
+    title: "New Arrival",
+    meta: "Recently reviewed cards and display pieces",
     tone: "from-[#5fd0ff] via-[#276b9f] to-[#111318]"
   },
   {
-    label: "Graded Vault",
-    title: "Slabs & Grails",
-    meta: "Display pieces and graded favorites",
+    label: "Collector Ready",
+    title: "Clean Listing",
+    meta: "Clear photos and condition notes",
     tone: "from-[#f4f1ea] via-[#7d8594] to-[#101216]"
   }
 ];
@@ -70,7 +70,7 @@ function VaultShowpiece({ card, featured = false, compact = false }: { card: Her
       </div>
       <div
         className={`absolute rounded-2xl border border-white/25 bg-black/25 shadow-[0_18px_60px_rgba(0,0,0,0.35)] ${
-          featured ? "left-1/2 top-12 h-48 w-32 -translate-x-1/2 rotate-3 sm:h-56 sm:w-36" : "right-5 top-7 h-24 w-16 rotate-6"
+          featured ? "left-1/2 top-10 h-52 w-36 -translate-x-1/2 rotate-3 sm:h-60 sm:w-40" : "right-5 top-5 h-28 w-20 rotate-6"
         }`}
       >
         <div className="absolute inset-2 rounded-xl border border-white/20 bg-white/10" />
