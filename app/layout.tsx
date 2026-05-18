@@ -11,8 +11,20 @@ export const metadata: Metadata = {
   description:
     "Collector-first trading cards, sealed product, slabs, Japanese cards, singles, and rare finds with real product photos and transparent condition notes.",
   icons: {
-    icon: "/brand/rockin-rare-logo.jpg",
-    apple: "/brand/rockin-rare-badge.jpg"
+    icon: [
+      {
+        url: "/brand/rockin-rare-favicon.png",
+        sizes: "512x512",
+        type: "image/png"
+      }
+    ],
+    apple: [
+      {
+        url: "/brand/rockin-rare-favicon.png",
+        sizes: "512x512",
+        type: "image/png"
+      }
+    ]
   },
   openGraph: {
     title: "Rockin Rare Collectibles",
