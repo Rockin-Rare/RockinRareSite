@@ -33,8 +33,8 @@ export default async function HomePage() {
             Collector-first trading cards, sealed product, slabs, and rare finds.
           </p>
           <p className="mt-6 max-w-2xl text-base leading-8 text-vault-secondaryText">
-            We&apos;re building a cleaner way to buy and sell collectibles with real product photos, transparent condition
-            notes, and secure packaging from people who actually care about the hobby.
+            Buy and sell collectibles with real product photos, transparent condition notes, and secure packaging from
+            people who actually care about the hobby.
           </p>
           <div className="mt-7 flex items-center gap-4">
             <Image
@@ -62,7 +62,7 @@ export default async function HomePage() {
       </section>
 
       <section className="py-10">
-        <SectionHeader title="Collector Categories" description="The first release focuses on clear browsing, trustworthy details, and simple ways to contact us." />
+        <SectionHeader title="Collector Categories" description="Browse clean listings, clear condition details, and collector-focused card categories." />
         <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {categories.map((category) => (
             <CategoryCard key={category.title} {...category} />

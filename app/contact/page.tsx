@@ -20,7 +20,7 @@ export default function ContactPage() {
         <div className="mt-8 grid gap-3 rounded-2xl border border-vault-border bg-vault-card p-5 text-sm text-vault-secondaryText">
           <span>Email: contact@rockinrarecollectibles.com</span>
           <span>Instagram: @rockinrarecollectibles</span>
-          <span>eBay / TCGplayer / Whatnot: placeholders</span>
+          <span>Marketplace listings available from individual inventory pages</span>
           <span>Southern California based</span>
         </div>
       </div>

@@ -18,7 +18,7 @@ const items = [
   },
   {
     question: "Are your cards authentic?",
-    answer: "We review inventory before listing and avoid publishing scanner-only records without manual review."
+    answer: "Yes. We review inventory before listing and focus on clear photos, condition notes, and trustworthy product details."
   },
   {
     question: "Do you ship?",
@@ -42,7 +42,7 @@ const items = [
   },
   {
     question: "Where can I buy your listed items?",
-    answer: "V1 uses external listing links such as eBay, TCGplayer, Whatnot, Instagram, or direct contact. There is no checkout on this site yet."
+    answer: "Use the listing links on each item when available, or contact us directly with questions about a card, slab, sealed product, or bundle."
   }
 ];
 

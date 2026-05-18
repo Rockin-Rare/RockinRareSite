@@ -92,7 +92,7 @@ export function CollectorClubForm() {
       <div className="rounded-2xl border border-vault-success/30 bg-vault-success/10 p-6 shadow-vault" role="status">
         <h3 className="text-xl font-black text-vault-text">You&apos;re on the Collector Club list.</h3>
         <p className="mt-2 text-sm leading-6 text-vault-secondaryText">
-          Thanks. We&apos;ll use this list for future drop alerts, wishlist updates, and Discord launch invites.
+          Thanks. We&apos;ll email you with drop alerts, wishlist updates, and Discord launch invites.
         </p>
       </div>
     );
@@ -152,10 +152,13 @@ export function CollectorClubForm() {
         <span>
           <span className="block text-sm font-semibold text-vault-text">I may be interested in Collector Club Pro later.</span>
           <span className="mt-1 block text-xs leading-5 text-vault-secondaryText">
-            Pro is not live yet. This only helps us understand future interest in early access, wishlist matching, store credit, and custom bundles.
+            This helps us understand interest in early access, wishlist matching, store credit, and custom bundles.
           </span>
         </span>
       </label>
+      <p className="text-xs leading-5 text-vault-muted">
+        By joining, you agree that Rockin Rare may email you about Collector Club updates, drop alerts, and Discord invites.
+      </p>
       {submitError ? (
         <p className="rounded-xl border border-vault-error/30 bg-vault-error/10 px-4 py-3 text-sm text-vault-error" role="alert">
           {submitError}

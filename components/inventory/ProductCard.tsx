@@ -35,7 +35,7 @@ export function ProductCard({ product }: { product: Product }) {
           {product.language ? ` / ${product.language}` : ""}
         </p>
         <p className="mt-3 inline-flex w-fit rounded-full border border-vault-border bg-vault-secondary px-2.5 py-1 text-xs font-semibold text-vault-secondaryText">
-          {product.condition ?? "Condition pending"}
+          {product.condition ?? "Condition available on request"}
         </p>
         <div className="mt-auto flex items-end justify-between gap-4 pt-5">
           <div>

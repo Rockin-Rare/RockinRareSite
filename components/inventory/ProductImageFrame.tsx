@@ -41,7 +41,7 @@ export function ProductImageFrame({
           <div>
             <p className="text-sm font-semibold text-vault-gold">Rockin Rare</p>
             <p className="mt-2 text-lg font-black text-vault-text">{alt}</p>
-            <p className="mt-2 text-xs text-vault-muted">Product image pending</p>
+            <p className="mt-2 text-xs text-vault-muted">Product image unavailable</p>
           </div>
         </div>
       )}

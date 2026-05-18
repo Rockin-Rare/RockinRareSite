@@ -118,7 +118,7 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
         <div className="rounded-2xl border border-vault-border bg-vault-card p-6">
           <h2 className="text-xl font-black text-vault-text">Condition Notes</h2>
           <p className="mt-4 leading-7 text-vault-secondaryText">
-            {product.conditionNotes ?? "Condition notes are pending manual review."}
+            {product.conditionNotes ?? "Contact us if you have condition questions about this item."}
           </p>
         </div>
         <div className="rounded-2xl border border-vault-border bg-vault-card p-6">

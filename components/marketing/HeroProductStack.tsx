@@ -77,7 +77,7 @@ function VaultPlaceholder({ className, label, featured = false }: { className: s
         <div>
           <p className="text-xs font-semibold uppercase text-vault-gold">Rockin Rare</p>
           <p className="mt-3 text-3xl font-black text-vault-text">{label}</p>
-          <p className="mt-3 text-xs text-vault-secondaryText">Public inventory activates after review</p>
+          <p className="mt-3 text-xs text-vault-secondaryText">Fresh inventory rotates in regularly</p>
         </div>
       </div>
     </div>
@@ -88,7 +88,7 @@ function PreviewPanel() {
   return (
     <div className="absolute bottom-0 left-1/2 w-[88%] -translate-x-1/2 rounded-2xl border border-vault-border bg-vault-secondary/90 p-4 shadow-vault backdrop-blur">
       <p className="text-xs font-semibold uppercase text-vault-gold">Current Inventory Preview</p>
-      <p className="mt-1 text-sm text-vault-secondaryText">Real intake photos, condition notes, and external listing links.</p>
+      <p className="mt-1 text-sm text-vault-secondaryText">Real product photos, condition notes, and listing links.</p>
     </div>
   );
 }

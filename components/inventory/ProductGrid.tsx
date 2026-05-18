@@ -7,7 +7,7 @@ export function ProductGrid({ products }: { products: Product[] }) {
     return (
       <EmptyState
         title="No public inventory available"
-        message="Inventory appears here after Card Intake Router marks items listable or ready for draft. Try adjusting filters if you are searching a populated catalog."
+        message="No items match the current filters. Try adjusting your search or check back for new drops."
       />
     );
   }
