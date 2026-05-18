@@ -35,6 +35,9 @@ export function ProductImageFrame({
           )}
           src={src}
           loading={priority ? "eager" : "lazy"}
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
+          }}
         />
       ) : (
         <div className="relative grid h-full min-h-72 place-items-center p-8 text-center">

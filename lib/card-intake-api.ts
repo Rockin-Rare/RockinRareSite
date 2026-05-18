@@ -15,7 +15,7 @@ export async function getCardIntakeProducts(): Promise<Product[]> {
 
   const response = await fetch(`${baseUrl.replace(/\/$/, "")}/api/public/inventory`, {
     headers: authHeaders(),
-    next: { revalidate: 60 }
+    cache: "no-store"
   });
 
   if (!response.ok) {
@@ -33,7 +33,7 @@ export async function getCardIntakeProductBySlug(slug: string): Promise<Product 
 
   const response = await fetch(`${baseUrl.replace(/\/$/, "")}/api/public/inventory/${encodeURIComponent(slug)}`, {
     headers: authHeaders(),
-    next: { revalidate: 60 }
+    cache: "no-store"
   });
 
   if (response.status === 404) return undefined;
