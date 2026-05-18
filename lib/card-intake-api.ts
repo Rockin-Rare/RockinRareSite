@@ -1,7 +1,9 @@
 import type { Product } from "@/lib/types";
 
+type RawPublicProduct = Partial<Product> & Record<string, unknown>;
+
 type PublicInventoryResponse = {
-  products?: Product[];
+  products?: RawPublicProduct[];
 };
 
 export function hasCardIntakeApi() {
@@ -23,7 +25,8 @@ export async function getCardIntakeProducts(): Promise<Product[]> {
   }
 
   const payload = (await response.json()) as PublicInventoryResponse;
-  return (payload.products ?? []).map(normalizePublicProduct);
+  const products = (payload.products ?? []).map(normalizePublicProduct);
+  return enrichProductsMissingImages(products);
 }
 
 export async function getCardIntakeProductBySlug(slug: string): Promise<Product | undefined> {
@@ -40,16 +43,22 @@ export async function getCardIntakeProductBySlug(slug: string): Promise<Product 
     throw new Error(`Card Intake product API returned ${response.status}`);
   }
 
-  const payload = (await response.json()) as { product?: Product };
+  const payload = (await response.json()) as { product?: RawPublicProduct };
   return payload.product ? normalizePublicProduct(payload.product) : undefined;
 }
 
-function normalizePublicProduct(product: Product): Product {
-  const imageUrls = product.imageUrls ?? [];
-  const primaryImageUrl = product.primaryImageUrl || imageUrls[0] || "";
+function normalizePublicProduct(product: RawPublicProduct): Product {
+  const imageUrls = readImageUrls(product);
+  const primaryImageUrl =
+    readString(product.primaryImageUrl) ||
+    readString(product.primary_image_url) ||
+    readString(product.imageUrl) ||
+    readString(product.image_url) ||
+    imageUrls[0] ||
+    "";
 
   return {
-    ...product,
+    ...(product as Product),
     imageUrls,
     primaryImageUrl,
     sku: product.sku ?? product.scanId ?? product.id,
@@ -58,7 +67,60 @@ function normalizePublicProduct(product: Product): Product {
   };
 }
 
+function readImageUrls(product: RawPublicProduct) {
+  const candidateArrays = [product.imageUrls, product.image_urls, product.images, product.photos];
+  const imageUrls = candidateArrays.flatMap((candidate) => normalizeImageArray(candidate));
+  return Array.from(new Set(imageUrls.filter(Boolean)));
+}
+
+function normalizeImageArray(value: unknown) {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((item) => {
+      if (typeof item === "string") return item;
+      if (!item || typeof item !== "object") return "";
+
+      const image = item as Record<string, unknown>;
+      return (
+        readString(image.url) ||
+        readString(image.imageUrl) ||
+        readString(image.image_url) ||
+        readString(image.signedUrl) ||
+        readString(image.signed_url) ||
+        readString(image.publicUrl) ||
+        readString(image.public_url) ||
+        readString(image.src)
+      );
+    })
+    .filter(Boolean);
+}
+
+function readString(value: unknown) {
+  return typeof value === "string" ? value : "";
+}
+
 function authHeaders() {
   const token = process.env.CARD_INTAKE_API_TOKEN;
   return token ? { authorization: `Bearer ${token}` } : undefined;
+}
+
+async function enrichProductsMissingImages(products: Product[]) {
+  if (!products.some((product) => !product.primaryImageUrl && product.slug)) {
+    return products;
+  }
+
+  return Promise.all(
+    products.map(async (product) => {
+      if (product.primaryImageUrl || !product.slug) return product;
+
+      try {
+        const detail = await getCardIntakeProductBySlug(product.slug);
+        return detail?.primaryImageUrl ? { ...product, imageUrls: detail.imageUrls, primaryImageUrl: detail.primaryImageUrl } : product;
+      } catch (error) {
+        console.error(`Failed to load Card Intake image details for ${product.slug}`, error);
+        return product;
+      }
+    })
+  );
 }
