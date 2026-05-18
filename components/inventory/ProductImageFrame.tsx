@@ -5,6 +5,8 @@ export function ProductImageFrame({
   alt,
   sold = false,
   priority = false,
+  fit = "contain",
+  padded = true,
   imageClassName,
   className
 }: {
@@ -12,6 +14,8 @@ export function ProductImageFrame({
   alt: string;
   sold?: boolean;
   priority?: boolean;
+  fit?: "contain" | "cover";
+  padded?: boolean;
   imageClassName?: string;
   className?: string;
 }) {
@@ -23,7 +27,9 @@ export function ProductImageFrame({
         <img
           alt={alt}
           className={cn(
-            "absolute inset-0 h-full w-full object-contain p-5 transition duration-500 group-hover:scale-105",
+            "absolute inset-0 h-full w-full transition duration-500 group-hover:scale-105",
+            fit === "cover" ? "object-cover" : "object-contain",
+            padded && "p-5",
             sold && "opacity-45 grayscale",
             imageClassName
           )}

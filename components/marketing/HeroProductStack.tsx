@@ -1,8 +1,24 @@
 import { ProductImageFrame } from "@/components/inventory/ProductImageFrame";
 import type { Product } from "@/lib/types";
 
+const heroCards = [
+  {
+    alt: "Holographic Charizard card in a protective case",
+    src: "https://images.pexels.com/photos/9661257/pexels-photo-9661257.jpeg?auto=compress&cs=tinysrgb&w=640"
+  },
+  {
+    alt: "Vintage collectible Pokemon cards in protective cases",
+    src: "https://images.pexels.com/photos/9661252/pexels-photo-9661252.jpeg?auto=compress&cs=tinysrgb&w=640"
+  },
+  {
+    alt: "Holographic Blastoise card in a protective case",
+    src: "https://images.pexels.com/photos/9572050/pexels-photo-9572050.jpeg?auto=compress&cs=tinysrgb&w=640"
+  }
+];
+
 export function HeroProductStack({ products }: { products: Product[] }) {
-  const [first, second, third] = products;
+  void products;
+  const [first, second, third] = heroCards;
 
   if (!first) {
     return (
@@ -19,24 +35,29 @@ export function HeroProductStack({ products }: { products: Product[] }) {
     <div className="relative min-h-[430px]">
       {third ? (
         <ProductImageFrame
-          alt={third.name}
-          src={third.primaryImageUrl}
+          alt={third.alt}
+          src={third.src}
+          fit="cover"
+          padded={false}
           className="absolute right-0 top-16 h-72 w-52 rotate-6 opacity-80 sm:h-80 sm:w-60"
         />
       ) : null}
       {second ? (
         <ProductImageFrame
-          alt={second.name}
-          src={second.primaryImageUrl}
+          alt={second.alt}
+          src={second.src}
+          fit="cover"
+          padded={false}
           className="absolute left-0 top-24 h-72 w-52 -rotate-6 opacity-90 sm:h-80 sm:w-60"
         />
       ) : null}
       {first ? (
         <ProductImageFrame
-          alt={first.name}
-          src={first.primaryImageUrl}
+          alt={first.alt}
+          src={first.src}
           priority
-          imageClassName="rotate-180"
+          fit="cover"
+          padded={false}
           className="absolute left-1/2 top-0 h-[390px] w-64 -translate-x-1/2 gold-glow sm:w-72"
         />
       ) : null}

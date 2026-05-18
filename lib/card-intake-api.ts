@@ -45,8 +45,13 @@ export async function getCardIntakeProductBySlug(slug: string): Promise<Product 
 }
 
 function normalizePublicProduct(product: Product): Product {
+  const imageUrls = product.imageUrls ?? [];
+  const primaryImageUrl = product.primaryImageUrl || imageUrls[0] || "";
+
   return {
     ...product,
+    imageUrls,
+    primaryImageUrl,
     sku: product.sku ?? product.scanId ?? product.id,
     sitePrice: product.sitePrice ?? product.price,
     checkoutEnabled: product.checkoutEnabled ?? product.publicStatus !== "coming_soon"
