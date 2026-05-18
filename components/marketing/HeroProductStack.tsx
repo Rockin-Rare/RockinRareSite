@@ -22,11 +22,13 @@ export function HeroProductStack({ products }: { products: Product[] }) {
 
   if (!first) {
     return (
-      <div className="vault-panel relative mx-auto grid min-h-[330px] w-full max-w-[520px] grid-cols-[0.92fr_1.08fr] gap-4 overflow-hidden rounded-2xl p-5 lg:mt-4" aria-label="Rockin Rare vault preview">
-        <VaultPlaceholder className="relative h-full min-h-[250px] gold-glow" label="Singles" featured />
-        <div className="grid gap-4">
-          <VaultPlaceholder className="relative min-h-[118px]" label="Sealed" compact />
-          <VaultPlaceholder className="relative min-h-[118px]" label="Slabs" compact />
+      <div className="vault-panel relative mx-auto grid w-full max-w-[520px] gap-4 overflow-hidden rounded-2xl p-5 lg:mt-4" aria-label="Rockin Rare vault preview">
+        <div className="grid gap-4 sm:grid-cols-[1.05fr_0.95fr]">
+          <VaultPlaceholder className="relative min-h-[300px] gold-glow" label="Singles" featured />
+          <div className="grid gap-4">
+            <VaultPlaceholder className="relative min-h-[142px]" label="Sealed" compact />
+            <VaultPlaceholder className="relative min-h-[142px]" label="Slabs" compact />
+          </div>
         </div>
         <PreviewPanel />
       </div>
@@ -34,11 +36,13 @@ export function HeroProductStack({ products }: { products: Product[] }) {
   }
 
   return (
-    <div className="vault-panel relative mx-auto grid min-h-[330px] w-full max-w-[520px] grid-cols-[0.92fr_1.08fr] gap-4 overflow-hidden rounded-2xl p-5 lg:mt-4">
-      {first ? <ProductImageFrame alt={first.alt} src={first.src} priority fit="cover" padded={false} className="h-full min-h-[250px] gold-glow" /> : null}
-      <div className="grid gap-4">
-        {second ? <ProductImageFrame alt={second.alt} src={second.src} fit="cover" padded={false} className="min-h-[118px]" /> : null}
-        {third ? <ProductImageFrame alt={third.alt} src={third.src} fit="cover" padded={false} className="min-h-[118px]" /> : null}
+    <div className="vault-panel relative mx-auto grid w-full max-w-[520px] gap-4 overflow-hidden rounded-2xl p-5 lg:mt-4">
+      <div className="grid gap-4 sm:grid-cols-[1.05fr_0.95fr]">
+        {first ? <ProductImageFrame alt={first.alt} src={first.src} priority fit="cover" padded={false} className="min-h-[300px] gold-glow" /> : null}
+        <div className="grid gap-4">
+          {second ? <ProductImageFrame alt={second.alt} src={second.src} fit="cover" padded={false} className="min-h-[142px]" /> : null}
+          {third ? <ProductImageFrame alt={third.alt} src={third.src} fit="cover" padded={false} className="min-h-[142px]" /> : null}
+        </div>
       </div>
       <PreviewPanel />
     </div>
@@ -75,9 +79,12 @@ function VaultPlaceholder({
 
 function PreviewPanel() {
   return (
-    <div className="absolute inset-x-5 bottom-5 rounded-xl border border-vault-border bg-vault-secondary/90 p-3 shadow-vault backdrop-blur">
-      <p className="text-xs font-semibold uppercase text-vault-gold">Current Inventory Preview</p>
-      <p className="mt-1 text-sm text-vault-secondaryText">Real product photos, condition notes, and listing links.</p>
+    <div className="grid gap-3 rounded-xl border border-vault-border bg-vault-secondary/90 p-3 shadow-vault sm:grid-cols-[1fr_auto] sm:items-center">
+      <div>
+        <p className="text-xs font-semibold uppercase text-vault-gold">Current Inventory Preview</p>
+        <p className="mt-1 text-sm text-vault-secondaryText">Real product photos, condition notes, and listing links.</p>
+      </div>
+      <div className="rounded-lg border border-vault-gold/30 px-3 py-2 text-sm font-black text-vault-highlight">Live</div>
     </div>
   );
 }
