@@ -3,16 +3,16 @@ import type { Product } from "@/lib/types";
 
 const heroCards = [
   {
+    alt: "Holographic Charizard card in a protective case",
+    src: "https://images.pexels.com/photos/9661257/pexels-photo-9661257.jpeg?auto=compress&cs=tinysrgb&w=640"
+  },
+  {
+    alt: "Vintage collectible Pokemon cards in protective cases",
+    src: "https://images.pexels.com/photos/9661252/pexels-photo-9661252.jpeg?auto=compress&cs=tinysrgb&w=640"
+  },
+  {
     alt: "Holographic Blastoise card in a protective case",
     src: "https://images.pexels.com/photos/9572050/pexels-photo-9572050.jpeg?auto=compress&cs=tinysrgb&w=640"
-  },
-  {
-    alt: "Pokemon trading cards arranged on a blue surface",
-    src: "https://images.pexels.com/photos/7708408/pexels-photo-7708408.jpeg?auto=compress&cs=tinysrgb&w=640"
-  },
-  {
-    alt: "Collection of trading cards on a gray surface",
-    src: "https://images.pexels.com/photos/7708407/pexels-photo-7708407.jpeg?auto=compress&cs=tinysrgb&w=640"
   }
 ];
 
