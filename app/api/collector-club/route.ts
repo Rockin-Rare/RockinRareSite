@@ -127,7 +127,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "A valid email is required." }, { status: 400 });
   }
 
-  const webhookUrl = process.env.DISCORD_COLLECTOR_CLUB_WAITLIST_WEBHOOK_URL || process.env.DISCORD_COLLECTOR_CLUB_WEBHOOK_URL;
+  const webhookUrl = process.env.DISCORD_COLLECTOR_CLUB_WAITLIST_WEBHOOK_URL;
 
   if (!webhookUrl) {
     return NextResponse.json(
