@@ -30,7 +30,7 @@ export function HeroProductStack({ products }: { products: Product[] }) {
       <div className="vault-panel relative mx-auto grid w-full max-w-[520px] gap-4 overflow-hidden rounded-2xl p-5 lg:mt-4" aria-label="Rockin Rare vault preview">
         <div className="grid gap-4 sm:grid-cols-[1.05fr_0.95fr]">
           <VaultShowpiece card={first} featured />
-          <div className="grid gap-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-1">
             <VaultShowpiece card={second} compact />
             <VaultShowpiece card={third} compact />
           </div>
@@ -44,7 +44,7 @@ export function HeroProductStack({ products }: { products: Product[] }) {
     <div className="vault-panel relative mx-auto grid w-full max-w-[520px] gap-4 overflow-hidden rounded-2xl p-5 lg:mt-4">
       <div className="grid gap-4 sm:grid-cols-[1.05fr_0.95fr]">
         <VaultShowpiece card={first} featured />
-        <div className="grid gap-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-1">
           <VaultShowpiece card={second} compact />
           <VaultShowpiece card={third} compact />
         </div>
@@ -60,7 +60,7 @@ function VaultShowpiece({ card, featured = false, compact = false }: { card: Her
   return (
     <div
       className={`relative overflow-hidden rounded-2xl border ${
-        featured ? "min-h-[300px] border-vault-gold/50 gold-glow" : "min-h-[142px] border-vault-border"
+        featured ? "min-h-[300px] border-vault-gold/50 gold-glow" : "min-h-[190px] border-vault-border"
       } bg-vault-secondary`}
     >
       <div className={`absolute inset-0 bg-gradient-to-br ${card.tone} opacity-90`} />
@@ -70,7 +70,7 @@ function VaultShowpiece({ card, featured = false, compact = false }: { card: Her
       </div>
       <div
         className={`absolute rounded-2xl border border-white/25 bg-black/25 shadow-[0_18px_60px_rgba(0,0,0,0.35)] ${
-          featured ? "left-1/2 top-10 h-52 w-36 -translate-x-1/2 rotate-3 sm:h-60 sm:w-40" : "right-5 top-5 h-28 w-20 rotate-6"
+          featured ? "left-1/2 top-10 h-52 w-36 -translate-x-1/2 rotate-3 sm:h-60 sm:w-40" : "left-1/2 top-5 h-28 w-20 -translate-x-1/2 rotate-3"
         }`}
       >
         <div className="absolute inset-2 rounded-xl border border-white/20 bg-white/10" />
@@ -81,7 +81,7 @@ function VaultShowpiece({ card, featured = false, compact = false }: { card: Her
           <span className="h-1 rounded bg-white/20" />
         </div>
       </div>
-      <div className={featured ? "relative flex min-h-[300px] flex-col justify-end p-5" : "relative flex min-h-[142px] flex-col justify-end p-4 pr-24"}>
+      <div className={featured ? "relative flex min-h-[300px] flex-col justify-end p-5" : "relative flex min-h-[190px] flex-col justify-end p-4 text-center"}>
         <p className="text-xs font-black uppercase text-white/85">{card.label}</p>
         <h3 className={compact ? "mt-1 text-lg font-black text-white" : "mt-2 text-3xl font-black text-white"}>{card.title}</h3>
         {!compact ? <p className="mt-2 text-sm leading-5 text-white/80">{card.meta}</p> : null}
