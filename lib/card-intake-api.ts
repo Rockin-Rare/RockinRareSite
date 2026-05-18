@@ -23,7 +23,8 @@ export async function getCardIntakeProducts(): Promise<Product[]> {
   }
 
   const payload = (await response.json()) as PublicInventoryResponse;
-  return (payload.products ?? []).map(normalizePublicProduct);
+  const products = (payload.products ?? []).map(normalizePublicProduct);
+  return hydrateMissingProductImages(products);
 }
 
 export async function getCardIntakeProductBySlug(slug: string): Promise<Product | undefined> {
@@ -61,4 +62,36 @@ function normalizePublicProduct(product: Product): Product {
 function authHeaders() {
   const token = process.env.CARD_INTAKE_API_TOKEN;
   return token ? { authorization: `Bearer ${token}` } : undefined;
+}
+
+async function hydrateMissingProductImages(products: Product[]) {
+  const missingImageProducts = products.filter((product) => !product.primaryImageUrl && product.slug);
+
+  if (missingImageProducts.length === 0) {
+    return products;
+  }
+
+  const imageBySlug = new Map<string, Pick<Product, "imageUrls" | "primaryImageUrl">>();
+
+  await Promise.all(
+    missingImageProducts.map(async (product) => {
+      try {
+        const detailProduct = await getCardIntakeProductBySlug(product.slug);
+
+        if (detailProduct?.primaryImageUrl) {
+          imageBySlug.set(product.slug, {
+            imageUrls: detailProduct.imageUrls,
+            primaryImageUrl: detailProduct.primaryImageUrl
+          });
+        }
+      } catch (error) {
+        console.error(`Failed to hydrate image for ${product.slug}`, error);
+      }
+    })
+  );
+
+  return products.map((product) => {
+    const image = imageBySlug.get(product.slug);
+    return image ? { ...product, ...image } : product;
+  });
 }
