@@ -8,6 +8,7 @@ import { categoryLabel, cn, formatPrice } from "@/lib/utils";
 export function ProductCard({ product }: { product: Product }) {
   const sold = product.publicStatus === "sold";
   const cta = product.publicStatus === "coming_soon" ? "Preview" : "View Details";
+  const imageUrl = product.primaryImageUrl || product.imageUrls[0] || "";
 
   return (
     <Link
@@ -18,7 +19,7 @@ export function ProductCard({ product }: { product: Product }) {
       href={`/inventory/${product.slug}`}
     >
       <div className="relative aspect-[4/5]">
-        <ProductImageFrame alt={product.name} sold={sold} src={product.primaryImageUrl} className="absolute inset-0 rounded-none border-0" />
+        <ProductImageFrame alt={product.name} sold={sold} src={imageUrl} className="absolute inset-0 rounded-none border-0" />
         <div className="absolute left-3 top-3">
           <ProductStatusBadge status={product.publicStatus} />
         </div>

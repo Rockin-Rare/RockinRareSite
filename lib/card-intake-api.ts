@@ -24,7 +24,7 @@ export async function getCardIntakeProducts(): Promise<Product[]> {
 
   const payload = (await response.json()) as PublicInventoryResponse;
   const products = (payload.products ?? []).map(normalizePublicProduct);
-  return hydrateMissingProductImages(products);
+  return hydrateProductImagesFromDetails(products);
 }
 
 export async function getCardIntakeProductBySlug(slug: string): Promise<Product | undefined> {
@@ -64,17 +64,13 @@ function authHeaders() {
   return token ? { authorization: `Bearer ${token}` } : undefined;
 }
 
-async function hydrateMissingProductImages(products: Product[]) {
-  const missingImageProducts = products.filter((product) => !product.primaryImageUrl && product.slug);
-
-  if (missingImageProducts.length === 0) {
-    return products;
-  }
-
+async function hydrateProductImagesFromDetails(products: Product[]) {
   const imageBySlug = new Map<string, Pick<Product, "imageUrls" | "primaryImageUrl">>();
 
   await Promise.all(
-    missingImageProducts.map(async (product) => {
+    products.map(async (product) => {
+      if (!product.slug) return;
+
       try {
         const detailProduct = await getCardIntakeProductBySlug(product.slug);
 
