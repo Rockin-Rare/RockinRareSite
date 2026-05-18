@@ -22,24 +22,24 @@ export function HeroProductStack({ products }: { products: Product[] }) {
 
   if (!first) {
     return (
-      <div className="relative min-h-[430px]" aria-label="Rockin Rare vault preview">
-        <VaultPlaceholder className="absolute right-0 top-16 h-72 w-52 rotate-6 opacity-80 sm:h-80 sm:w-60" label="Sealed" />
-        <VaultPlaceholder className="absolute left-0 top-24 h-72 w-52 -rotate-6 opacity-90 sm:h-80 sm:w-60" label="Slabs" />
-        <VaultPlaceholder className="absolute left-1/2 top-0 h-[390px] w-64 -translate-x-1/2 gold-glow sm:w-72" label="Singles" featured />
+      <div className="relative min-h-[360px] sm:min-h-[390px]" aria-label="Rockin Rare vault preview">
+        <VaultPlaceholder className="absolute right-0 top-12 h-64 w-48 rotate-6 opacity-80 sm:h-72 sm:w-56" label="Sealed" />
+        <VaultPlaceholder className="absolute left-0 top-20 h-64 w-48 -rotate-6 opacity-90 sm:h-72 sm:w-56" label="Slabs" />
+        <VaultPlaceholder className="absolute left-1/2 top-0 h-[330px] w-56 -translate-x-1/2 gold-glow sm:h-[360px] sm:w-64" label="Singles" featured />
         <PreviewPanel />
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-[430px]">
+    <div className="relative min-h-[360px] sm:min-h-[390px]">
       {third ? (
         <ProductImageFrame
           alt={third.alt}
           src={third.src}
           fit="cover"
           padded={false}
-          className="absolute right-0 top-16 h-72 w-52 rotate-6 opacity-80 sm:h-80 sm:w-60"
+          className="absolute right-0 top-12 h-64 w-48 rotate-6 opacity-80 sm:h-72 sm:w-56"
         />
       ) : null}
       {second ? (
@@ -48,7 +48,7 @@ export function HeroProductStack({ products }: { products: Product[] }) {
           src={second.src}
           fit="cover"
           padded={false}
-          className="absolute left-0 top-24 h-72 w-52 -rotate-6 opacity-90 sm:h-80 sm:w-60"
+          className="absolute left-0 top-20 h-64 w-48 -rotate-6 opacity-90 sm:h-72 sm:w-56"
         />
       ) : null}
       {first ? (
@@ -58,7 +58,7 @@ export function HeroProductStack({ products }: { products: Product[] }) {
           priority
           fit="cover"
           padded={false}
-          className="absolute left-1/2 top-0 h-[390px] w-64 -translate-x-1/2 gold-glow sm:w-72"
+          className="absolute left-1/2 top-0 h-[330px] w-56 -translate-x-1/2 gold-glow sm:h-[360px] sm:w-64"
         />
       ) : null}
       <PreviewPanel />
@@ -86,7 +86,7 @@ function VaultPlaceholder({ className, label, featured = false }: { className: s
 
 function PreviewPanel() {
   return (
-    <div className="absolute bottom-0 left-1/2 w-[88%] -translate-x-1/2 rounded-2xl border border-vault-border bg-vault-secondary/90 p-4 shadow-vault backdrop-blur">
+    <div className="absolute bottom-0 left-1/2 w-[84%] -translate-x-1/2 rounded-2xl border border-vault-border bg-vault-secondary/90 p-3 shadow-vault backdrop-blur">
       <p className="text-xs font-semibold uppercase text-vault-gold">Current Inventory Preview</p>
       <p className="mt-1 text-sm text-vault-secondaryText">Real product photos, condition notes, and listing links.</p>
     </div>

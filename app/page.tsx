@@ -23,7 +23,7 @@ export default async function HomePage() {
 
   return (
     <Container>
-      <section className="grid gap-12 py-16 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:py-24">
+      <section className="grid gap-10 py-10 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:py-14">
         <div>
           <p className="text-sm font-semibold uppercase text-vault-gold">
             Pokemon / Japanese Cards / Singles / Sealed Product / Slabs / Collector Bundles
@@ -61,7 +61,7 @@ export default async function HomePage() {
         <HeroProductStack products={featured.slice(0, 3)} />
       </section>
 
-      <section className="py-10">
+      <section className="py-8">
         <SectionHeader title="Collector Categories" description="Browse clean listings, clear condition details, and collector-focused card categories." />
         <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {categories.map((category) => (
