@@ -53,6 +53,9 @@ export default async function HomePage() {
             <Button href="/sell-trade" variant="secondary">
               Sell or Trade Cards
             </Button>
+            <Button href="/collector-club" variant="secondary">
+              Join Collector Club
+            </Button>
           </div>
         </div>
         <HeroProductStack products={featured.slice(0, 3)} />

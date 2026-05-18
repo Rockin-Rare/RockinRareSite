@@ -35,6 +35,7 @@ Copy `.env.example` to `.env.local` and set the values you need:
 ```bash
 DISCORD_SELL_TRADE_WEBHOOK_URL=
 DISCORD_CONTACT_WEBHOOK_URL=
+DISCORD_COLLECTOR_CLUB_WAITLIST_WEBHOOK_URL=
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 NEXT_PUBLIC_SITE_URL=
@@ -47,7 +48,7 @@ CARD_INTAKE_SALES_WEBHOOK_URL=
 CARD_INTAKE_SALES_WEBHOOK_TOKEN=
 ```
 
-The sell/trade and contact forms work locally without webhooks, but submissions are only delivered to Discord when `DISCORD_SELL_TRADE_WEBHOOK_URL` and `DISCORD_CONTACT_WEBHOOK_URL` are set. Supabase values are optional placeholders for future product data work.
+The sell/trade, contact, and Collector Club waitlist forms work locally without webhooks, but submissions are only delivered to Discord when `DISCORD_SELL_TRADE_WEBHOOK_URL`, `DISCORD_CONTACT_WEBHOOK_URL`, and `DISCORD_COLLECTOR_CLUB_WAITLIST_WEBHOOK_URL` are set. Supabase values are optional placeholders for future product data work.
 
 ## Current V1 Features
 
@@ -146,7 +147,7 @@ Scanner app -> inventory database -> admin review -> published website catalog.
 
 1. Push the project to a Git repository.
 2. Import the repo into Vercel.
-3. Set `DISCORD_SELL_TRADE_WEBHOOK_URL` and `DISCORD_CONTACT_WEBHOOK_URL` for form notifications.
+3. Set `DISCORD_SELL_TRADE_WEBHOOK_URL`, `DISCORD_CONTACT_WEBHOOK_URL`, and `DISCORD_COLLECTOR_CLUB_WAITLIST_WEBHOOK_URL` for form notifications.
 4. Deploy with the default Next.js build command: `npm run build`.
 
 ## Future Roadmap
