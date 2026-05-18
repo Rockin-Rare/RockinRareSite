@@ -36,6 +36,7 @@ export function HeroProductStack({ products }: { products: Product[] }) {
           alt={first.name}
           src={first.primaryImageUrl}
           priority
+          imageClassName="rotate-180"
           className="absolute left-1/2 top-0 h-[390px] w-64 -translate-x-1/2 gold-glow sm:w-72"
         />
       ) : null}

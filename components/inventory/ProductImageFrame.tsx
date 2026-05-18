@@ -5,12 +5,14 @@ export function ProductImageFrame({
   alt,
   sold = false,
   priority = false,
+  imageClassName,
   className
 }: {
   src?: string;
   alt: string;
   sold?: boolean;
   priority?: boolean;
+  imageClassName?: string;
   className?: string;
 }) {
   return (
@@ -20,7 +22,11 @@ export function ProductImageFrame({
       {src ? (
         <img
           alt={alt}
-          className={cn("absolute inset-0 h-full w-full object-contain p-5 transition duration-500 group-hover:scale-105", sold && "opacity-45 grayscale")}
+          className={cn(
+            "absolute inset-0 h-full w-full object-contain p-5 transition duration-500 group-hover:scale-105",
+            sold && "opacity-45 grayscale",
+            imageClassName
+          )}
           src={src}
           loading={priority ? "eager" : "lazy"}
         />
