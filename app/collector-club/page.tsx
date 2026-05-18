@@ -31,7 +31,7 @@ const benefits = [
 export default function CollectorClubPage() {
   return (
     <Container>
-      <section className="grid gap-10 py-14 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
+      <section className="grid gap-8 py-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start lg:py-10">
         <div>
           <p className="mb-3 text-sm font-semibold uppercase text-vault-gold">Free Collector Club Waitlist</p>
           <h1 className="text-4xl font-black text-vault-text sm:text-5xl">Join the Rockin Rare Collector Club</h1>
@@ -53,7 +53,7 @@ export default function CollectorClubPage() {
         <CollectorClubForm />
       </section>
 
-      <section className="py-8">
+      <section className="py-6">
         <div className="grid gap-4 md:grid-cols-4">
           {benefits.map((benefit) => (
             <article className="rounded-2xl border border-vault-border bg-vault-card p-5" key={benefit.title}>

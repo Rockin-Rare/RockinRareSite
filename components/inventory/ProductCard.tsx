@@ -19,7 +19,7 @@ export function ProductCard({ product }: { product: Product }) {
       href={`/inventory/${product.slug}`}
     >
       <div className="relative aspect-[4/5]">
-        <ProductImageFrame alt={product.name} priority sold={sold} src={imageUrl} className="absolute inset-0 rounded-none border-0" />
+        <ProductImageFrame alt={product.name} priority sold={sold} src={imageUrl} className="h-full w-full rounded-none border-0" />
         <div className="absolute left-3 top-3">
           <ProductStatusBadge status={product.publicStatus} />
         </div>
