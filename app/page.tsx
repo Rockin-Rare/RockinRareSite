@@ -23,7 +23,7 @@ export default async function HomePage() {
 
   return (
     <Container>
-      <section className="grid gap-10 py-10 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:py-14">
+      <section className="grid gap-10 py-10 lg:grid-cols-[1fr_0.9fr] lg:items-start lg:py-14">
         <div>
           <p className="text-sm font-semibold uppercase text-vault-gold">
             Pokemon / Japanese Cards / Singles / Sealed Product / Slabs / Collector Bundles

@@ -22,7 +22,7 @@ export function HeroProductStack({ products }: { products: Product[] }) {
 
   if (!first) {
     return (
-      <div className="relative min-h-[360px] sm:min-h-[390px]" aria-label="Rockin Rare vault preview">
+      <div className="relative min-h-[360px] sm:min-h-[390px] lg:mt-4" aria-label="Rockin Rare vault preview">
         <VaultPlaceholder className="absolute right-0 top-12 h-64 w-48 rotate-6 opacity-80 sm:h-72 sm:w-56" label="Sealed" />
         <VaultPlaceholder className="absolute left-0 top-20 h-64 w-48 -rotate-6 opacity-90 sm:h-72 sm:w-56" label="Slabs" />
         <VaultPlaceholder className="absolute left-1/2 top-0 h-[330px] w-56 -translate-x-1/2 gold-glow sm:h-[360px] sm:w-64" label="Singles" featured />
@@ -32,7 +32,7 @@ export function HeroProductStack({ products }: { products: Product[] }) {
   }
 
   return (
-    <div className="relative min-h-[360px] sm:min-h-[390px]">
+    <div className="relative min-h-[360px] sm:min-h-[390px] lg:mt-4">
       {third ? (
         <ProductImageFrame
           alt={third.alt}
