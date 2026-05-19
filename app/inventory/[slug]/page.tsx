@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { JsonLd } from "@/components/JsonLd";
 import { ProductImageFrame } from "@/components/inventory/ProductImageFrame";
 import { CheckoutButton } from "@/components/inventory/CheckoutButton";
 import { ProductMetaRow } from "@/components/inventory/ProductMetaRow";
@@ -12,6 +13,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { getProductBySlug, getRelatedProducts } from "@/lib/products";
 import { canCheckoutOnSite, getSitePrice, inferPrimaryChannel } from "@/lib/commerce";
+import { absoluteUrl, siteName } from "@/lib/site";
 import { categoryLabel, formatPrice } from "@/lib/utils";
 
 type PageProps = {
@@ -24,9 +26,36 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
+  const title = product ? product.name : "Inventory Item";
+  const description = product?.description ?? "Rockin Rare Collectibles product detail page.";
+  const image = product?.primaryImageUrl ? absoluteUrl(product.primaryImageUrl) : undefined;
+
   return {
-    title: product ? `${product.name} | Rockin Rare Collectibles` : "Inventory Item | Rockin Rare Collectibles",
-    description: product?.description ?? "Rockin Rare Collectibles product detail page."
+    title,
+    description,
+    alternates: {
+      canonical: `/inventory/${slug}`
+    },
+    openGraph: {
+      title,
+      description,
+      url: absoluteUrl(`/inventory/${slug}`),
+      type: "website",
+      images: image
+        ? [
+            {
+              url: image,
+              alt: product?.name
+            }
+          ]
+        : undefined
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: image ? [image] : undefined
+    }
   };
 }
 
@@ -45,9 +74,63 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
   const directPrice = getSitePrice(product);
   const primaryChannel = inferPrimaryChannel(product);
   const mailSubject = encodeURIComponent(`Question about ${product.name}`);
+  const productUrl = absoluteUrl(`/inventory/${product.slug}`);
+  const productImage = product.primaryImageUrl ? absoluteUrl(product.primaryImageUrl) : undefined;
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "@id": `${productUrl}#product`,
+    name: product.name,
+    description: product.description ?? `${product.name} from ${siteName}.`,
+    image: productImage ? [productImage] : undefined,
+    sku: product.sku ?? product.scanId ?? product.id,
+    brand: {
+      "@type": "Brand",
+      name: product.franchise
+    },
+    category: categoryLabel(product.category),
+    offers:
+      typeof directPrice === "number"
+        ? {
+            "@type": "Offer",
+            url: productUrl,
+            priceCurrency: "USD",
+            price: directPrice.toFixed(2),
+            availability:
+              product.publicStatus === "sold"
+                ? "https://schema.org/SoldOut"
+                : product.publicStatus === "coming_soon"
+                  ? "https://schema.org/PreOrder"
+                  : "https://schema.org/InStock",
+            itemCondition: product.condition === "Sealed" ? "https://schema.org/NewCondition" : "https://schema.org/UsedCondition",
+            seller: {
+              "@id": absoluteUrl("/#store")
+            }
+          }
+        : undefined
+  };
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Inventory",
+        item: absoluteUrl("/inventory")
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: product.name,
+        item: productUrl
+      }
+    ]
+  };
 
   return (
     <Container className="py-12">
+      <JsonLd data={[productSchema, breadcrumbSchema]} />
       <nav className="mb-6 text-sm text-vault-secondaryText" aria-label="Breadcrumb">
         <Link className="hover:text-vault-highlight" href="/inventory">
           Inventory

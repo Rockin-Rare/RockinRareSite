@@ -4,8 +4,11 @@ import { Container } from "@/components/layout/Container";
 import { getPublishedProducts } from "@/lib/products";
 
 export const metadata: Metadata = {
-  title: "Current Inventory | Rockin Rare Collectibles",
-  description: "Browse current Rockin Rare Collectibles inventory with product photos, conditions, status, and listing links."
+  title: "Current Inventory",
+  description: "Browse current Rockin Rare Collectibles inventory with product photos, conditions, status, and listing links.",
+  alternates: {
+    canonical: "/inventory"
+  }
 };
 
 export const dynamic = "force-dynamic";

@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/JsonLd";
 import { Container } from "@/components/layout/Container";
 import { Accordion } from "@/components/ui/Accordion";
 
 export const metadata: Metadata = {
-  title: "FAQ | Rockin Rare Collectibles",
-  description: "Answers about buying, selling, trading, shipping, authenticity, condition, and listings."
+  title: "FAQ",
+  description: "Answers about buying, selling, trading, shipping, authenticity, condition, and listings.",
+  alternates: {
+    canonical: "/faq"
+  }
 };
 
 const items = [
@@ -51,8 +55,22 @@ const items = [
 ];
 
 export default function FaqPage() {
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer
+      }
+    }))
+  };
+
   return (
     <Container className="py-14">
+      <JsonLd data={faqSchema} />
       <div className="mb-8 max-w-3xl">
         <p className="mb-3 text-sm font-semibold uppercase text-vault-gold">FAQ</p>
         <h1 className="text-4xl font-black text-vault-text sm:text-5xl">Common Buyer & Seller Questions</h1>

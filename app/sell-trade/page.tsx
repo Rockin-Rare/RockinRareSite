@@ -3,8 +3,11 @@ import { SellTradeForm } from "@/components/forms/SellTradeForm";
 import { Container } from "@/components/layout/Container";
 
 export const metadata: Metadata = {
-  title: "Sell or Trade Your Cards | Rockin Rare Collectibles",
-  description: "Submit Pokemon, One Piece, Magic, singles, slabs, sealed product, bulk, or collections to Rockin Rare Collectibles for review."
+  title: "Sell or Trade Your Cards",
+  description: "Submit Pokemon, One Piece, Magic, singles, slabs, sealed product, bulk, or collections to Rockin Rare Collectibles for review.",
+  alternates: {
+    canonical: "/sell-trade"
+  }
 };
 
 export default function SellTradePage() {

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { Container } from "@/components/layout/Container";
 import { CategoryCard } from "@/components/marketing/CategoryCard";
@@ -8,8 +9,19 @@ import { SellTradeCTA } from "@/components/marketing/SellTradeCTA";
 import { TrustPromise } from "@/components/marketing/TrustPromise";
 import { Button } from "@/components/ui/Button";
 import { getFeaturedProducts, getHeroShowcaseProducts } from "@/lib/products";
+import { defaultDescription } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: {
+    absolute: "Rockin Rare Collectibles | Pokemon, One Piece, Magic & Trading Cards"
+  },
+  description: defaultDescription,
+  alternates: {
+    canonical: "/"
+  }
+};
 
 const categories = [
   { title: "Pokemon", description: "Pokemon singles, Japanese cards, sealed product, slabs, and collector favorites.", href: "/inventory" },

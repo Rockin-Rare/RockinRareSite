@@ -3,8 +3,11 @@ import { Container } from "@/components/layout/Container";
 import { TrustPromise } from "@/components/marketing/TrustPromise";
 
 export const metadata: Metadata = {
-  title: "About Rockin Rare Collectibles",
-  description: "Learn about Rockin Rare Collectibles, a collector-first trading card business based in Southern California."
+  title: "About",
+  description: "Learn about Rockin Rare Collectibles, a collector-first trading card business based in Southern California.",
+  alternates: {
+    canonical: "/about"
+  }
 };
 
 export default function AboutPage() {

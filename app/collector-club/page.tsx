@@ -4,9 +4,12 @@ import { Container } from "@/components/layout/Container";
 import { Button } from "@/components/ui/Button";
 
 export const metadata: Metadata = {
-  title: "Join the Collector Club | Rockin Rare Collectibles",
+  title: "Join the Collector Club",
   description:
-    "Join the free Rockin Rare Collector Club waitlist for drop alerts, wishlist matching, fair pack updates, and Discord launch invites."
+    "Join the free Rockin Rare Collector Club waitlist for drop alerts, wishlist matching, fair pack updates, and Discord launch invites.",
+  alternates: {
+    canonical: "/collector-club"
+  }
 };
 
 const benefits = [

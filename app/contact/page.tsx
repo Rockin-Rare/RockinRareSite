@@ -3,8 +3,11 @@ import { ContactForm } from "@/components/forms/ContactForm";
 import { Container } from "@/components/layout/Container";
 
 export const metadata: Metadata = {
-  title: "Contact Rockin Rare Collectibles",
-  description: "Contact Rockin Rare Collectibles for inventory questions, collection submissions, and trading card inquiries."
+  title: "Contact",
+  description: "Contact Rockin Rare Collectibles for inventory questions, collection submissions, and trading card inquiries.",
+  alternates: {
+    canonical: "/contact"
+  }
 };
 
 export default function ContactPage() {

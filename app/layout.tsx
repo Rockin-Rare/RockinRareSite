@@ -1,15 +1,42 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { JsonLd } from "@/components/JsonLd";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://rockinrarecollectibles.com";
+import { absoluteUrl, contactEmail, defaultDescription, instagramHandle, siteName, siteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "Rockin Rare Collectibles | Pokemon, One Piece, Magic & Trading Cards",
-  description:
-    "Collector-first Pokemon, One Piece, Magic: The Gathering, sealed product, slabs, singles, and rare finds with real product photos and transparent condition notes.",
+  applicationName: siteName,
+  title: {
+    default: "Rockin Rare Collectibles | Pokemon, One Piece, Magic & Trading Cards",
+    template: `%s | ${siteName}`
+  },
+  description: defaultDescription,
+  keywords: [
+    "Pokemon cards",
+    "One Piece cards",
+    "Magic The Gathering cards",
+    "trading cards",
+    "graded cards",
+    "sealed Pokemon",
+    "Japanese Pokemon cards",
+    "Southern California collectibles"
+  ],
+  authors: [{ name: siteName }],
+  creator: siteName,
+  publisher: siteName,
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1
+    }
+  },
   icons: {
     icon: [
       {
@@ -27,9 +54,9 @@ export const metadata: Metadata = {
     ]
   },
   openGraph: {
-    title: "Rockin Rare Collectibles",
-    description:
-      "Collector-first Pokemon, One Piece, Magic: The Gathering, sealed product, slabs, singles, and rare finds.",
+    title: siteName,
+    description: defaultDescription,
+    url: siteUrl,
     images: [
       {
         url: "/brand/rockin-rare-logo.jpg",
@@ -38,9 +65,20 @@ export const metadata: Metadata = {
         alt: "Rockin Rare Collectibles"
       }
     ],
-    siteName: "Rockin Rare Collectibles",
+    siteName,
+    locale: "en_US",
     type: "website"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteName,
+    description: defaultDescription,
+    images: ["/brand/rockin-rare-logo.jpg"]
   }
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0b0b0f"
 };
 
 export default function RootLayout({
@@ -48,9 +86,36 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Store",
+    "@id": absoluteUrl("/#store"),
+    name: siteName,
+    url: siteUrl,
+    logo: absoluteUrl("/brand/rockin-rare-logo.jpg"),
+    image: absoluteUrl("/brand/rockin-rare-logo.jpg"),
+    email: contactEmail,
+    areaServed: "Southern California",
+    sameAs: [`https://www.instagram.com/${instagramHandle}/`],
+    description: defaultDescription,
+    knowsAbout: ["Pokemon cards", "One Piece cards", "Magic: The Gathering cards", "graded cards", "sealed trading card products"]
+  };
+
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": absoluteUrl("/#website"),
+    name: siteName,
+    url: siteUrl,
+    publisher: {
+      "@id": absoluteUrl("/#store")
+    }
+  };
+
   return (
     <html lang="en">
       <body>
+        <JsonLd data={[organizationSchema, websiteSchema]} />
         <Navbar />
         <main>{children}</main>
         <Footer />
