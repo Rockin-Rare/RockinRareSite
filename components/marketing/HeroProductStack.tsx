@@ -82,12 +82,12 @@ function ProductShowpiece({
       <div className="absolute right-4 top-4 rounded-full border border-vault-gold/30 bg-black/35 px-3 py-1 text-[10px] font-black uppercase text-vault-highlight">
         {label}
       </div>
-      <div className={featured ? "relative flex h-full min-h-[360px] flex-col p-5" : "relative flex min-h-[230px] flex-col p-4 text-center"}>
-        <div className={featured ? "mt-3 flex h-[250px] items-center justify-center sm:h-[275px]" : "mt-5 flex h-[135px] items-center justify-center"}>
+      <div className={featured ? "relative flex h-full min-h-[360px] flex-col p-4" : "relative flex min-h-[230px] flex-col p-3"}>
+        <div className={featured ? "flex min-h-0 flex-1 items-center justify-center pb-3 pt-6" : "flex min-h-0 flex-1 items-center justify-center pb-3 pt-6"}>
           {imageUrl ? (
             <img
               alt={product.name}
-              className="max-h-full max-w-full object-contain drop-shadow-[0_18px_35px_rgba(0,0,0,0.55)]"
+              className={featured ? "max-h-[285px] w-full scale-110 object-contain drop-shadow-[0_18px_35px_rgba(0,0,0,0.55)]" : "max-h-[145px] w-full scale-110 object-contain drop-shadow-[0_18px_30px_rgba(0,0,0,0.5)]"}
               loading={featured ? "eager" : "lazy"}
               src={imageUrl}
             />
@@ -95,10 +95,10 @@ function ProductShowpiece({
             <div className="h-full w-full rounded-xl border border-vault-gold/30 bg-vault-bg shadow-[0_18px_50px_rgba(0,0,0,0.42)]" />
           )}
         </div>
-        <div className={featured ? "mt-auto pt-5" : "mt-auto pt-3"}>
+        <div className={featured ? "rounded-xl border border-vault-border bg-vault-bg/72 p-3" : "rounded-xl border border-vault-border bg-vault-bg/72 p-2 text-center"}>
           <p className="text-xs font-black uppercase text-white/85">{product.franchise}</p>
-          <h3 className={compact ? "mt-1 line-clamp-2 text-base font-black text-white" : "mt-2 line-clamp-2 text-2xl font-black text-white"}>{product.name}</h3>
-          {!compact ? <p className="mt-2 text-sm leading-5 text-white/80">{meta}</p> : null}
+          <h3 className={compact ? "mt-1 line-clamp-1 text-base font-black text-white" : "mt-1 line-clamp-1 text-2xl font-black text-white"}>{product.name}</h3>
+          {!compact ? <p className="mt-1 text-sm leading-5 text-white/80">{meta}</p> : null}
         </div>
       </div>
     </div>
