@@ -3,7 +3,7 @@ import "./globals.css";
 import { JsonLd } from "@/components/JsonLd";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
-import { absoluteUrl, contactEmail, defaultDescription, instagramHandle, siteName, siteUrl } from "@/lib/site";
+import { absoluteUrl, contactEmail, defaultDescription, instagramHandle, shortSiteName, siteName, siteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -40,11 +40,22 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
+        url: "/favicon.ico",
+        sizes: "256x256",
+        type: "image/x-icon"
+      },
+      {
+        url: "/favicon.png",
+        sizes: "256x256",
+        type: "image/png"
+      },
+      {
         url: "/brand/rockin-rare-favicon.png",
         sizes: "512x512",
         type: "image/png"
       }
     ],
+    shortcut: ["/favicon.ico"],
     apple: [
       {
         url: "/brand/rockin-rare-favicon.png",
@@ -91,6 +102,7 @@ export default function RootLayout({
     "@type": "Store",
     "@id": absoluteUrl("/#store"),
     name: siteName,
+    alternateName: shortSiteName,
     url: siteUrl,
     logo: absoluteUrl("/brand/rockin-rare-logo.jpg"),
     image: absoluteUrl("/brand/rockin-rare-logo.jpg"),
