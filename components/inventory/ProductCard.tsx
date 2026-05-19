@@ -9,6 +9,11 @@ export function ProductCard({ product }: { product: Product }) {
   const sold = product.publicStatus === "sold";
   const cta = product.publicStatus === "coming_soon" ? "Preview" : "View Details";
   const imageUrl = product.primaryImageUrl || product.imageUrls[0] || "";
+  const detailItems = [
+    product.setName,
+    product.cardNumber ? `#${product.cardNumber}` : null,
+    product.quantity && product.quantity > 1 ? `Qty ${product.quantity}` : null
+  ].filter(Boolean);
 
   return (
     <Link
@@ -18,33 +23,53 @@ export function ProductCard({ product }: { product: Product }) {
       )}
       href={`/inventory/${product.slug}`}
     >
-      <div className="relative aspect-[4/5]">
-        <ProductImageFrame alt={product.name} priority sold={sold} src={imageUrl} className="h-full w-full rounded-none border-0" />
-        <div className="absolute left-3 top-3">
-          <ProductStatusBadge status={product.publicStatus} />
+      <div className="border-b border-vault-border/60 bg-[radial-gradient(circle_at_top_left,rgba(214,168,79,0.12),transparent_38%),linear-gradient(135deg,rgba(255,255,255,0.05),rgba(13,17,23,0.38))] p-4">
+        <div className="mb-3 flex min-h-8 items-center justify-between gap-2">
+          <ProductStatusBadge className="shadow-[0_6px_18px_rgba(0,0,0,0.2)]" status={product.publicStatus} />
+          {product.actualPhoto ? (
+            <span className="rounded-full border border-vault-border/80 bg-vault-bg/45 px-2.5 py-1 text-[11px] font-semibold text-vault-secondaryText">
+              Actual photo
+            </span>
+          ) : null}
         </div>
+        <ProductImageFrame
+          alt={product.name}
+          priority
+          sold={sold}
+          src={imageUrl}
+          className="mx-auto aspect-[5/7] w-full max-w-[212px] rounded-lg border-vault-border/70 bg-black/25"
+          imageClassName="p-2.5"
+        />
       </div>
       <div className="flex flex-1 flex-col p-4 sm:p-5">
-        <div className="flex flex-wrap gap-2">
-          {product.actualPhoto ? <Badge tone="neutral">Actual Product Photo</Badge> : null}
-          {product.conditionReviewed ? <Badge tone="gold">Condition Reviewed</Badge> : null}
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge className="bg-vault-secondary/80 text-vault-text" tone="neutral">
+            {product.condition ?? "Condition available on request"}
+          </Badge>
+          {product.conditionReviewed ? (
+            <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-vault-highlight">Reviewed</span>
+          ) : null}
         </div>
         <h3 className="mt-4 line-clamp-2 min-h-12 text-base font-black text-vault-text">{product.name}</h3>
-        <p className="mt-2 text-xs font-medium text-vault-secondaryText">
+        <p className="mt-2 text-xs font-semibold leading-5 text-vault-secondaryText">
           {categoryLabel(product.category)} / {product.franchise}
           {product.language ? ` / ${product.language}` : ""}
         </p>
-        <p className="mt-3 inline-flex w-fit rounded-full border border-vault-border bg-vault-secondary px-2.5 py-1 text-xs font-semibold text-vault-secondaryText">
-          {product.condition ?? "Condition available on request"}
-        </p>
-        <div className="mt-auto flex items-end justify-between gap-4 pt-5">
-          <div>
-            <p className="text-lg font-black text-vault-highlight">{formatPrice(product.price)}</p>
-            {product.externalListingPlatform ? (
-              <p className="mt-1 text-xs text-vault-muted">Listed on {product.externalListingPlatform}</p>
-            ) : null}
+        {detailItems.length > 0 ? (
+          <p className="mt-1 line-clamp-2 text-xs font-medium leading-5 text-vault-muted">{detailItems.join(" / ")}</p>
+        ) : null}
+        <div className="mt-auto pt-5">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <p className="text-lg font-black text-vault-highlight">{formatPrice(product.price)}</p>
+              {product.externalListingPlatform ? (
+                <p className="mt-1 text-xs font-medium text-vault-secondaryText">
+                  Listed on {product.externalListingPlatform}
+                </p>
+              ) : null}
+            </div>
           </div>
-          <span className="shrink-0 rounded-full border border-vault-gold/30 px-3 py-1.5 text-xs font-bold text-vault-gold transition group-hover:bg-vault-gold group-hover:text-vault-bg">
+          <span className="mt-4 flex min-h-10 w-full items-center justify-center rounded-xl border border-vault-gold/35 px-3 py-2 text-xs font-black text-vault-gold transition group-hover:bg-vault-gold group-hover:text-vault-bg">
             {cta}
           </span>
         </div>
