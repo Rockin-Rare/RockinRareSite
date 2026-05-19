@@ -37,8 +37,8 @@ export function ProductCard({ product }: { product: Product }) {
           priority
           sold={sold}
           src={imageUrl}
-          className="mx-auto aspect-[5/7] w-full max-w-[212px] rounded-lg border-vault-border/70 bg-black/25"
-          imageClassName="p-2.5"
+          className="mx-auto aspect-[6/7] w-full max-w-[224px] rounded-lg border-vault-border/70 bg-black/25"
+          imageClassName="p-2"
         />
       </div>
       <div className="flex flex-1 flex-col p-4 sm:p-5">
@@ -50,15 +50,15 @@ export function ProductCard({ product }: { product: Product }) {
             <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-vault-highlight">Reviewed</span>
           ) : null}
         </div>
-        <h3 className="mt-4 line-clamp-2 min-h-12 text-base font-black text-vault-text">{product.name}</h3>
-        <p className="mt-2 text-xs font-semibold leading-5 text-vault-secondaryText">
+        <h3 className="mt-3 line-clamp-2 min-h-10 text-base font-black leading-snug text-vault-text">{product.name}</h3>
+        <p className="mt-1.5 text-xs font-semibold leading-5 text-vault-secondaryText">
           {categoryLabel(product.category)} / {product.franchise}
           {product.language ? ` / ${product.language}` : ""}
         </p>
         {detailItems.length > 0 ? (
-          <p className="mt-1 line-clamp-2 text-xs font-medium leading-5 text-vault-muted">{detailItems.join(" / ")}</p>
+          <p className="mt-0.5 line-clamp-2 text-xs font-medium leading-5 text-vault-muted">{detailItems.join(" / ")}</p>
         ) : null}
-        <div className="mt-auto pt-5">
+        <div className="mt-auto pt-4">
           <div className="flex items-end justify-between gap-3">
             <div>
               <p className="text-lg font-black text-vault-highlight">{formatPrice(product.price)}</p>
