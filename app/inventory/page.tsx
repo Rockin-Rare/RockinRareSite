@@ -19,8 +19,8 @@ export default async function InventoryPage() {
         <p className="mb-3 text-sm font-semibold uppercase text-vault-gold">Current Inventory</p>
         <h1 className="text-4xl font-black text-vault-text sm:text-5xl">Browse The Vault</h1>
         <p className="mt-4 text-base leading-7 text-vault-secondaryText">
-          Browse current singles, sealed product, slabs, and collector pieces with real photos and clear condition notes.
-          Sold items stay visible to show recent activity.
+          Browse current Pokemon, One Piece, Magic, singles, sealed product, slabs, and collector pieces with real photos
+          and clear condition notes. Sold items stay visible to show recent activity.
         </p>
       </div>
       <InventoryClient products={products} />

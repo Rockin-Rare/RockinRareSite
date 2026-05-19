@@ -4,7 +4,7 @@ const heroCards = [
   {
     label: "Featured Card",
     title: "Vault Spotlight",
-    meta: "Rotating singles, slabs, and collector favorites",
+    meta: "Rotating Pokemon, One Piece, Magic, slabs, and favorites",
     tone: "from-[#f2c76e] via-[#b8572f] to-[#16191f]"
   },
   {
@@ -95,7 +95,7 @@ function PreviewPanel() {
     <div className="grid gap-3 rounded-xl border border-vault-border bg-vault-secondary/90 p-3 shadow-vault sm:grid-cols-[1fr_auto] sm:items-center">
       <div>
         <p className="text-xs font-semibold uppercase text-vault-gold">Current Inventory Preview</p>
-        <p className="mt-1 text-sm text-vault-secondaryText">Real product photos, condition notes, and listing links.</p>
+        <p className="mt-1 text-sm text-vault-secondaryText">Pokemon, One Piece, Magic, photos, condition notes, and links.</p>
       </div>
       <div className="rounded-lg border border-vault-gold/30 px-3 py-2 text-sm font-black text-vault-highlight">Live</div>
     </div>

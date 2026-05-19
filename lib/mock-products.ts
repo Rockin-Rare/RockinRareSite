@@ -151,6 +151,28 @@ export const mockProducts: Product[] = [
     updatedAt: now
   },
   {
+    id: "prod-013",
+    slug: "magic-the-gathering-collector-booster",
+    name: "Magic: The Gathering Collector Booster",
+    category: "sealed",
+    franchise: "Magic: The Gathering",
+    setName: "Collector Booster",
+    language: "English",
+    condition: "Sealed",
+    price: 29.99,
+    quantity: 8,
+    status: "published",
+    publicStatus: "available",
+    description: "Sealed Magic: The Gathering collector booster selected for display-ready inventory.",
+    conditionNotes: "Factory sealed pack. Wrapper reviewed before shipping.",
+    imageUrls: ["/products/placeholder-card-13.svg"],
+    primaryImageUrl: "/products/placeholder-card-13.svg",
+    actualPhoto: true,
+    conditionReviewed: true,
+    createdAt: "2026-05-06T12:00:00.000Z",
+    updatedAt: now
+  },
+  {
     id: "prod-007",
     slug: "english-pokemon-elite-trainer-box",
     name: "English Pokemon Elite Trainer Box",

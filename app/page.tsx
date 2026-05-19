@@ -12,10 +12,10 @@ import { getFeaturedProducts } from "@/lib/products";
 export const dynamic = "force-dynamic";
 
 const categories = [
-  { title: "Japanese Cards", description: "Japanese Pokemon singles, sealed product, AR/SAR finds, and collector favorites.", href: "/inventory" },
-  { title: "English Singles", description: "Binder-ready singles with clear condition notes and actual product photos whenever possible.", href: "/inventory" },
-  { title: "Sealed Product", description: "Booster boxes, packs, ETBs, and sealed inventory reviewed before shipping.", href: "/inventory" },
-  { title: "Slabs & Bundles", description: "Graded cards, collector bundles, bulk lots, and curated collection pieces.", href: "/inventory" }
+  { title: "Pokemon", description: "Pokemon singles, Japanese cards, sealed product, slabs, and collector favorites.", href: "/inventory" },
+  { title: "One Piece", description: "One Piece sealed product, singles, and collector-ready inventory as it comes in.", href: "/inventory" },
+  { title: "Magic: The Gathering", description: "Magic sealed product, singles, Commander staples, and collector pieces.", href: "/inventory" },
+  { title: "Sealed, Slabs & Bundles", description: "Booster boxes, packs, graded cards, collector bundles, and curated lots.", href: "/inventory" }
 ];
 
 export default async function HomePage() {
@@ -26,11 +26,11 @@ export default async function HomePage() {
       <section className="grid gap-10 py-10 lg:grid-cols-[1fr_0.9fr] lg:items-start lg:py-14">
         <div>
           <p className="text-sm font-semibold uppercase text-vault-gold">
-            Pokemon / Japanese Cards / Singles / Sealed Product / Slabs / Collector Bundles
+            Pokemon / One Piece / Magic: The Gathering / Japanese Cards / Singles / Sealed Product / Slabs
           </p>
           <h1 className="mt-5 text-5xl font-black text-vault-text sm:text-6xl lg:text-7xl">Rockin Rare Collectibles</h1>
           <p className="mt-5 text-xl font-semibold text-vault-secondaryText">
-            Collector-first trading cards, sealed product, slabs, and rare finds.
+            Collector-first Pokemon, One Piece, Magic, sealed product, slabs, and rare finds.
           </p>
           <p className="mt-6 max-w-2xl text-base leading-8 text-vault-secondaryText">
             Buy and sell collectibles with real product photos, transparent condition notes, and secure packaging from
@@ -45,7 +45,7 @@ export default async function HomePage() {
               width={128}
             />
             <p className="max-w-md text-sm font-medium leading-6 text-vault-secondaryText">
-              Southern California based, with a focus on Pokemon, rare finds, sealed product, and collector bundles.
+              Southern California based, with Pokemon first, then One Piece and Magic above the rest of the catalog.
             </p>
           </div>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">

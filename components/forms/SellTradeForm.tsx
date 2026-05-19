@@ -148,7 +148,7 @@ export function SellTradeForm() {
         <FormSelect
           label="Franchise/category"
           onChange={(event) => update("franchise", event.target.value)}
-          options={["Pokemon", "One Piece", "Yu-Gi-Oh!", "Sports", "Mixed collection", "Other"]}
+          options={["Pokemon", "One Piece", "Magic: The Gathering", "Yu-Gi-Oh!", "Sports", "Mixed collection", "Other"]}
           value={form.franchise}
         />
         <FormInput

@@ -10,7 +10,7 @@ export function FeaturedInventory({ products }: { products: Product[] }) {
         <SectionHeader
           eyebrow="Recently Added"
           title="Fresh From The Vault"
-          description="Browse current singles, sealed product, slabs, bundles, and recent sold examples."
+          description="Browse current Pokemon, One Piece, Magic, singles, sealed product, slabs, bundles, and recent sold examples."
         />
         <Button href="/inventory" variant="secondary">
           View All Inventory

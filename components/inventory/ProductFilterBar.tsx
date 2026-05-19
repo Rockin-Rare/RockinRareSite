@@ -1,5 +1,6 @@
 "use client";
 
+import { sortByFranchisePriority } from "@/lib/catalog-priority";
 import type { Product } from "@/lib/types";
 
 export type InventoryFilters = {
@@ -22,7 +23,7 @@ export function ProductFilterBar({
   onChange: (filters: InventoryFilters) => void;
 }) {
   const categories = unique(products.map((product) => product.category));
-  const franchises = unique(products.map((product) => product.franchise));
+  const franchises = sortByFranchisePriority(unique(products.map((product) => product.franchise)));
   const languages = unique(products.map((product) => product.language).filter(Boolean) as string[]);
   const conditions = unique(products.map((product) => product.condition).filter(Boolean) as string[]);
 
@@ -55,7 +56,7 @@ export function ProductFilterBar({
         label="Sort"
         value={filters.sort}
         onChange={(value) => update("sort", value)}
-        options={["Newest", "Price low to high", "Price high to low", "Name A-Z"]}
+        options={["Featured", "Newest", "Price low to high", "Price high to low", "Name A-Z"]}
         includeAll={false}
       />
     </div>

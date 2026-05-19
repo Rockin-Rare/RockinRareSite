@@ -7,9 +7,9 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://rockinrarecollectib
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "Rockin Rare Collectibles | Trading Cards, Pokemon, Slabs & Sealed Product",
+  title: "Rockin Rare Collectibles | Pokemon, One Piece, Magic & Trading Cards",
   description:
-    "Collector-first trading cards, sealed product, slabs, Japanese cards, singles, and rare finds with real product photos and transparent condition notes.",
+    "Collector-first Pokemon, One Piece, Magic: The Gathering, sealed product, slabs, singles, and rare finds with real product photos and transparent condition notes.",
   icons: {
     icon: [
       {
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Rockin Rare Collectibles",
     description:
-      "Collector-first trading cards, sealed product, slabs, Japanese cards, singles, and rare finds.",
+      "Collector-first Pokemon, One Piece, Magic: The Gathering, sealed product, slabs, singles, and rare finds.",
     images: [
       {
         url: "/brand/rockin-rare-logo.jpg",

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ProductFilterBar, type InventoryFilters } from "@/components/inventory/ProductFilterBar";
 import { ProductGrid } from "@/components/inventory/ProductGrid";
+import { compareByFranchisePriority } from "@/lib/catalog-priority";
 import type { Product } from "@/lib/types";
 
 const initialFilters: InventoryFilters = {
@@ -12,7 +13,7 @@ const initialFilters: InventoryFilters = {
   language: "",
   condition: "",
   availability: "",
-  sort: "Newest"
+  sort: "Featured"
 };
 
 export function InventoryClient({ products }: { products: Product[] }) {
@@ -40,6 +41,7 @@ export function InventoryClient({ products }: { products: Product[] }) {
         return true;
       })
       .sort((a, b) => {
+        if (filters.sort === "Featured") return compareByFranchisePriority(a, b);
         if (filters.sort === "Price low to high") return (a.price ?? Number.MAX_VALUE) - (b.price ?? Number.MAX_VALUE);
         if (filters.sort === "Price high to low") return (b.price ?? 0) - (a.price ?? 0);
         if (filters.sort === "Name A-Z") return a.name.localeCompare(b.name);

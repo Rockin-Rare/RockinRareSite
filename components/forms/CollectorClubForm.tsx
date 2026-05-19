@@ -117,7 +117,7 @@ export function CollectorClubForm() {
         <FormSelect
           label="Main collecting focus"
           onChange={(event) => update("collectingFocus", event.target.value)}
-          options={["Pokemon", "Japanese cards", "English singles", "Sealed product", "Slabs", "Mixed collection", "Other"]}
+          options={["Pokemon", "One Piece", "Magic: The Gathering", "Japanese cards", "English singles", "Sealed product", "Slabs", "Mixed collection", "Other"]}
           value={form.collectingFocus}
         />
         <FormInput

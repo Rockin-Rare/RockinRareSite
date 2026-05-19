@@ -11,8 +11,8 @@ export function Footer() {
         <div>
           <BrandLogo compact mark="gem" />
           <p className="mt-4 max-w-md text-sm leading-6 text-vault-secondaryText">
-            Collector-first trading cards, sealed product, slabs, and rare finds with real photos, clear condition notes,
-            and secure packaging. Southern California based.
+            Collector-first Pokemon, One Piece, Magic, sealed product, slabs, and rare finds with real photos, clear
+            condition notes, and secure packaging. Southern California based.
           </p>
         </div>
         <div>

@@ -1,5 +1,6 @@
 import { mockProducts } from "@/lib/mock-products";
 import { getCardIntakeProductBySlug, getCardIntakeProducts, hasCardIntakeApi } from "@/lib/card-intake-api";
+import { compareByFranchisePriority } from "@/lib/catalog-priority";
 import type { Product } from "@/lib/types";
 
 const publicStatuses = new Set(["published", "listed_externally", "sold"]);
@@ -41,6 +42,7 @@ export async function getFeaturedProducts(limit = 8): Promise<Product[]> {
   const products = await getPublishedProducts();
   return products
     .filter((product) => product.publicStatus === "available" || product.publicStatus === "listed")
+    .sort(compareByFranchisePriority)
     .slice(0, limit);
 }
 

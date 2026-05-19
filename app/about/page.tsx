@@ -18,8 +18,9 @@ export default function AboutPage() {
           card business focused on fair deals, clean inventory, and transparent listings.
         </p>
         <p className="mt-5 text-lg leading-8 text-vault-secondaryText">
-          We specialize in Pokemon, Japanese cards, English singles, sealed product, slabs, and collector bundles. Our
-          goal is to make every listing clear, every product photo useful, and every transaction feel safe for collectors.
+          We specialize first in Pokemon, with One Piece and Magic: The Gathering prioritized next, followed by Japanese
+          cards, English singles, sealed product, slabs, and collector bundles. Our goal is to make every listing clear,
+          every product photo useful, and every transaction feel safe for collectors.
         </p>
       </section>
       <section className="mt-12 grid gap-5 md:grid-cols-2">
