@@ -5,7 +5,7 @@ import { ProductStatusBadge } from "@/components/inventory/ProductStatusBadge";
 import type { Product } from "@/lib/types";
 import { categoryLabel, cn, formatPrice } from "@/lib/utils";
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product, priorityImage = false }: { product: Product; priorityImage?: boolean }) {
   const sold = product.publicStatus === "sold";
   const cta = product.publicStatus === "coming_soon" ? "Preview" : "View Details";
   const imageUrl = product.primaryImageUrl || product.imageUrls[0] || "";
@@ -34,7 +34,7 @@ export function ProductCard({ product }: { product: Product }) {
         </div>
         <ProductImageFrame
           alt={product.name}
-          priority
+          priority={priorityImage}
           sold={sold}
           src={imageUrl}
           className="mx-auto aspect-[6/7] w-full max-w-[224px] rounded-lg border-vault-border/70 bg-black/25"
