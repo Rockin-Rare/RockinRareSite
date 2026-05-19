@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { getProductBySlug, getRelatedProducts } from "@/lib/products";
 import { canCheckoutOnSite, getSitePrice, inferPrimaryChannel } from "@/lib/commerce";
-import { absoluteUrl, siteName } from "@/lib/site";
+import { absoluteUrl, contactEmail, siteName } from "@/lib/site";
 import { categoryLabel, formatPrice } from "@/lib/utils";
 
 type PageProps = {
@@ -186,7 +186,7 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
                 View on {product.externalListingPlatform ?? "Listing"}
               </Button>
             ) : !canBuyDirect ? (
-              <Button href={`mailto:contact@rockinrarecollectibles.com?subject=${mailSubject}`}>
+              <Button href={`mailto:${contactEmail}?subject=${mailSubject}`}>
                 {sold ? "Contact About Similar Items" : "Contact About This Item"}
               </Button>
             ) : null}

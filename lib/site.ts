@@ -5,7 +5,7 @@ export const siteUrl = normalizeSiteUrl(process.env.NEXT_PUBLIC_SITE_URL || "htt
 export const defaultDescription =
   "Collector-first Pokemon, One Piece, Magic: The Gathering, sealed product, slabs, singles, and rare finds with real product photos and transparent condition notes.";
 
-export const contactEmail = "contact@rockinrarecollectibles.com";
+export const contactEmail = "rockinrare@gmail.com";
 
 export const instagramHandle = "rockinrarecollectibles";
 

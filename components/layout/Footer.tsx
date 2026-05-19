@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/layout/BrandLogo";
 import { Container } from "@/components/layout/Container";
+import { contactEmail } from "@/lib/site";
 
 export function Footer() {
   const year = new Date().getFullYear();
@@ -29,7 +30,7 @@ export function Footer() {
         <div>
           <h3 className="text-sm font-bold text-vault-text">Shop & Contact</h3>
           <div className="mt-4 grid gap-3 text-sm text-vault-secondaryText">
-            <span>contact@rockinrarecollectibles.com</span>
+            <span>{contactEmail}</span>
             <span>Instagram: @rockinrarecollectibles</span>
             <span>eBay / TCGplayer / Whatnot listings coming online</span>
           </div>
