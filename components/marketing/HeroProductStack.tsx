@@ -1,4 +1,3 @@
-import { ProductImageFrame } from "@/components/inventory/ProductImageFrame";
 import type { Product } from "@/lib/types";
 import { categoryLabel, formatPrice } from "@/lib/utils";
 
@@ -84,16 +83,26 @@ function ProductShowpiece({
         {label}
       </div>
       <div className={featured ? "relative flex min-h-[300px] flex-col justify-end p-5" : "relative flex min-h-[190px] flex-col justify-end p-4 text-center"}>
-        <div className={featured ? "absolute left-1/2 top-8 h-52 w-36 -translate-x-1/2 rotate-3 sm:h-60 sm:w-40" : "absolute left-1/2 top-5 h-28 w-20 -translate-x-1/2 rotate-3"}>
-          <ProductImageFrame
+        <div
+          className={
+            featured
+              ? "absolute left-1/2 top-8 h-56 w-40 -translate-x-1/2 rotate-3 sm:h-64 sm:w-44"
+              : "absolute left-1/2 top-5 h-32 w-24 -translate-x-1/2 rotate-3"
+          }
+        >
+          {imageUrl ? (
+            <img
             alt={product.name}
-            src={imageUrl}
-            priority={featured}
-            className={featured ? "h-full w-full border-vault-gold/40 bg-vault-bg" : "h-full w-full border-white/20 bg-vault-bg"}
-          />
+              className="h-full w-full rounded-xl object-contain shadow-[0_18px_50px_rgba(0,0,0,0.42)]"
+              loading={featured ? "eager" : "lazy"}
+              src={imageUrl}
+            />
+          ) : (
+            <div className="h-full w-full rounded-xl border border-vault-gold/30 bg-vault-bg shadow-[0_18px_50px_rgba(0,0,0,0.42)]" />
+          )}
         </div>
         <p className="text-xs font-black uppercase text-white/85">{product.franchise}</p>
-        <h3 className={compact ? "mt-1 line-clamp-1 text-lg font-black text-white" : "mt-2 line-clamp-2 text-3xl font-black text-white"}>{product.name}</h3>
+        <h3 className={compact ? "mt-1 line-clamp-2 text-lg font-black text-white" : "mt-2 line-clamp-2 text-3xl font-black text-white"}>{product.name}</h3>
         {!compact ? <p className="mt-2 text-sm leading-5 text-white/80">{meta}</p> : null}
       </div>
     </div>
