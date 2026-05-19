@@ -83,11 +83,11 @@ function ProductShowpiece({
         {label}
       </div>
       <div className={featured ? "relative flex h-full min-h-[360px] flex-col p-4" : "relative flex min-h-[230px] flex-col p-3"}>
-        <div className={featured ? "flex h-[320px] items-center justify-center pb-2 pt-10" : "flex h-[140px] items-center justify-center pb-2 pt-9"}>
+        <div className={featured ? "flex h-[320px] items-center justify-center pb-2 pt-10" : "flex h-[160px] items-center justify-center pb-2 pt-9"}>
           {imageUrl ? (
             <img
               alt={product.name}
-              className={featured ? "relative z-10 h-full w-full object-contain drop-shadow-[0_18px_35px_rgba(0,0,0,0.55)]" : "relative z-10 h-full w-full object-contain drop-shadow-[0_18px_30px_rgba(0,0,0,0.5)]"}
+              className={featured ? "relative z-10 h-full w-full object-contain drop-shadow-[0_18px_35px_rgba(0,0,0,0.55)]" : "relative z-10 h-full w-full scale-110 object-contain drop-shadow-[0_18px_30px_rgba(0,0,0,0.5)]"}
               loading={featured ? "eager" : "lazy"}
               src={imageUrl}
             />
