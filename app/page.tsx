@@ -7,7 +7,7 @@ import { SectionHeader } from "@/components/marketing/SectionHeader";
 import { SellTradeCTA } from "@/components/marketing/SellTradeCTA";
 import { TrustPromise } from "@/components/marketing/TrustPromise";
 import { Button } from "@/components/ui/Button";
-import { getFeaturedProducts } from "@/lib/products";
+import { getFeaturedProducts, getHeroShowcaseProducts } from "@/lib/products";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +19,7 @@ const categories = [
 ];
 
 export default async function HomePage() {
-  const featured = await getFeaturedProducts(8);
+  const [featured, heroProducts] = await Promise.all([getFeaturedProducts(8), getHeroShowcaseProducts(3)]);
 
   return (
     <Container>
@@ -58,7 +58,7 @@ export default async function HomePage() {
             </Button>
           </div>
         </div>
-        <HeroProductStack products={featured.slice(0, 3)} />
+        <HeroProductStack products={heroProducts} />
       </section>
 
       <section className="py-8">

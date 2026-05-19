@@ -46,10 +46,27 @@ export async function getFeaturedProducts(limit = 8): Promise<Product[]> {
     .slice(0, limit);
 }
 
+export async function getHeroShowcaseProducts(limit = 3): Promise<Product[]> {
+  const products = await getPublishedProducts();
+  const availableProducts = products.filter((product) => product.publicStatus === "available" || product.publicStatus === "listed");
+  const cardProducts = availableProducts.filter((product) => product.category === "single" || product.category === "slab");
+  const rankedProducts = cardProducts.length >= limit ? cardProducts : availableProducts;
+
+  return rankedProducts.sort(compareByDisplayValue).slice(0, limit);
+}
+
 export async function getRelatedProducts(product: Product, limit = 4): Promise<Product[]> {
   const products = await getPublishedProducts();
   return products
     .filter((candidate) => candidate.id !== product.id)
     .filter((candidate) => candidate.franchise === product.franchise || candidate.category === product.category)
     .slice(0, limit);
+}
+
+function compareByDisplayValue(a: Product, b: Product) {
+  return getDisplayValue(b) - getDisplayValue(a);
+}
+
+function getDisplayValue(product: Product) {
+  return Math.max(product.sitePrice ?? 0, product.price ?? 0, product.ebayPrice ?? 0, product.tcgplayerPrice ?? 0);
 }

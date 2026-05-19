@@ -1,4 +1,6 @@
+import { ProductImageFrame } from "@/components/inventory/ProductImageFrame";
 import type { Product } from "@/lib/types";
+import { categoryLabel, formatPrice } from "@/lib/utils";
 
 const heroCards = [
   {
@@ -22,17 +24,17 @@ const heroCards = [
 ];
 
 export function HeroProductStack({ products }: { products: Product[] }) {
-  void products;
-  const [first, second, third] = heroCards;
+  const [first, second, third] = products;
+  const [fallbackFirst, fallbackSecond, fallbackThird] = heroCards;
 
   if (!first) {
     return (
       <div className="vault-panel relative mx-auto grid w-full max-w-[520px] gap-4 overflow-hidden rounded-2xl p-5 lg:mt-4" aria-label="Rockin Rare vault preview">
         <div className="grid gap-4 sm:grid-cols-[1.05fr_0.95fr]">
-          <VaultShowpiece card={first} featured />
+          <VaultShowpiece card={fallbackFirst} featured />
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-1">
-            <VaultShowpiece card={second} compact />
-            <VaultShowpiece card={third} compact />
+            <VaultShowpiece card={fallbackSecond} compact />
+            <VaultShowpiece card={fallbackThird} compact />
           </div>
         </div>
         <PreviewPanel />
@@ -43,10 +45,10 @@ export function HeroProductStack({ products }: { products: Product[] }) {
   return (
     <div className="vault-panel relative mx-auto grid w-full max-w-[520px] gap-4 overflow-hidden rounded-2xl p-5 lg:mt-4">
       <div className="grid gap-4 sm:grid-cols-[1.05fr_0.95fr]">
-        <VaultShowpiece card={first} featured />
+        <ProductShowpiece product={first} label="Top Value" featured />
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-1">
-          <VaultShowpiece card={second} compact />
-          <VaultShowpiece card={third} compact />
+          {second ? <ProductShowpiece product={second} label="Collector Pick" compact /> : <VaultShowpiece card={fallbackSecond} compact />}
+          {third ? <ProductShowpiece product={third} label="Fresh Pick" compact /> : <VaultShowpiece card={fallbackThird} compact />}
         </div>
       </div>
       <PreviewPanel />
@@ -55,6 +57,48 @@ export function HeroProductStack({ products }: { products: Product[] }) {
 }
 
 type HeroCard = (typeof heroCards)[number];
+
+function ProductShowpiece({
+  product,
+  label,
+  featured = false,
+  compact = false
+}: {
+  product: Product;
+  label: string;
+  featured?: boolean;
+  compact?: boolean;
+}) {
+  const imageUrl = product.primaryImageUrl || product.imageUrls[0] || "";
+  const displayPrice = formatPrice(product.sitePrice ?? product.price);
+  const meta = [categoryLabel(product.category), product.condition, displayPrice].filter(Boolean).join(" / ");
+
+  return (
+    <div
+      className={`relative overflow-hidden rounded-2xl border ${
+        featured ? "min-h-[300px] border-vault-gold/50 gold-glow" : "min-h-[190px] border-vault-border"
+      } bg-vault-secondary`}
+    >
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_18%,rgba(214,168,79,0.22),transparent_34%),linear-gradient(145deg,#20242d,#101216)]" />
+      <div className="absolute right-4 top-4 rounded-full border border-vault-gold/30 bg-black/35 px-3 py-1 text-[10px] font-black uppercase text-vault-highlight">
+        {label}
+      </div>
+      <div className={featured ? "relative flex min-h-[300px] flex-col justify-end p-5" : "relative flex min-h-[190px] flex-col justify-end p-4 text-center"}>
+        <div className={featured ? "absolute left-1/2 top-8 h-52 w-36 -translate-x-1/2 rotate-3 sm:h-60 sm:w-40" : "absolute left-1/2 top-5 h-28 w-20 -translate-x-1/2 rotate-3"}>
+          <ProductImageFrame
+            alt={product.name}
+            src={imageUrl}
+            priority={featured}
+            className={featured ? "h-full w-full border-vault-gold/40 bg-vault-bg" : "h-full w-full border-white/20 bg-vault-bg"}
+          />
+        </div>
+        <p className="text-xs font-black uppercase text-white/85">{product.franchise}</p>
+        <h3 className={compact ? "mt-1 line-clamp-1 text-lg font-black text-white" : "mt-2 line-clamp-2 text-3xl font-black text-white"}>{product.name}</h3>
+        {!compact ? <p className="mt-2 text-sm leading-5 text-white/80">{meta}</p> : null}
+      </div>
+    </div>
+  );
+}
 
 function VaultShowpiece({ card, featured = false, compact = false }: { card: HeroCard; featured?: boolean; compact?: boolean }) {
   return (
