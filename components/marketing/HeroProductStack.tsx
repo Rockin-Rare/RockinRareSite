@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import type { Product } from "@/lib/types";
 import { categoryLabel, formatPrice } from "@/lib/utils";
 
@@ -73,21 +75,22 @@ function ProductShowpiece({
   const meta = [categoryLabel(product.category), product.condition, displayPrice].filter(Boolean).join(" / ");
 
   return (
-    <div
-      className={`relative overflow-hidden rounded-2xl border ${
+    <Link
+      className={`group relative flex overflow-hidden rounded-2xl border ${
         featured ? "min-h-[360px] border-vault-gold/50 gold-glow" : "min-h-[230px] border-vault-border"
-      } bg-vault-secondary`}
+      } bg-vault-secondary transition duration-300 hover:-translate-y-0.5 hover:border-vault-gold/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-vault-highlight`}
+      href={`/inventory/${product.slug}`}
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_18%,rgba(214,168,79,0.22),transparent_34%),linear-gradient(145deg,#20242d,#101216)]" />
       <div className="absolute right-4 top-4 z-20 whitespace-nowrap rounded-full border border-vault-gold/30 bg-black/55 px-3 py-1 text-[10px] font-black uppercase text-vault-highlight">
         {label}
       </div>
-      <div className={featured ? "relative flex h-full min-h-[360px] flex-col p-4" : "relative flex min-h-[230px] flex-col p-3"}>
+      <div className={featured ? "relative flex h-full min-h-[360px] flex-1 flex-col p-4" : "relative flex min-h-[230px] flex-1 flex-col p-3"}>
         <div className={featured ? "flex h-[320px] items-center justify-center pb-2 pt-10" : "flex h-[160px] items-center justify-center pb-2 pt-9"}>
           {imageUrl ? (
             <img
               alt={product.name}
-              className={featured ? "relative z-10 h-full w-full object-contain drop-shadow-[0_18px_35px_rgba(0,0,0,0.55)]" : "relative z-10 h-full w-full scale-110 object-contain drop-shadow-[0_18px_30px_rgba(0,0,0,0.5)]"}
+              className={featured ? "relative z-10 h-full w-full object-contain drop-shadow-[0_18px_35px_rgba(0,0,0,0.55)] transition duration-500 group-hover:scale-[1.03]" : "relative z-10 h-full w-full scale-110 object-contain drop-shadow-[0_18px_30px_rgba(0,0,0,0.5)] transition duration-500 group-hover:scale-[1.16]"}
               loading={featured ? "eager" : "lazy"}
               src={imageUrl}
             />
@@ -95,13 +98,13 @@ function ProductShowpiece({
             <div className="h-full w-full rounded-xl border border-vault-gold/30 bg-vault-bg shadow-[0_18px_50px_rgba(0,0,0,0.42)]" />
           )}
         </div>
-        <div className={featured ? "rounded-xl border border-vault-border bg-vault-bg/72 p-3" : "rounded-xl border border-vault-border bg-vault-bg/72 p-2 text-center"}>
+        <div className={featured ? "relative z-10 mt-auto px-2 pb-1" : "relative z-10 mt-auto px-1 pb-1 text-center"}>
           <p className="text-xs font-black uppercase text-white/85">{product.franchise}</p>
           <h3 className={compact ? "mt-1 line-clamp-2 text-base font-black leading-tight text-white" : "mt-1 line-clamp-2 text-2xl font-black leading-tight text-white"}>{product.name}</h3>
           {!compact ? <p className="mt-1 text-sm leading-5 text-white/80">{meta}</p> : null}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
