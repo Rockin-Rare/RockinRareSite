@@ -71,7 +71,7 @@ function ProductShowpiece({
   compact?: boolean;
 }) {
   const imageUrl = product.primaryImageUrl || product.imageUrls[0] || "";
-  const displayPrice = formatPrice(product.sitePrice ?? product.price);
+  const displayPrice = formatPrice(product.price);
   const meta = [categoryLabel(product.category), product.condition, displayPrice].filter(Boolean).join(" / ");
 
   return (
