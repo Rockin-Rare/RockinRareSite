@@ -31,28 +31,32 @@ export function HeroProductStack({ products }: { products: Product[] }) {
   if (!first) {
     return (
       <div className="vault-panel relative mx-auto grid w-full max-w-[520px] gap-4 overflow-hidden rounded-2xl p-5 lg:mt-4" aria-label="Rockin Rare vault preview">
-        <div className="grid gap-4 sm:grid-cols-[1.05fr_0.95fr]">
-          <VaultShowpiece card={fallbackFirst} featured />
+        <div className="grid gap-4 sm:grid-cols-[1.05fr_0.95fr] sm:items-start">
+          <div className="grid gap-4">
+            <VaultShowpiece card={fallbackFirst} featured />
+            <PreviewPanel />
+          </div>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-1">
             <VaultShowpiece card={fallbackSecond} compact />
             <VaultShowpiece card={fallbackThird} compact />
           </div>
         </div>
-        <PreviewPanel />
       </div>
     );
   }
 
   return (
     <div className="vault-panel relative mx-auto grid w-full max-w-[520px] gap-4 overflow-hidden rounded-2xl p-5 lg:mt-4">
-      <div className="grid gap-4 sm:grid-cols-[1.05fr_0.95fr]">
-        <ProductShowpiece product={first} label="Top Value" featured />
+      <div className="grid gap-4 sm:grid-cols-[1.05fr_0.95fr] sm:items-start">
+        <div className="grid gap-4">
+          <ProductShowpiece product={first} label="Top Value" featured />
+          <PreviewPanel />
+        </div>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-1">
           {second ? <ProductShowpiece product={second} label="Collector Pick" compact /> : <VaultShowpiece card={fallbackSecond} compact />}
           {third ? <ProductShowpiece product={third} label="Fresh Pick" compact /> : <VaultShowpiece card={fallbackThird} compact />}
         </div>
       </div>
-      <PreviewPanel />
     </div>
   );
 }
@@ -98,7 +102,7 @@ function ProductShowpiece({
             <div className="h-full w-full rounded-xl border border-vault-gold/30 bg-vault-bg shadow-[0_18px_50px_rgba(0,0,0,0.42)]" />
           )}
         </div>
-        <div className={featured ? "relative z-10 px-2 pb-1 pt-2" : "relative z-10 mt-auto px-1 pb-1 pt-4 text-center"}>
+        <div className={featured ? "relative z-10 px-2 pb-1 pt-2 text-center" : "relative z-10 mt-auto px-1 pb-1 pt-4 text-center"}>
           <p className="text-xs font-black uppercase text-white/85">{product.franchise}</p>
           <h3 className={compact ? "mt-1 line-clamp-2 text-base font-black leading-tight text-white" : "mt-1 line-clamp-2 text-2xl font-black leading-tight text-white"}>{product.name}</h3>
           <p className={compact ? "mt-1 text-xs leading-4 text-white/75" : "mt-1 text-sm leading-5 text-white/80"}>{meta}</p>
