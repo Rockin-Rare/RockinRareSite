@@ -36,12 +36,19 @@ export function getEbayPrice(product: Product) {
   return Math.round((sitePrice / (1 - feeCushion)) * 100) / 100;
 }
 
+export function isDirectSiteInventory(product: Product) {
+  const channel = inferPrimaryChannel(product);
+
+  return channel === "site" || channel === "multi";
+}
+
 export function canCheckoutOnSite(product: Product) {
   const sitePrice = getSitePrice(product);
   const hasAvailableStatus = product.publicStatus === "available" || product.publicStatus === "listed";
   const quantity = product.quantity ?? 1;
 
   return (
+    isDirectSiteInventory(product) &&
     product.checkoutEnabled !== false &&
     hasAvailableStatus &&
     quantity > 0 &&
