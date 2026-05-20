@@ -77,7 +77,7 @@ function ProductShowpiece({
   return (
     <Link
       className={`group relative flex overflow-hidden rounded-2xl border ${
-        featured ? "min-h-[360px] border-vault-gold/50 gold-glow" : "min-h-[230px] border-vault-border"
+        featured ? "min-h-[360px] border-vault-gold/50 gold-glow" : "min-h-[252px] border-vault-border"
       } bg-vault-secondary transition duration-300 hover:-translate-y-0.5 hover:border-vault-gold/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-vault-highlight`}
       href={`/inventory/${product.slug}`}
     >
@@ -85,12 +85,12 @@ function ProductShowpiece({
       <div className="absolute right-4 top-4 z-20 whitespace-nowrap rounded-full border border-vault-gold/30 bg-black/55 px-3 py-1 text-[10px] font-black uppercase text-vault-highlight">
         {label}
       </div>
-      <div className={featured ? "relative flex h-full min-h-[360px] flex-1 flex-col p-4" : "relative flex min-h-[230px] flex-1 flex-col p-3"}>
-        <div className={featured ? "flex h-[320px] items-center justify-center pb-2 pt-10" : "flex h-[160px] items-center justify-center pb-2 pt-9"}>
+      <div className={featured ? "relative flex h-full min-h-[360px] flex-1 flex-col p-4" : "relative flex min-h-[252px] flex-1 flex-col p-3"}>
+        <div className={featured ? "flex h-[296px] items-center justify-center pb-1 pt-10" : "flex h-[150px] items-center justify-center overflow-hidden pb-1 pt-9"}>
           {imageUrl ? (
             <img
               alt={product.name}
-              className={featured ? "relative z-10 h-full w-full object-contain drop-shadow-[0_18px_35px_rgba(0,0,0,0.55)] transition duration-500 group-hover:scale-[1.03]" : "relative z-10 h-full w-full scale-110 object-contain drop-shadow-[0_18px_30px_rgba(0,0,0,0.5)] transition duration-500 group-hover:scale-[1.16]"}
+              className={featured ? "relative z-10 h-full w-full object-contain drop-shadow-[0_18px_35px_rgba(0,0,0,0.55)] transition duration-500 group-hover:scale-[1.03]" : "relative z-10 h-full w-full scale-[1.08] object-contain drop-shadow-[0_18px_30px_rgba(0,0,0,0.5)] transition duration-500 group-hover:scale-[1.12]"}
               loading={featured ? "eager" : "lazy"}
               src={imageUrl}
             />
@@ -98,10 +98,10 @@ function ProductShowpiece({
             <div className="h-full w-full rounded-xl border border-vault-gold/30 bg-vault-bg shadow-[0_18px_50px_rgba(0,0,0,0.42)]" />
           )}
         </div>
-        <div className={featured ? "relative z-10 mt-auto px-2 pb-1" : "relative z-10 mt-auto px-1 pb-1 text-center"}>
+        <div className={featured ? "relative z-10 px-2 pb-1 pt-2" : "relative z-10 mt-auto px-1 pb-1 pt-4 text-center"}>
           <p className="text-xs font-black uppercase text-white/85">{product.franchise}</p>
           <h3 className={compact ? "mt-1 line-clamp-2 text-base font-black leading-tight text-white" : "mt-1 line-clamp-2 text-2xl font-black leading-tight text-white"}>{product.name}</h3>
-          {!compact ? <p className="mt-1 text-sm leading-5 text-white/80">{meta}</p> : null}
+          <p className={compact ? "mt-1 text-xs leading-4 text-white/75" : "mt-1 text-sm leading-5 text-white/80"}>{meta}</p>
         </div>
       </div>
     </Link>
