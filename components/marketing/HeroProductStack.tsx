@@ -32,7 +32,7 @@ export function HeroProductStack({ products }: { products: Product[] }) {
     return (
       <div className="vault-panel relative mx-auto grid w-full max-w-[520px] gap-4 overflow-hidden rounded-2xl p-5 lg:mt-4" aria-label="Rockin Rare vault preview">
         <div className="grid gap-4 sm:grid-cols-[1.12fr_0.88fr] sm:items-start">
-          <div className="grid gap-4">
+          <div className="grid gap-4 self-center">
             <VaultShowpiece card={fallbackFirst} featured />
           </div>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-1">
@@ -47,7 +47,7 @@ export function HeroProductStack({ products }: { products: Product[] }) {
   return (
     <div className="vault-panel relative mx-auto grid w-full max-w-[520px] gap-4 overflow-hidden rounded-2xl p-5 lg:mt-4">
       <div className="grid gap-4 sm:grid-cols-[1.12fr_0.88fr] sm:items-start">
-        <div className="grid gap-4">
+        <div className="grid gap-4 self-center">
           <ProductShowpiece product={first} label="Top Value" featured />
         </div>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-1">
