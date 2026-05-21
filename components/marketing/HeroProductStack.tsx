@@ -31,7 +31,7 @@ export function HeroProductStack({ products }: { products: Product[] }) {
   if (!first) {
     return (
       <div className="vault-panel relative mx-auto grid w-full max-w-[520px] gap-4 overflow-hidden rounded-2xl p-5 lg:mt-4" aria-label="Rockin Rare vault preview">
-        <div className="grid gap-4 sm:grid-cols-[1.05fr_0.95fr] sm:items-start">
+        <div className="grid gap-4 sm:grid-cols-[1.12fr_0.88fr] sm:items-start">
           <div className="grid gap-4">
             <VaultShowpiece card={fallbackFirst} featured />
             <PreviewPanel />
@@ -47,7 +47,7 @@ export function HeroProductStack({ products }: { products: Product[] }) {
 
   return (
     <div className="vault-panel relative mx-auto grid w-full max-w-[520px] gap-4 overflow-hidden rounded-2xl p-5 lg:mt-4">
-      <div className="grid gap-4 sm:grid-cols-[1.05fr_0.95fr] sm:items-start">
+      <div className="grid gap-4 sm:grid-cols-[1.12fr_0.88fr] sm:items-start">
         <div className="grid gap-4">
           <ProductShowpiece product={first} label="Top Value" featured />
           <PreviewPanel />
@@ -76,7 +76,7 @@ function ProductShowpiece({
 }) {
   const imageUrl = product.primaryImageUrl || product.imageUrls[0] || "";
   const displayPrice = formatPrice(product.price);
-  const meta = [categoryLabel(product.category), product.condition, displayPrice].filter(Boolean).join(" / ");
+  const details = [categoryLabel(product.category), product.condition].filter(Boolean).join(" / ");
 
   return (
     <Link
@@ -105,7 +105,10 @@ function ProductShowpiece({
         <div className={featured ? "relative z-10 px-2 pb-1 pt-2 text-center" : "relative z-10 mt-auto px-1 pb-1 pt-4 text-center"}>
           <p className="text-xs font-black uppercase text-white/85">{product.franchise}</p>
           <h3 className={compact ? "mt-1 line-clamp-2 text-base font-black leading-tight text-white" : "mt-1 line-clamp-2 text-2xl font-black leading-tight text-white"}>{product.name}</h3>
-          <p className={compact ? "mt-1 text-xs leading-4 text-white/75" : "mt-1 text-sm leading-5 text-white/80"}>{meta}</p>
+          <p className={compact ? "mt-1 text-xs leading-4 text-white/75" : "mt-1 text-sm leading-5 text-white/80"}>
+            {details ? `${details} / ` : ""}
+            <span className="font-black text-vault-highlight">{displayPrice}</span>
+          </p>
         </div>
       </div>
     </Link>
@@ -148,12 +151,12 @@ function VaultShowpiece({ card, featured = false, compact = false }: { card: Her
 
 function PreviewPanel() {
   return (
-    <div className="grid gap-3 rounded-xl border border-vault-border bg-vault-secondary/90 p-3 shadow-vault sm:grid-cols-[1fr_auto] sm:items-center">
-      <div>
-        <p className="text-xs font-semibold uppercase text-vault-gold">Current Inventory Preview</p>
-        <p className="mt-1 text-sm text-vault-secondaryText">Pokemon, One Piece, Magic, photos, condition notes, and links.</p>
-      </div>
-      <div className="rounded-lg border border-vault-gold/30 px-3 py-2 text-sm font-black text-vault-highlight">Live</div>
-    </div>
+    <Link
+      className="inline-flex w-fit items-center gap-2 rounded-full border border-vault-gold/30 bg-vault-secondary/75 px-3 py-2 text-xs font-black uppercase text-vault-highlight transition hover:border-vault-gold/70 hover:bg-vault-gold hover:text-vault-bg focus-visible:outline focus-visible:outline-2 focus-visible:outline-vault-highlight"
+      href="/inventory"
+    >
+      Live Inventory
+      <span className="h-2 w-2 rounded-full bg-vault-success" />
+    </Link>
   );
 }

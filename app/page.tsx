@@ -37,9 +37,7 @@ export default async function HomePage() {
     <Container>
       <section className="grid gap-10 py-10 lg:grid-cols-[1fr_0.9fr] lg:items-start lg:py-14">
         <div>
-          <p className="text-sm font-semibold uppercase text-vault-gold">
-            Pokemon / One Piece / Magic: The Gathering / Japanese Cards / Singles / Sealed Product / Slabs
-          </p>
+          <p className="text-sm font-semibold uppercase text-vault-gold">Pokemon / One Piece / Magic / Japanese / Sealed / Slabs</p>
           <h1 className="mt-5 text-5xl font-black text-vault-text sm:text-6xl lg:text-7xl">Rockin Rare Collectibles</h1>
           <p className="mt-5 text-xl font-semibold text-vault-secondaryText">
             Collector-first Pokemon, One Piece, Magic, sealed product, slabs, and rare finds.
