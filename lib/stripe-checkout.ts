@@ -34,7 +34,7 @@ export async function createCheckoutSession({ products, origin, reservations }: 
   const params = new URLSearchParams();
   params.set("mode", "payment");
   params.set("success_url", `${origin}/cart?checkout=success`);
-  params.set("cancel_url", `${origin}/cart?checkout=cancelled`);
+  params.set("cancel_url", `${origin}/cart?checkout=cancelled&session_id={CHECKOUT_SESSION_ID}`);
   params.set("client_reference_id", reservations.map((reservation) => reservation.id).join(",").slice(0, 200));
   params.set("metadata[itemCount]", String(products.length));
   params.set("metadata[soldChannel]", "site");

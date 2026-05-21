@@ -3,7 +3,7 @@ import { CartClient } from "@/components/cart/CartClient";
 import { Container } from "@/components/layout/Container";
 
 type PageProps = {
-  searchParams?: Promise<{ checkout?: string }>;
+  searchParams?: Promise<{ checkout?: string; session_id?: string }>;
 };
 
 export const metadata: Metadata = {
@@ -12,11 +12,13 @@ export const metadata: Metadata = {
 };
 
 export default async function CartPage({ searchParams }: PageProps) {
-  const checkoutStatus = (await searchParams)?.checkout;
+  const params = await searchParams;
+  const checkoutStatus = params?.checkout;
+  const checkoutSessionId = params?.session_id;
 
   return (
     <Container className="py-12">
-      <CartClient checkoutStatus={checkoutStatus} />
+      <CartClient checkoutSessionId={checkoutSessionId} checkoutStatus={checkoutStatus} />
     </Container>
   );
 }

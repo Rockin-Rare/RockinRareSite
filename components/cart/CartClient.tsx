@@ -1,20 +1,48 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckoutButton } from "@/components/inventory/CheckoutButton";
 import { Button } from "@/components/ui/Button";
 import { useCart } from "@/components/cart/CartProvider";
 import { formatPrice } from "@/lib/utils";
 
-export function CartClient({ checkoutStatus }: { checkoutStatus?: string }) {
+type CartClientProps = {
+  checkoutStatus?: string;
+  checkoutSessionId?: string;
+};
+
+export function CartClient({ checkoutStatus, checkoutSessionId }: CartClientProps) {
   const cart = useCart();
+  const cancelCleanupStarted = useRef(false);
+  const [cancelCleanupStatus, setCancelCleanupStatus] = useState<"idle" | "releasing" | "released" | "failed">("idle");
 
   useEffect(() => {
     if (checkoutStatus === "success") {
       cart.clearCart();
     }
   }, [cart, checkoutStatus]);
+
+  useEffect(() => {
+    if (checkoutStatus !== "cancelled" || !checkoutSessionId || cancelCleanupStarted.current) return;
+
+    cancelCleanupStarted.current = true;
+    setCancelCleanupStatus("releasing");
+
+    fetch("/api/checkout/cancel", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId: checkoutSessionId })
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error("Unable to release checkout reservations.");
+        setCancelCleanupStatus("released");
+      })
+      .catch((error) => {
+        console.error("Checkout cancellation cleanup failed", error);
+        setCancelCleanupStatus("failed");
+      });
+  }, [checkoutSessionId, checkoutStatus]);
 
   if (cart.items.length === 0) {
     return (
@@ -74,7 +102,10 @@ export function CartClient({ checkoutStatus }: { checkoutStatus?: string }) {
       <aside className="h-fit rounded-2xl border border-vault-border bg-vault-card p-5 shadow-vault">
         {checkoutStatus === "cancelled" ? (
           <p className="mb-4 rounded-xl border border-vault-border bg-vault-secondary px-4 py-3 text-sm font-semibold text-vault-secondaryText">
-            Checkout was cancelled. Items stay in your cart, but availability can change.
+            Checkout was cancelled. Items stay in your cart
+            {cancelCleanupStatus === "releasing" ? ", and we are releasing the temporary inventory hold." : "."}
+            {cancelCleanupStatus === "released" ? " The temporary inventory hold has been released." : ""}
+            {cancelCleanupStatus === "failed" ? " We could not release the temporary inventory hold automatically." : ""}
           </p>
         ) : null}
         <h2 className="text-xl font-black text-vault-text">Order Summary</h2>

@@ -11,6 +11,13 @@ type CheckoutReservation = {
   reservedUntil: string;
 };
 
+type CheckoutReservationReleaseInput = {
+  productId: string;
+  sku: string;
+  slug: string;
+  reservationId: string;
+};
+
 const reservationHoldMinutes = 30;
 
 function getReservationEndpoint() {
@@ -81,6 +88,15 @@ export async function reserveCheckoutProduct(product: Product): Promise<Checkout
 }
 
 export async function releaseCheckoutReservation(product: Product, reservation: CheckoutReservation) {
+  await releaseCheckoutReservationByInput({
+    productId: product.id,
+    sku: getProductSku(product),
+    slug: product.slug,
+    reservationId: reservation.id
+  });
+}
+
+export async function releaseCheckoutReservationByInput(input: CheckoutReservationReleaseInput) {
   const endpoint = getReservationEndpoint();
   if (!endpoint) return;
 
@@ -92,10 +108,10 @@ export async function releaseCheckoutReservation(product: Product, reservation: 
     },
     body: JSON.stringify({
       action: "release",
-      productId: product.id,
-      sku: getProductSku(product),
-      slug: product.slug,
-      reservationId: reservation.id
+      productId: input.productId,
+      sku: input.sku,
+      slug: input.slug,
+      reservationId: input.reservationId
     })
   });
 
