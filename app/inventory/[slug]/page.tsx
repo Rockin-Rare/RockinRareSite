@@ -12,7 +12,7 @@ import { TrustPromise } from "@/components/marketing/TrustPromise";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { getProductBySlug, getRelatedProducts } from "@/lib/products";
-import { canCheckoutOnSite, getSitePrice, inferPrimaryChannel } from "@/lib/commerce";
+import { canCheckoutOnSite, getSitePrice } from "@/lib/commerce";
 import { absoluteUrl, contactEmail, siteName } from "@/lib/site";
 import { categoryLabel, formatPrice } from "@/lib/utils";
 
@@ -23,11 +23,18 @@ type PageProps = {
 
 export const dynamic = "force-dynamic";
 
+function publicDescription(description?: string) {
+  if (!description) return undefined;
+  if (description.toLowerCase().includes("imported from the card intake")) return undefined;
+
+  return description;
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   const title = product ? product.name : "Inventory Item";
-  const description = product?.description ?? "Rockin Rare Collectibles product detail page.";
+  const description = publicDescription(product?.description) ?? "Rockin Rare Collectibles product detail page.";
   const image = product?.primaryImageUrl ? absoluteUrl(product.primaryImageUrl) : undefined;
 
   return {
@@ -72,7 +79,7 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
   const sold = product.publicStatus === "sold";
   const canBuyDirect = canCheckoutOnSite(product);
   const directPrice = getSitePrice(product);
-  const primaryChannel = inferPrimaryChannel(product);
+  const description = publicDescription(product.description);
   const mailSubject = encodeURIComponent(`Question about ${product.name}`);
   const productUrl = absoluteUrl(`/inventory/${product.slug}`);
   const productImage = product.primaryImageUrl ? absoluteUrl(product.primaryImageUrl) : undefined;
@@ -81,7 +88,7 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
     "@type": "Product",
     "@id": `${productUrl}#product`,
     name: product.name,
-    description: product.description ?? `${product.name} from ${siteName}.`,
+    description: description ?? `${product.name} from ${siteName}.`,
     image: productImage ? [productImage] : undefined,
     sku: product.sku ?? product.scanId ?? product.id,
     brand: {
@@ -176,9 +183,8 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
             <ProductMetaRow label="Condition" value={product.condition} />
             <ProductMetaRow label="Grade" value={product.gradeCompany && product.grade ? `${product.gradeCompany} ${product.grade}` : undefined} />
             <ProductMetaRow label="Quantity" value={product.quantity} />
-            <ProductMetaRow label="Primary Channel" value={primaryChannel === "multi" ? "Site + Marketplace" : primaryChannel} />
           </dl>
-          {product.description ? <p className="mt-6 leading-7 text-vault-secondaryText">{product.description}</p> : null}
+          {description ? <p className="mt-6 leading-7 text-vault-secondaryText">{description}</p> : null}
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             {canBuyDirect ? <CheckoutButton productId={product.id} /> : null}
             {!canBuyDirect && !sold && product.externalListingUrl ? (
