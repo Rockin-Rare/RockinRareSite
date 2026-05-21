@@ -34,7 +34,6 @@ export function HeroProductStack({ products }: { products: Product[] }) {
         <div className="grid gap-4 sm:grid-cols-[1.12fr_0.88fr] sm:items-start">
           <div className="grid gap-4">
             <VaultShowpiece card={fallbackFirst} featured />
-            <PreviewPanel />
           </div>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-1">
             <VaultShowpiece card={fallbackSecond} compact />
@@ -50,7 +49,6 @@ export function HeroProductStack({ products }: { products: Product[] }) {
       <div className="grid gap-4 sm:grid-cols-[1.12fr_0.88fr] sm:items-start">
         <div className="grid gap-4">
           <ProductShowpiece product={first} label="Top Value" featured />
-          <PreviewPanel />
         </div>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-1">
           {second ? <ProductShowpiece product={second} label="Collector Pick" compact /> : <VaultShowpiece card={fallbackSecond} compact />}
@@ -149,14 +147,3 @@ function VaultShowpiece({ card, featured = false, compact = false }: { card: Her
   );
 }
 
-function PreviewPanel() {
-  return (
-    <Link
-      className="inline-flex w-fit items-center gap-2 rounded-full border border-vault-gold/30 bg-vault-secondary/75 px-3 py-2 text-xs font-black uppercase text-vault-highlight transition hover:border-vault-gold/70 hover:bg-vault-gold hover:text-vault-bg focus-visible:outline focus-visible:outline-2 focus-visible:outline-vault-highlight"
-      href="/inventory"
-    >
-      Live Inventory
-      <span className="h-2 w-2 rounded-full bg-vault-success" />
-    </Link>
-  );
-}
