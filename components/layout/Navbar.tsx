@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { CartLink } from "@/components/cart/CartLink";
 import { BrandLogo } from "@/components/layout/BrandLogo";
 import { Button } from "@/components/ui/Button";
 
@@ -36,6 +37,7 @@ export function Navbar() {
           <Button href="/inventory" className="px-4 py-2.5">
             Shop Inventory
           </Button>
+          <CartLink />
         </nav>
         <button
           aria-expanded={open}
@@ -63,6 +65,7 @@ export function Navbar() {
             <Button href="/inventory" onClick={() => setOpen(false)}>
               Shop Inventory
             </Button>
+            <CartLink onClick={() => setOpen(false)} />
           </div>
         </nav>
       ) : null}

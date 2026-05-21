@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
+import { CartProvider } from "@/components/cart/CartProvider";
 import { JsonLd } from "@/components/JsonLd";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
@@ -128,11 +129,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <JsonLd data={[organizationSchema, websiteSchema]} />
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
-        <Analytics />
+        <CartProvider>
+          <JsonLd data={[organizationSchema, websiteSchema]} />
+          <Navbar />
+          <main>{children}</main>
+          <Footer />
+          <Analytics />
+        </CartProvider>
       </body>
     </html>
   );

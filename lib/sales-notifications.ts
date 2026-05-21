@@ -2,12 +2,23 @@ type CheckoutSale = {
   productId: string;
   sku: string;
   slug: string;
+  reservationId?: string;
+  reservedUntil?: string;
+  items?: CheckoutSaleItem[];
   sessionId: string;
   paymentIntentId?: string;
   amountTotal?: number;
   currency?: string;
   customerEmail?: string;
   status: "paid" | "expired";
+};
+
+type CheckoutSaleItem = {
+  productId: string;
+  sku: string;
+  slug: string;
+  reservationId?: string;
+  amountTotal?: number;
 };
 
 function formatMoney(amount?: number, currency?: string) {
@@ -28,18 +39,21 @@ function escapeDiscordMentions(value: string) {
 }
 
 export async function notifyCheckoutSale(sale: CheckoutSale) {
-  await Promise.allSettled([notifyDiscord(sale), notifyCardIntake(sale)]);
+  await notifyCardIntake(sale);
+  await notifyDiscord(sale).catch((error) => {
+    console.error("Discord sales notification failed", error);
+  });
 }
 
 async function notifyDiscord(sale: CheckoutSale) {
   const webhookUrl = process.env.DISCORD_SALES_WEBHOOK_URL;
   if (!webhookUrl || sale.status !== "paid") return;
+  const items = sale.items?.length ? sale.items : [sale];
 
   const content = [
     "**New Direct Website Sale**",
-    `**SKU:** ${escapeDiscordMentions(sale.sku)}`,
-    `**Product ID:** ${escapeDiscordMentions(sale.productId)}`,
-    `**Slug:** ${escapeDiscordMentions(sale.slug)}`,
+    `**Items:** ${items.length}`,
+    ...items.slice(0, 10).map((item, index) => `**${index + 1}.** ${escapeDiscordMentions(item.sku)} / ${escapeDiscordMentions(item.slug)}`),
     `**Amount:** ${formatMoney(sale.amountTotal, sale.currency)}`,
     sale.customerEmail ? `**Customer:** ${escapeDiscordMentions(sale.customerEmail)}` : "",
     `**Stripe Session:** ${escapeDiscordMentions(sale.sessionId)}`
@@ -60,28 +74,44 @@ async function notifyDiscord(sale: CheckoutSale) {
 
 async function notifyCardIntake(sale: CheckoutSale) {
   const callbackUrl = process.env.CARD_INTAKE_SALES_WEBHOOK_URL;
-  if (!callbackUrl) return;
+  if (!callbackUrl) {
+    throw new Error("Card Intake sales webhook is not configured.");
+  }
 
-  await fetch(callbackUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(process.env.CARD_INTAKE_SALES_WEBHOOK_TOKEN
-        ? { authorization: `Bearer ${process.env.CARD_INTAKE_SALES_WEBHOOK_TOKEN}` }
-        : {})
-    },
-    body: JSON.stringify({
-      productId: sale.productId,
-      sku: sale.sku,
-      slug: sale.slug,
-      soldChannel: "site",
-      status: sale.status,
-      stripeSessionId: sale.sessionId,
-      stripePaymentIntentId: sale.paymentIntentId,
-      amountTotal: sale.amountTotal,
-      currency: sale.currency,
-      customerEmail: sale.customerEmail,
-      soldAt: new Date().toISOString()
-    })
-  });
+  const items = sale.items?.length ? sale.items : [sale];
+  const responses = await Promise.all(
+    items.map((item) =>
+      fetch(callbackUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(process.env.CARD_INTAKE_SALES_WEBHOOK_TOKEN
+            ? { authorization: `Bearer ${process.env.CARD_INTAKE_SALES_WEBHOOK_TOKEN}` }
+            : {})
+        },
+        body: JSON.stringify({
+          productId: item.productId,
+          sku: item.sku,
+          slug: item.slug,
+          reservationId: item.reservationId,
+          reservedUntil: sale.reservedUntil,
+          soldChannel: "site",
+          status: sale.status,
+          stripeSessionId: sale.sessionId,
+          stripePaymentIntentId: sale.paymentIntentId,
+          amountTotal: item.amountTotal ?? sale.amountTotal,
+          currency: sale.currency,
+          customerEmail: sale.customerEmail,
+          soldAt: new Date().toISOString()
+        })
+      })
+    )
+  );
+
+  const failed = responses.find((response) => !response.ok);
+  if (failed) {
+    const response = failed;
+    const errorText = await response.text().catch(() => "");
+    throw new Error(errorText || `Card Intake sales sync failed (${response.status}).`);
+  }
 }

@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
 import { canCheckoutOnSite } from "@/lib/commerce";
+import { releaseCheckoutReservation, reserveCheckoutProduct } from "@/lib/checkout-reservations";
 import { getProducts } from "@/lib/products";
 import { createCheckoutSession } from "@/lib/stripe-checkout";
+import type { Product } from "@/lib/types";
 
 type CheckoutRequest = {
   productId?: unknown;
+  productIds?: unknown;
 };
+
+const maxCheckoutItems = 8;
 
 function isAllowedOrigin(request: Request) {
   const origin = request.headers.get("origin");
@@ -14,8 +19,18 @@ function isAllowedOrigin(request: Request) {
   return origin === new URL(request.url).origin;
 }
 
-function cleanProductId(value: unknown) {
-  return typeof value === "string" ? value.trim().slice(0, 120) : "";
+function cleanProductIds(body: CheckoutRequest) {
+  const rawIds = Array.isArray(body.productIds) ? body.productIds : body.productId ? [body.productId] : [];
+  return [...new Set(rawIds.map((value) => (typeof value === "string" ? value.trim().slice(0, 120) : "")).filter(Boolean))];
+}
+
+async function releaseReservations(products: Product[], reservations: Array<{ id: string; reservedUntil: string }>) {
+  await Promise.allSettled(
+    reservations.map((reservation, index) => {
+      const product = products[index];
+      return product ? releaseCheckoutReservation(product, reservation) : Promise.resolve();
+    })
+  );
 }
 
 export async function POST(request: Request) {
@@ -31,25 +46,41 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid checkout payload." }, { status: 400 });
   }
 
-  const productId = cleanProductId(body.productId);
+  const productIds = cleanProductIds(body);
 
-  if (!productId) {
-    return NextResponse.json({ error: "Product is required." }, { status: 400 });
+  if (productIds.length === 0) {
+    return NextResponse.json({ error: "At least one product is required." }, { status: 400 });
+  }
+
+  if (productIds.length > maxCheckoutItems) {
+    return NextResponse.json({ error: `Checkout supports up to ${maxCheckoutItems} items at a time.` }, { status: 400 });
   }
 
   const products = await getProducts();
-  const product = products.find((candidate) => candidate.id === productId);
+  const productsById = new Map(products.map((product) => [product.id, product]));
+  const checkoutProducts = productIds.map((productId) => productsById.get(productId)).filter((product): product is Product => Boolean(product));
 
-  if (!product || !canCheckoutOnSite(product)) {
-    return NextResponse.json({ error: "This item is not available for direct checkout." }, { status: 409 });
+  if (checkoutProducts.length !== productIds.length || checkoutProducts.some((product) => !canCheckoutOnSite(product))) {
+    return NextResponse.json({ error: "One or more items are not available for direct checkout." }, { status: 409 });
   }
+
+  const reservations: Array<{ id: string; reservedUntil: string }> = [];
 
   try {
     const origin = process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
-    const session = await createCheckoutSession({ product, origin });
+
+    for (const product of checkoutProducts) {
+      reservations.push(await reserveCheckoutProduct(product));
+    }
+
+    const session = await createCheckoutSession({ products: checkoutProducts, origin, reservations });
 
     return NextResponse.json({ id: session.id, url: session.url });
   } catch (error) {
+    if (reservations.length > 0) {
+      await releaseReservations(checkoutProducts, reservations);
+    }
+
     console.error("Stripe checkout failed", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unable to start checkout." },

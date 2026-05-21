@@ -75,6 +75,46 @@ For direct Stripe sales, the website can post checkout events back to Card Intak
 ```bash
 CARD_INTAKE_SALES_WEBHOOK_URL=
 CARD_INTAKE_SALES_WEBHOOK_TOKEN=
+CARD_INTAKE_RESERVATION_URL=
+```
+
+Before creating a Stripe Checkout Session, the website reserves the product. If `CARD_INTAKE_RESERVATION_URL` is not set, it posts to:
+
+```text
+${CARD_INTAKE_API_BASE_URL}/api/public/reservations
+```
+
+Reserve payload:
+
+```json
+{
+  "action": "reserve",
+  "productId": "prod-001",
+  "sku": "scan-151-box-001",
+  "slug": "japanese-pokemon-151-booster-box",
+  "reservedUntil": "2026-05-15T12:30:00.000Z"
+}
+```
+
+Expected response:
+
+```json
+{
+  "reservationId": "res_...",
+  "reservedUntil": "2026-05-15T12:30:00.000Z"
+}
+```
+
+Release payload:
+
+```json
+{
+  "action": "release",
+  "productId": "prod-001",
+  "sku": "scan-151-box-001",
+  "slug": "japanese-pokemon-151-booster-box",
+  "reservationId": "res_..."
+}
 ```
 
 Payload shape:
@@ -84,6 +124,8 @@ Payload shape:
   "productId": "prod-001",
   "sku": "scan-151-box-001",
   "slug": "japanese-pokemon-151-booster-box",
+  "reservationId": "res_...",
+  "reservedUntil": "2026-05-15T12:30:00.000Z",
   "soldChannel": "site",
   "status": "paid",
   "stripeSessionId": "cs_test_...",

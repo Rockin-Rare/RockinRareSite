@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/JsonLd";
+import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { ProductImageFrame } from "@/components/inventory/ProductImageFrame";
 import { CheckoutButton } from "@/components/inventory/CheckoutButton";
 import { ProductMetaRow } from "@/components/inventory/ProductMetaRow";
@@ -11,6 +12,7 @@ import { Container } from "@/components/layout/Container";
 import { TrustPromise } from "@/components/marketing/TrustPromise";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { cartItemFromProduct } from "@/lib/cart";
 import { getProductBySlug, getRelatedProducts } from "@/lib/products";
 import { canCheckoutOnSite, getSitePrice } from "@/lib/commerce";
 import { absoluteUrl, contactEmail, siteName } from "@/lib/site";
@@ -78,6 +80,7 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
   const related = await getRelatedProducts(product);
   const sold = product.publicStatus === "sold";
   const canBuyDirect = canCheckoutOnSite(product);
+  const cartItem = canBuyDirect ? cartItemFromProduct(product) : undefined;
   const directPrice = getSitePrice(product);
   const description = publicDescription(product.description);
   const mailSubject = encodeURIComponent(`Question about ${product.name}`);
@@ -186,7 +189,8 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
           </dl>
           {description ? <p className="mt-6 leading-7 text-vault-secondaryText">{description}</p> : null}
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            {canBuyDirect ? <CheckoutButton productId={product.id} /> : null}
+            {cartItem ? <AddToCartButton item={cartItem} /> : null}
+            {canBuyDirect ? <CheckoutButton productIds={[product.id]} /> : null}
             {!canBuyDirect && !sold && product.externalListingUrl ? (
               <Button href={product.externalListingUrl} target="_blank" rel="noreferrer">
                 View on {product.externalListingPlatform ?? "Listing"}

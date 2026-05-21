@@ -46,6 +46,7 @@ STRIPE_TAX_ENABLED=
 DISCORD_SALES_WEBHOOK_URL=
 CARD_INTAKE_SALES_WEBHOOK_URL=
 CARD_INTAKE_SALES_WEBHOOK_TOKEN=
+CARD_INTAKE_RESERVATION_URL=
 ```
 
 The sell/trade, contact, and Collector Club waitlist forms work locally without webhooks, but submissions are only delivered to Discord when `DISCORD_SELL_TRADE_WEBHOOK_URL`, `DISCORD_CONTACT_WEBHOOK_URL`, and `DISCORD_COLLECTOR_CLUB_WAITLIST_WEBHOOK_URL` are set. Supabase values are optional placeholders for future product data work.
@@ -123,6 +124,14 @@ Checkout sessions are created through `POST /api/checkout`. Stripe should send w
 ```
 
 The webhook handles `checkout.session.completed` and `checkout.session.expired`. When `CARD_INTAKE_SALES_WEBHOOK_URL` is configured, completed and expired checkout events are posted to that URL so Card Intake Router can mark the item sold or release future reservations.
+
+Before creating a Stripe Checkout Session, `POST /api/checkout` reserves the item with Card Intake Router. By default it posts to:
+
+```text
+${CARD_INTAKE_API_BASE_URL}/api/public/reservations
+```
+
+Set `CARD_INTAKE_RESERVATION_URL` if the reservation endpoint lives elsewhere. The endpoint should accept `action: "reserve"` and `action: "release"` payloads. Paid and expired Stripe webhooks require `CARD_INTAKE_SALES_WEBHOOK_URL`; failures return a non-2xx response so Stripe retries instead of silently leaving inventory out of sync.
 
 ## Replacing Mock Data With Supabase
 
