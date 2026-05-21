@@ -24,7 +24,7 @@ export function inferPrimaryChannel(product: Product): SalesChannel {
 }
 
 export function getSitePrice(product: Product) {
-  return product.sitePrice ?? product.price;
+  return product.price ?? product.sitePrice;
 }
 
 export function getEbayPrice(product: Product) {

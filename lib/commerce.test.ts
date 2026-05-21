@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canCheckoutOnSite, inferPrimaryChannel, isDirectSiteInventory } from "./commerce";
+import { canCheckoutOnSite, getSitePrice, inferPrimaryChannel, isDirectSiteInventory } from "./commerce";
 import type { Product } from "./types";
 
 function product(overrides: Partial<Product>): Product {
@@ -33,6 +33,12 @@ describe("Card Intake inventory compatibility", () => {
     expect(inferPrimaryChannel(item)).toBe("site");
     expect(isDirectSiteInventory(item)).toBe(true);
     expect(canCheckoutOnSite(item)).toBe(true);
+  });
+
+  it("uses the listing price before market/site price fallbacks", () => {
+    const item = product({ price: 49.99, sitePrice: 51.54 });
+
+    expect(getSitePrice(item)).toBe(49.99);
   });
 
   it("allows direct checkout for multi-channel inventory", () => {
