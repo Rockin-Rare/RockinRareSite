@@ -14,14 +14,15 @@ type CartClientProps = {
 
 export function CartClient({ checkoutStatus, checkoutSessionId }: CartClientProps) {
   const cart = useCart();
+  const { clearCart } = cart;
   const cancelCleanupStarted = useRef(false);
   const [cancelCleanupStatus, setCancelCleanupStatus] = useState<"idle" | "releasing" | "released" | "failed">("idle");
 
   useEffect(() => {
     if (checkoutStatus === "success") {
-      cart.clearCart();
+      clearCart();
     }
-  }, [cart, checkoutStatus]);
+  }, [checkoutStatus, clearCart]);
 
   useEffect(() => {
     if (checkoutStatus !== "cancelled" || !checkoutSessionId || cancelCleanupStarted.current) return;
@@ -44,14 +45,26 @@ export function CartClient({ checkoutStatus, checkoutSessionId }: CartClientProp
       });
   }, [checkoutSessionId, checkoutStatus]);
 
+  if (checkoutStatus === "success") {
+    return (
+      <div className="rounded-2xl border border-vault-border bg-vault-card p-8 shadow-vault">
+        <p className="mb-4 rounded-xl border border-vault-gold/40 bg-vault-gold/10 px-4 py-3 text-sm font-semibold text-vault-highlight">
+          Payment received. We will review the order and prepare your items for shipment.
+        </p>
+        <h1 className="text-3xl font-black text-vault-text">Your cart is empty</h1>
+        <p className="mt-3 max-w-2xl leading-7 text-vault-secondaryText">
+          Add available direct-buy items from inventory, then checkout securely through Stripe.
+        </p>
+        <Button className="mt-6" href="/inventory">
+          Shop Inventory
+        </Button>
+      </div>
+    );
+  }
+
   if (cart.items.length === 0) {
     return (
       <div className="rounded-2xl border border-vault-border bg-vault-card p-8 shadow-vault">
-        {checkoutStatus === "success" ? (
-          <p className="mb-4 rounded-xl border border-vault-gold/40 bg-vault-gold/10 px-4 py-3 text-sm font-semibold text-vault-highlight">
-            Payment received. We will review the order and prepare your items for shipment.
-          </p>
-        ) : null}
         <h1 className="text-3xl font-black text-vault-text">Your cart is empty</h1>
         <p className="mt-3 max-w-2xl leading-7 text-vault-secondaryText">
           Add available direct-buy items from inventory, then checkout securely through Stripe.

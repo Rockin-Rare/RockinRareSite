@@ -1,6 +1,6 @@
-import type { Product } from "@/lib/types";
-import { getProductSku, getSitePrice } from "@/lib/commerce";
-import { getReservationExpiresAt } from "@/lib/checkout-reservations";
+import type { Product } from "./types";
+import { getProductSku, getSitePrice } from "./commerce";
+import { getReservationExpiresAt } from "./checkout-reservations";
 
 type StripeCheckoutSession = {
   id: string;

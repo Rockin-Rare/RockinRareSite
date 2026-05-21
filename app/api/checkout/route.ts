@@ -3,7 +3,7 @@ import { canCheckoutProductForEntitlement } from "@/lib/collector-club/gates";
 import { getCollectorClubEntitlementFromRequest } from "@/lib/collector-club/session";
 import { canCheckoutOnSite } from "@/lib/commerce";
 import { releaseCheckoutReservation, reserveCheckoutProduct } from "@/lib/checkout-reservations";
-import { getProducts } from "@/lib/products";
+import { getLocalCheckoutTestProduct, getProducts } from "@/lib/products";
 import { createCheckoutSession } from "@/lib/stripe-checkout";
 import type { Product } from "@/lib/types";
 
@@ -58,8 +58,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: `Checkout supports up to ${maxCheckoutItems} items at a time.` }, { status: 400 });
   }
 
-  const products = await getProducts();
-  const productsById = new Map(products.map((product) => [product.id, product]));
+  const localProductsById = new Map(
+    productIds
+      .map((productId) => getLocalCheckoutTestProduct(productId))
+      .filter((product): product is Product => Boolean(product))
+      .map((product) => [product.id, product])
+  );
+  const productsById =
+    localProductsById.size === productIds.length
+      ? localProductsById
+      : new Map([...localProductsById, ...(await getProducts()).map((product) => [product.id, product] as const)]);
   const checkoutProducts = productIds.map((productId) => productsById.get(productId)).filter((product): product is Product => Boolean(product));
   const entitlement = await getCollectorClubEntitlementFromRequest(request);
 

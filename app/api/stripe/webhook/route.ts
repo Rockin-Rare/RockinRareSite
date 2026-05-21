@@ -1,7 +1,11 @@
-import { createHmac, timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
 import { notifyCheckoutSale } from "@/lib/sales-notifications";
-import { beginStripeWebhookEvent, completeStripeWebhookEvent, failStripeWebhookEvent } from "@/lib/stripe-webhook-events";
+import { verifyStripeSignature } from "@/lib/stripe-signature";
+import {
+  beginPersistentStripeWebhookEvent,
+  completePersistentStripeWebhookEvent,
+  failPersistentStripeWebhookEvent
+} from "@/lib/stripe-webhook-events";
 
 export const runtime = "nodejs";
 
@@ -33,30 +37,16 @@ type StripeCheckoutSession = {
   };
 };
 
-const toleranceSeconds = 5 * 60;
+function isStripeEvent(value: unknown): value is StripeEvent {
+  if (!value || typeof value !== "object") return false;
 
-function verifyStripeSignature(payload: string, signatureHeader: string | null, secret: string) {
-  if (!signatureHeader) return false;
-
-  const parts = Object.fromEntries(
-    signatureHeader.split(",").map((part) => {
-      const [key, value] = part.split("=");
-      return [key, value];
-    })
+  const event = value as Partial<StripeEvent>;
+  return (
+    typeof event.id === "string" &&
+    event.id.startsWith("evt_") &&
+    typeof event.type === "string" &&
+    Boolean(event.data?.object?.id)
   );
-  const timestamp = parts.t;
-  const signature = parts.v1;
-
-  if (!timestamp || !signature) return false;
-
-  const age = Math.abs(Date.now() / 1000 - Number(timestamp));
-  if (!Number.isFinite(age) || age > toleranceSeconds) return false;
-
-  const expected = createHmac("sha256", secret).update(`${timestamp}.${payload}`).digest("hex");
-  const expectedBuffer = Buffer.from(expected, "hex");
-  const signatureBuffer = Buffer.from(signature, "hex");
-
-  return expectedBuffer.length === signatureBuffer.length && timingSafeEqual(expectedBuffer, signatureBuffer);
 }
 
 function saleFromSession(session: StripeCheckoutSession, status: "paid" | "expired") {
@@ -114,12 +104,16 @@ export async function POST(request: Request) {
   let event: StripeEvent;
 
   try {
-    event = JSON.parse(payload) as StripeEvent;
+    const parsedEvent = JSON.parse(payload) as unknown;
+    if (!isStripeEvent(parsedEvent)) {
+      return NextResponse.json({ error: "Invalid Stripe event payload." }, { status: 400 });
+    }
+    event = parsedEvent;
   } catch {
     return NextResponse.json({ error: "Invalid Stripe event payload." }, { status: 400 });
   }
 
-  const eventState = beginStripeWebhookEvent(event.id);
+  const eventState = await beginPersistentStripeWebhookEvent(event.id, event.type);
   if (eventState === "completed") return NextResponse.json({ received: true, duplicate: true });
   if (eventState === "processing") return NextResponse.json({ error: "Event is already processing." }, { status: 409 });
 
@@ -132,9 +126,9 @@ export async function POST(request: Request) {
       await notifyCheckoutSale(saleFromSession(event.data.object, "expired"));
     }
 
-    completeStripeWebhookEvent(event.id);
+    await completePersistentStripeWebhookEvent(event.id);
   } catch (error) {
-    failStripeWebhookEvent(event.id);
+    await failPersistentStripeWebhookEvent(event.id);
     console.error("Stripe webhook processing failed", error);
     return NextResponse.json({ error: "Webhook processing failed." }, { status: 502 });
   }

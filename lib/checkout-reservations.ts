@@ -1,5 +1,5 @@
-import { getProductSku } from "@/lib/commerce";
-import type { Product } from "@/lib/types";
+import { getProductSku } from "./commerce";
+import type { Product } from "./types";
 
 type ReservationResponse = {
   reservationId?: string;
@@ -19,6 +19,7 @@ type CheckoutReservationReleaseInput = {
 };
 
 const reservationHoldMinutes = 30;
+const localCheckoutTestProductId = "local-checkout-test-product";
 
 function getReservationEndpoint() {
   if (process.env.CARD_INTAKE_RESERVATION_URL) {
@@ -52,6 +53,10 @@ export function getReservationExpiresAt(reservation: CheckoutReservation) {
 }
 
 export async function reserveCheckoutProduct(product: Product): Promise<CheckoutReservation> {
+  if (process.env.NODE_ENV !== "production" && product.id === localCheckoutTestProductId) {
+    return fallbackReservation(product);
+  }
+
   const endpoint = getReservationEndpoint();
 
   if (!endpoint) {
@@ -97,6 +102,10 @@ export async function releaseCheckoutReservation(product: Product, reservation: 
 }
 
 export async function releaseCheckoutReservationByInput(input: CheckoutReservationReleaseInput) {
+  if (process.env.NODE_ENV !== "production" && input.productId === localCheckoutTestProductId) {
+    return;
+  }
+
   const endpoint = getReservationEndpoint();
   if (!endpoint) return;
 

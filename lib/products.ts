@@ -7,19 +7,64 @@ import type { CollectorClubEntitlement } from "@/lib/collector-club/types";
 import type { Product } from "@/lib/types";
 
 const publicStatuses = new Set(["published", "listed_externally", "sold"]);
+const localCheckoutTestProduct: Product = {
+  id: "local-checkout-test-product",
+  slug: "local-checkout-test-product",
+  sku: "LOCAL-CHECKOUT-TEST",
+  name: "Local Checkout Test Listing",
+  category: "sealed",
+  franchise: "Pokemon",
+  setName: "Local QA",
+  language: "English",
+  condition: "Sealed",
+  price: 1,
+  quantity: 1,
+  status: "published",
+  publicStatus: "available",
+  primaryChannel: "site",
+  checkoutEnabled: true,
+  description: "Development-only listing for testing the local cart and Stripe Checkout redirect flow.",
+  conditionNotes: "QA fixture only. Do not use for production inventory.",
+  imageUrls: ["/products/placeholder-card-2.svg"],
+  primaryImageUrl: "/products/placeholder-card-2.svg",
+  actualPhoto: false,
+  conditionReviewed: true,
+  createdAt: "2026-05-21T00:00:00.000Z",
+  updatedAt: "2026-05-21T00:00:00.000Z"
+};
+
+export function isLocalCheckoutTestProductId(productId: string) {
+  return process.env.NODE_ENV !== "production" && productId === localCheckoutTestProduct.id;
+}
+
+export function getLocalCheckoutTestProduct(productId: string) {
+  return isLocalCheckoutTestProductId(productId) ? localCheckoutTestProduct : undefined;
+}
+
+function withLocalCheckoutTestProduct(products: Product[]) {
+  if (process.env.NODE_ENV === "production") return products;
+  if (products.some((product) => product.id === localCheckoutTestProduct.id)) return products;
+
+  return [localCheckoutTestProduct, ...products];
+}
+
+function logCardIntakeInventoryError(action: string, error: unknown) {
+  const message = error instanceof Error ? error.message : "unknown error";
+  console.warn(`${action}; using available fallback inventory. (${message})`);
+}
 
 export async function getProducts(): Promise<Product[]> {
   if (hasCardIntakeApi()) {
     try {
-      return await getCardIntakeProducts();
+      return withLocalCheckoutTestProduct(await getCardIntakeProducts());
     } catch (error) {
-      console.error("Failed to load Card Intake Router inventory", error);
-      return [];
+      logCardIntakeInventoryError("Failed to load Card Intake Router inventory", error);
+      return withLocalCheckoutTestProduct([]);
     }
   }
 
   // Fallback keeps local development and preview builds working without database credentials.
-  return mockProducts;
+  return withLocalCheckoutTestProduct(mockProducts);
 }
 
 export async function getPublishedProducts(): Promise<Product[]> {
@@ -39,12 +84,16 @@ export async function getProductBySlug(slug: string): Promise<Product | undefine
 }
 
 export async function getProductBySlugForEntitlement(slug: string, entitlement: CollectorClubEntitlement): Promise<Product | undefined> {
+  if (isLocalCheckoutTestProductId(slug)) {
+    return canViewProductForEntitlement(entitlement, localCheckoutTestProduct) ? localCheckoutTestProduct : undefined;
+  }
+
   if (hasCardIntakeApi()) {
     try {
       const product = await getCardIntakeProductBySlug(slug);
       return product && canViewProductForEntitlement(entitlement, product) ? product : undefined;
     } catch (error) {
-      console.error("Failed to load Card Intake Router product", error);
+      logCardIntakeInventoryError("Failed to load Card Intake Router product", error);
       return undefined;
     }
   }

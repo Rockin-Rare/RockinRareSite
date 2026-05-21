@@ -35,6 +35,11 @@ function readStoredCart() {
   }
 }
 
+function writeStoredCart(items: CartItem[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(cartStorageKey, JSON.stringify(items));
+}
+
 function isCartItem(value: unknown): value is CartItem {
   const item = value as Partial<CartItem>;
   return (
@@ -58,7 +63,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!hydrated) return;
-    window.localStorage.setItem(cartStorageKey, JSON.stringify(items));
+    writeStoredCart(items);
   }, [hydrated, items]);
 
   const addItem = useCallback((item: CartItem) => {
@@ -70,7 +75,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const clearCart = useCallback(() => {
-    setItems([]);
+    writeStoredCart([]);
+    setItems((current) => (current.length > 0 ? [] : current));
   }, []);
 
   const hasItem = useCallback((productId: string) => items.some((item) => item.id === productId), [items]);
