@@ -37,7 +37,7 @@ export function CheckoutButton({ productId }: CheckoutButtonProps) {
   return (
     <div className="flex flex-col gap-2">
       <Button onClick={startCheckout} disabled={loading}>
-        {loading ? "Opening Checkout..." : "Buy Direct"}
+        {loading ? "Opening Checkout..." : "Buy"}
       </Button>
       {error ? <p className="text-sm font-medium text-red-300">{error}</p> : null}
     </div>
