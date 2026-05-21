@@ -13,7 +13,9 @@ import { TrustPromise } from "@/components/marketing/TrustPromise";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { cartItemFromProduct } from "@/lib/cart";
-import { getProductBySlug, getRelatedProducts } from "@/lib/products";
+import { getCurrentCollectorClubEntitlement } from "@/lib/collector-club/current";
+import { canCheckoutProductForEntitlement } from "@/lib/collector-club/gates";
+import { getProductBySlug, getProductBySlugForEntitlement, getRelatedProductsForEntitlement } from "@/lib/products";
 import { canCheckoutOnSite, getSitePrice } from "@/lib/commerce";
 import { absoluteUrl, contactEmail, siteName } from "@/lib/site";
 import { categoryLabel, formatPrice } from "@/lib/utils";
@@ -71,15 +73,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function ProductDetailPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const checkoutStatus = (await searchParams)?.checkout;
-  const product = await getProductBySlug(slug);
+  const entitlement = await getCurrentCollectorClubEntitlement();
+  const product = await getProductBySlugForEntitlement(slug, entitlement);
 
   if (!product) {
     notFound();
   }
 
-  const related = await getRelatedProducts(product);
+  const related = await getRelatedProductsForEntitlement(product, entitlement);
   const sold = product.publicStatus === "sold";
-  const canBuyDirect = canCheckoutOnSite(product);
+  const canBuyDirect = canCheckoutOnSite(product) && canCheckoutProductForEntitlement(entitlement, product);
   const cartItem = canBuyDirect ? cartItemFromProduct(product) : undefined;
   const directPrice = getSitePrice(product);
   const description = publicDescription(product.description);

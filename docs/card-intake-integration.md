@@ -2,6 +2,8 @@
 
 The website should consume Card Intake Router through its public inventory API instead of connecting directly to Neon or R2.
 
+Collector Club and billing tables can live in the same Neon project, but inventory ownership should remain behind the Card Intake Router API. The website should not directly update product, listing, scan, reservation, or sold-state inventory tables.
+
 ## Website Environment
 
 Set these values in `.env.local` for local development and in Vercel for production:
@@ -54,6 +56,12 @@ checkoutEnabled
 reservedUntil
 soldAt
 soldChannel
+accessTier
+earlyAccessStartsAt
+publicStartsAt
+proOnlyUntil
+dropId
+dropName
 ```
 
 `primaryChannel` should be one of:
@@ -67,6 +75,19 @@ hold
 ```
 
 If these fields are omitted, the website derives defaults from `id`, `scanId`, `price`, category, and external listing fields.
+
+Collector Club gate fields are public-safe controls:
+
+```text
+accessTier # public | collector_club | pro
+earlyAccessStartsAt # ISO timestamp for early access window start
+publicStartsAt # ISO timestamp when public checkout should begin
+proOnlyUntil # ISO timestamp before which checkout requires Pro access
+dropId # optional public drop identifier
+dropName # optional public drop display name
+```
+
+The website treats omitted `accessTier` as `public`. Checkout must still be validated by the website API and reservation endpoint; client-side hiding is not a security boundary.
 
 ## Optional Sales Callback
 

@@ -16,6 +16,8 @@ export type SalesChannel = "site" | "ebay" | "tcgplayer" | "multi" | "hold";
 
 export type SoldChannel = "site" | "ebay" | "tcgplayer" | "in_person" | "other";
 
+export type ProductAccessTier = "public" | "collector_club" | "pro";
+
 export type Product = {
   id: string;
   slug: string;
@@ -45,6 +47,12 @@ export type Product = {
   quantity?: number;
   status: ProductStatus;
   publicStatus: PublicProductStatus;
+  accessTier?: ProductAccessTier;
+  earlyAccessStartsAt?: string;
+  publicStartsAt?: string;
+  proOnlyUntil?: string;
+  dropId?: string;
+  dropName?: string;
   primaryChannel?: SalesChannel;
   checkoutEnabled?: boolean;
   description?: string;

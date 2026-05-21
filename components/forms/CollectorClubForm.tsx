@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 import { FormInput } from "@/components/forms/FormInput";
 import { FormSelect } from "@/components/forms/FormSelect";
 import { FormTextarea } from "@/components/forms/FormTextarea";
@@ -36,6 +37,7 @@ const maxLengths = {
 };
 
 export function CollectorClubForm() {
+  const router = useRouter();
   const [form, setForm] = useState(initialState);
   const [errors, setErrors] = useState<Partial<FormState>>({});
   const [submitError, setSubmitError] = useState("");
@@ -72,7 +74,7 @@ export function CollectorClubForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-      const result = (await response.json().catch(() => ({}))) as { error?: string };
+      const result = (await response.json().catch(() => ({}))) as { error?: string; hasSession?: boolean };
 
       if (!response.ok) {
         throw new Error(result.error || "Signup failed. Please try again.");
@@ -80,6 +82,9 @@ export function CollectorClubForm() {
 
       setSubmitted(true);
       setForm(initialState);
+      if (result.hasSession) {
+        router.push("/collector-club/account");
+      }
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "Signup failed. Please try again.");
     } finally {
@@ -92,7 +97,8 @@ export function CollectorClubForm() {
       <div className="rounded-2xl border border-vault-success/30 bg-vault-success/10 p-6 shadow-vault" role="status">
         <h3 className="text-xl font-black text-vault-text">You&apos;re on the Collector Club list.</h3>
         <p className="mt-2 text-sm leading-6 text-vault-secondaryText">
-          Thanks. We&apos;ll email you with drop alerts, wishlist updates, and Discord launch invites.
+          Thanks. We&apos;ll email you with drop alerts, wishlist updates, Discord invites, and Founding Pro updates if
+          you marked interest.
         </p>
       </div>
     );
@@ -150,9 +156,9 @@ export function CollectorClubForm() {
           type="checkbox"
         />
         <span>
-          <span className="block text-sm font-semibold text-vault-text">I may be interested in Collector Club Pro later.</span>
+          <span className="block text-sm font-semibold text-vault-text">I may be interested in a Founding Pro spot.</span>
           <span className="mt-1 block text-xs leading-5 text-vault-secondaryText">
-            This helps us understand interest in early access, wishlist matching, store credit, and custom bundles.
+            This helps us test early access, priority wishlist matching, deal previews, and custom bundles before a public paid tier.
           </span>
         </span>
       </label>

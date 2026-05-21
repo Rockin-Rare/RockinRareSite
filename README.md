@@ -38,6 +38,8 @@ DISCORD_CONTACT_WEBHOOK_URL=
 DISCORD_COLLECTOR_CLUB_WAITLIST_WEBHOOK_URL=
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
+DATABASE_URL=
+COLLECTOR_CLUB_SESSION_SECRET=
 NEXT_PUBLIC_SITE_URL=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
@@ -49,7 +51,7 @@ CARD_INTAKE_SALES_WEBHOOK_TOKEN=
 CARD_INTAKE_RESERVATION_URL=
 ```
 
-The sell/trade, contact, and Collector Club waitlist forms work locally without webhooks, but submissions are only delivered to Discord when `DISCORD_SELL_TRADE_WEBHOOK_URL`, `DISCORD_CONTACT_WEBHOOK_URL`, and `DISCORD_COLLECTOR_CLUB_WAITLIST_WEBHOOK_URL` are set. Supabase values are optional placeholders for future product data work.
+The sell/trade and contact forms work locally without webhooks, but submissions are only delivered to Discord when `DISCORD_SELL_TRADE_WEBHOOK_URL` and `DISCORD_CONTACT_WEBHOOK_URL` are set. Collector Club signups are saved to Neon when `DATABASE_URL` is set and can also be mirrored to Discord when `DISCORD_COLLECTOR_CLUB_WAITLIST_WEBHOOK_URL` is set. Set `COLLECTOR_CLUB_SESSION_SECRET` to issue signed Collector Club session cookies after signup. Supabase values are legacy placeholders from the original v1 plan.
 
 ## Current V1 Features
 
@@ -95,6 +97,12 @@ checkoutEnabled
 reservedUntil
 soldAt
 soldChannel
+accessTier # public | collector_club | pro
+earlyAccessStartsAt
+publicStartsAt
+proOnlyUntil
+dropId
+dropName
 ```
 
 Required website env vars:
@@ -137,10 +145,9 @@ Set `CARD_INTAKE_RESERVATION_URL` if the reservation endpoint lives elsewhere. T
 
 Use `docs/supabase-schema.sql` as the starting schema. Replace the mock reads in `lib/products.ts` with Supabase queries from `lib/supabase/server.ts`, mapping snake_case database columns back into the `Product` type in `lib/types.ts`.
 
-Future image storage buckets:
+Collector Club and Pro data should use Neon tables in `docs/neon-collector-club-schema.sql`. Card Intake Router remains the owner of inventory visibility, reservations, and sold-state write-backs.
 
-- `product-images`
-- `submission-images`
+See `docs/collector-club-foundation.md` for the current lightweight Collector Club operating model and manual Founding Pro workflow.
 
 The sell/trade form sends submission details and attached photos to Discord. Supported photo types are JPG, PNG, WebP, GIF, HEIC, and HEIF, up to 8 photos, 8 MB each, and 24 MB total. The phone QR opens a photo-only upload page tied to the desktop form session; phone photos are held temporarily in memory until the main form is submitted.
 

@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { canCheckoutProductForEntitlement } from "@/lib/collector-club/gates";
+import { getCollectorClubEntitlementFromRequest } from "@/lib/collector-club/session";
 import { canCheckoutOnSite } from "@/lib/commerce";
 import { releaseCheckoutReservation, reserveCheckoutProduct } from "@/lib/checkout-reservations";
 import { getProducts } from "@/lib/products";
@@ -59,8 +61,12 @@ export async function POST(request: Request) {
   const products = await getProducts();
   const productsById = new Map(products.map((product) => [product.id, product]));
   const checkoutProducts = productIds.map((productId) => productsById.get(productId)).filter((product): product is Product => Boolean(product));
+  const entitlement = await getCollectorClubEntitlementFromRequest(request);
 
-  if (checkoutProducts.length !== productIds.length || checkoutProducts.some((product) => !canCheckoutOnSite(product))) {
+  if (
+    checkoutProducts.length !== productIds.length ||
+    checkoutProducts.some((product) => !canCheckoutOnSite(product) || !canCheckoutProductForEntitlement(entitlement, product))
+  ) {
     return NextResponse.json({ error: "One or more items are not available for direct checkout." }, { status: 409 });
   }
 

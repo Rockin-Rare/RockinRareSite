@@ -1,5 +1,6 @@
--- Draft schema for future Supabase integration.
--- Do not require this for local mock-data v1.
+-- Legacy draft schema from the original Supabase-ready v1 plan.
+-- Current implementation direction is Neon Postgres through Card Intake Router boundaries.
+-- Use docs/neon-collector-club-schema.sql for Collector Club and Pro tables.
 
 create table products (
   id uuid primary key default gen_random_uuid(),

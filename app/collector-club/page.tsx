@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 export const metadata: Metadata = {
   title: "Join the Collector Club",
   description:
-    "Join the free Rockin Rare Collector Club waitlist for drop alerts, wishlist matching, fair pack updates, and Discord launch invites.",
+    "Join the free Rockin Rare Collector Club for drop alerts, wishlist matching, fair pack updates, Discord invites, and Founding Pro interest.",
   alternates: {
     canonical: "/collector-club"
   }
@@ -19,7 +19,7 @@ const benefits = [
   },
   {
     title: "Wishlist Matching",
-    text: "Tell us what you collect so new inventory can be matched to real buyer interest."
+    text: "Tell us what you collect so new inventory can be matched to real buyer interest as the catalog grows."
   },
   {
     title: "Fair Pack Updates",
@@ -31,25 +31,34 @@ const benefits = [
   }
 ];
 
+const proBenefits = [
+  "24-hour early access to selected drops",
+  "Priority wishlist matching when new inventory is scanned",
+  "Pro-only deal previews",
+  "One custom bundle request per month",
+  "Priority collection estimate review"
+];
+
 export default function CollectorClubPage() {
   return (
     <Container>
       <section className="grid gap-8 py-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start lg:py-10">
         <div>
-          <p className="mb-3 text-sm font-semibold uppercase text-vault-gold">Free Collector Club Waitlist</p>
+          <p className="mb-3 text-sm font-semibold uppercase text-vault-gold">Free Collector Club</p>
           <h1 className="text-4xl font-black text-vault-text sm:text-5xl">Join the Rockin Rare Collector Club</h1>
           <p className="mt-5 text-lg leading-8 text-vault-secondaryText">
-            The Collector Club is the free waitlist for drop alerts, wishlist matching, fair pack transparency, and
-            collector-friendly card discussion.
+            The Collector Club is the free home for drop alerts, wishlist matching, fair pack transparency, Discord
+            invites, and collector-friendly card discussion.
           </p>
           <p className="mt-4 text-base leading-7 text-vault-secondaryText">
-            Join now and we&apos;ll email you when invites, new drops, and community updates are ready.
+            Join now and we&apos;ll email you when invites, new drops, and community updates are ready. If you want
+            early-access perks later, mark your interest in Founding Pro.
           </p>
           <div className="mt-8 rounded-2xl border border-vault-border bg-vault-card p-5">
-            <h2 className="text-lg font-black text-vault-text">Collector Club Pro interest</h2>
+            <h2 className="text-lg font-black text-vault-text">Founding Collector Club Pro</h2>
             <p className="mt-3 text-sm leading-6 text-vault-secondaryText">
-              If you&apos;re interested in perks like early drop access, store credit, priority wishlist matching, or custom
-              bundle support, you can let us know in the form.
+              Pro will start as a limited founding test before a public subscription. The first perks should stay practical:
+              early access, priority wishlist matching, deal previews, bundle requests, and collection estimate priority.
             </p>
           </div>
         </div>
@@ -63,6 +72,24 @@ export default function CollectorClubPage() {
               <h2 className="font-black text-vault-text">{benefit.title}</h2>
               <p className="mt-3 text-sm leading-6 text-vault-secondaryText">{benefit.text}</p>
             </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="grid gap-5 py-6 lg:grid-cols-[0.8fr_1.2fr]">
+        <div>
+          <p className="text-sm font-semibold uppercase text-vault-gold">Founding Pro Test</p>
+          <h2 className="mt-3 text-3xl font-black text-vault-text">Start small before opening paid memberships.</h2>
+          <p className="mt-4 text-base leading-7 text-vault-secondaryText">
+            Founding Pro spots will be used to test whether priority access and personalized collecting help are useful
+            before store credit and automated subscriptions are added.
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {proBenefits.map((benefit) => (
+            <div className="rounded-2xl border border-vault-border bg-vault-card p-4" key={benefit}>
+              <p className="text-sm font-bold leading-6 text-vault-text">{benefit}</p>
+            </div>
           ))}
         </div>
       </section>

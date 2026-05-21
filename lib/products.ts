@@ -1,6 +1,9 @@
 import { mockProducts } from "@/lib/mock-products";
 import { getCardIntakeProductBySlug, getCardIntakeProducts, hasCardIntakeApi } from "@/lib/card-intake-api";
 import { compareByFranchisePriority } from "@/lib/catalog-priority";
+import { getAnonymousCollectorClubEntitlement } from "@/lib/collector-club/entitlements";
+import { canViewProductForEntitlement } from "@/lib/collector-club/gates";
+import type { CollectorClubEntitlement } from "@/lib/collector-club/types";
 import type { Product } from "@/lib/types";
 
 const publicStatuses = new Set(["published", "listed_externally", "sold"]);
@@ -20,21 +23,33 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 export async function getPublishedProducts(): Promise<Product[]> {
+  return getPublishedProductsForEntitlement(getAnonymousCollectorClubEntitlement());
+}
+
+export async function getPublishedProductsForEntitlement(entitlement: CollectorClubEntitlement): Promise<Product[]> {
   const products = await getProducts();
-  return products.filter((product) => publicStatuses.has(product.status) && product.status !== "hidden");
+
+  return products
+    .filter((product) => publicStatuses.has(product.status) && product.status !== "hidden")
+    .filter((product) => canViewProductForEntitlement(entitlement, product));
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | undefined> {
+  return getProductBySlugForEntitlement(slug, getAnonymousCollectorClubEntitlement());
+}
+
+export async function getProductBySlugForEntitlement(slug: string, entitlement: CollectorClubEntitlement): Promise<Product | undefined> {
   if (hasCardIntakeApi()) {
     try {
-      return await getCardIntakeProductBySlug(slug);
+      const product = await getCardIntakeProductBySlug(slug);
+      return product && canViewProductForEntitlement(entitlement, product) ? product : undefined;
     } catch (error) {
       console.error("Failed to load Card Intake Router product", error);
       return undefined;
     }
   }
 
-  const products = await getPublishedProducts();
+  const products = await getPublishedProductsForEntitlement(entitlement);
   return products.find((product) => product.slug === slug);
 }
 
@@ -56,7 +71,11 @@ export async function getHeroShowcaseProducts(limit = 3): Promise<Product[]> {
 }
 
 export async function getRelatedProducts(product: Product, limit = 4): Promise<Product[]> {
-  const products = await getPublishedProducts();
+  return getRelatedProductsForEntitlement(product, getAnonymousCollectorClubEntitlement(), limit);
+}
+
+export async function getRelatedProductsForEntitlement(product: Product, entitlement: CollectorClubEntitlement, limit = 4): Promise<Product[]> {
+  const products = await getPublishedProductsForEntitlement(entitlement);
   return products
     .filter((candidate) => candidate.id !== product.id)
     .filter((candidate) => candidate.franchise === product.franchise || candidate.category === product.category)

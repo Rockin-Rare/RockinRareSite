@@ -1,4 +1,10 @@
 import { NextResponse } from "next/server";
+import { saveCollectorClubSignup } from "@/lib/collector-club/members";
+import {
+  collectorClubSessionCookieName,
+  collectorClubSessionCookieOptions,
+  createCollectorClubSessionValue
+} from "@/lib/collector-club/session";
 
 type CollectorClubRequest = {
   name: string;
@@ -127,17 +133,36 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "A valid email is required." }, { status: 400 });
   }
 
+  let sessionValue: string | null = null;
+  let storedInDatabase = false;
+
+  try {
+    const result = await saveCollectorClubSignup({ ...submission, source: "collector-club-page" });
+    storedInDatabase = result.stored;
+    sessionValue = result.stored ? createCollectorClubSessionValue(result.member) : null;
+  } catch (error) {
+    console.error("Collector Club signup storage failed", error);
+    return NextResponse.json({ error: "Unable to save signup." }, { status: 502 });
+  }
+
   const webhookUrl = process.env.DISCORD_COLLECTOR_CLUB_WAITLIST_WEBHOOK_URL;
 
   if (!webhookUrl) {
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         ok: true,
-        storage: "unconfigured",
+        storage: storedInDatabase ? "neon" : "unconfigured",
+        hasSession: Boolean(sessionValue),
         message: "Signup accepted. Configure DISCORD_COLLECTOR_CLUB_WAITLIST_WEBHOOK_URL to send signups to Discord."
       },
       { status: 202 }
     );
+
+    if (sessionValue) {
+      response.cookies.set(collectorClubSessionCookieName, sessionValue, collectorClubSessionCookieOptions());
+    }
+
+    return response;
   }
 
   const content = [
@@ -167,5 +192,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unable to save signup." }, { status: 502 });
   }
 
-  return NextResponse.json({ ok: true }, { status: 201 });
+  const response = NextResponse.json(
+    { ok: true, storage: storedInDatabase ? "neon" : "unconfigured", hasSession: Boolean(sessionValue) },
+    { status: 201 }
+  );
+  if (sessionValue) {
+    response.cookies.set(collectorClubSessionCookieName, sessionValue, collectorClubSessionCookieOptions());
+  }
+
+  return response;
 }

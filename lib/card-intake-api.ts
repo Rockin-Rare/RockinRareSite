@@ -54,6 +54,7 @@ function normalizePublicProduct(product: Product): Product {
     primaryImageUrl,
     sku: product.sku ?? product.scanId ?? product.id,
     sitePrice: product.sitePrice ?? product.price,
+    accessTier: product.accessTier ?? "public",
     checkoutEnabled: product.checkoutEnabled ?? product.publicStatus !== "coming_soon"
   };
 }
