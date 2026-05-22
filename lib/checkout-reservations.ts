@@ -31,7 +31,7 @@ function getReservationEndpoint() {
 }
 
 function authHeaders(): Record<string, string> {
-  const token = process.env.CARD_INTAKE_API_TOKEN ?? process.env.CARD_INTAKE_SALES_WEBHOOK_TOKEN;
+  const token = process.env.CARD_INTAKE_SALES_WEBHOOK_TOKEN ?? process.env.CARD_INTAKE_API_TOKEN;
   return token ? { authorization: `Bearer ${token}` } : {};
 }
 
