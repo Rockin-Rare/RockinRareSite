@@ -31,7 +31,7 @@ function getReservationEndpoint() {
 }
 
 function authHeaders(): Record<string, string> {
-  const token = process.env.CARD_INTAKE_SALES_WEBHOOK_TOKEN ?? process.env.CARD_INTAKE_API_TOKEN;
+  const token = process.env.CARD_INTAKE_API_TOKEN ?? process.env.CARD_INTAKE_SALES_WEBHOOK_TOKEN;
   return token ? { authorization: `Bearer ${token}` } : {};
 }
 
@@ -81,7 +81,7 @@ export async function reserveCheckoutProduct(product: Product): Promise<Checkout
 
   if (!response.ok) {
     const errorText = await response.text().catch(() => "");
-    throw new Error(errorText || `Unable to reserve this item before checkout (${response.status}).`);
+    throw new Error(errorText || `Card Intake reservation failed (${response.status}).`);
   }
 
   const payload = (await response.json().catch(() => ({}))) as ReservationResponse;
@@ -126,6 +126,6 @@ export async function releaseCheckoutReservationByInput(input: CheckoutReservati
 
   if (!response.ok) {
     const errorText = await response.text().catch(() => "");
-    throw new Error(errorText || `Unable to release checkout reservation (${response.status}).`);
+    throw new Error(errorText || `Card Intake reservation release failed (${response.status}).`);
   }
 }
