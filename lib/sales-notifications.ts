@@ -40,6 +40,10 @@ function escapeDiscordMentions(value: string) {
     .replace(/<@&/g, "<@&\u200b");
 }
 
+function omitUndefined<T extends Record<string, unknown>>(payload: T) {
+  return Object.fromEntries(Object.entries(payload).filter(([, value]) => value !== undefined));
+}
+
 export async function notifyCheckoutSale(sale: CheckoutSale) {
   await notifyCardIntake(sale);
   await notifyDiscord(sale).catch((error) => {
@@ -96,21 +100,23 @@ async function notifyCardIntake(sale: CheckoutSale) {
             ? { authorization: `Bearer ${process.env.CARD_INTAKE_SALES_WEBHOOK_TOKEN}` }
             : {})
         },
-        body: JSON.stringify({
-          productId: item.productId,
-          sku: item.sku,
-          slug: item.slug,
-          reservationId: item.reservationId,
-          reservedUntil: sale.reservedUntil,
-          soldChannel: "site",
-          status: sale.status,
-          stripeSessionId: sale.sessionId,
-          stripePaymentIntentId: sale.paymentIntentId,
-          amountTotal: item.amountTotal ?? sale.amountTotal,
-          currency: sale.currency,
-          customerEmail: sale.customerEmail,
-          soldAt: new Date().toISOString()
-        })
+        body: JSON.stringify(
+          omitUndefined({
+            productId: item.productId,
+            sku: item.sku,
+            slug: item.slug,
+            reservationId: item.reservationId,
+            reservedUntil: sale.reservedUntil,
+            soldChannel: "site",
+            status: sale.status,
+            stripeSessionId: sale.sessionId,
+            stripePaymentIntentId: sale.paymentIntentId,
+            amountTotal: item.amountTotal ?? sale.amountTotal,
+            currency: sale.currency,
+            customerEmail: sale.customerEmail,
+            soldAt: new Date().toISOString()
+          })
+        )
       })
     )
   );

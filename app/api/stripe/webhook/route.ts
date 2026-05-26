@@ -19,13 +19,13 @@ type StripeEvent = {
 
 type StripeCheckoutSession = {
   id: string;
-  payment_intent?: string;
+  payment_intent?: string | null;
   amount_total?: number;
   currency?: string;
   customer_details?: {
     email?: string;
-  };
-  customer_email?: string;
+  } | null;
+  customer_email?: string | null;
   metadata?: {
     productId?: string;
     sku?: string;
@@ -81,12 +81,16 @@ function saleFromSession(session: StripeCheckoutSession, status: "paid" | "expir
       amountTotal: Number.isFinite(item.amountTotal) ? item.amountTotal : undefined
     })),
     sessionId: session.id,
-    paymentIntentId: session.payment_intent,
+    paymentIntentId: stringOrUndefined(session.payment_intent),
     amountTotal: session.amount_total,
     currency: session.currency,
-    customerEmail: session.customer_details?.email ?? session.customer_email,
+    customerEmail: stringOrUndefined(session.customer_details?.email ?? session.customer_email),
     status
   };
+}
+
+function stringOrUndefined(value: string | null | undefined) {
+  return typeof value === "string" && value.trim() ? value : undefined;
 }
 
 export async function POST(request: Request) {
