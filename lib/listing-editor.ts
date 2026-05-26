@@ -26,6 +26,8 @@ export type ListingEditField = keyof Pick<
   | "conditionReviewed"
 >;
 
+type ListingEditValue = string | number | boolean | null;
+
 export const productCategoryOptions = ["single", "sealed", "slab", "bundle", "bulk", "accessory"] as const;
 export const languageOptions = ["English", "Spanish", "Japanese", "Korean", "Chinese", "Other"] as const;
 export const conditionOptions = ["Mint", "Near Mint", "Lightly Played", "Moderately Played", "Heavily Played", "Damaged", "Sealed", "Graded", "Unknown"] as const;
@@ -35,7 +37,7 @@ export const publicStatusOptions = ["available", "listed", "sold", "coming_soon"
 export const salesChannelOptions = ["", "site", "ebay", "tcgplayer", "multi", "hold"] as const;
 export const externalListingPlatformOptions = ["", "eBay", "TCGplayer", "Whatnot", "Instagram", "Other"] as const;
 
-const editableFields = new Set<ListingEditField>([
+export const editableFieldNames = [
   "name",
   "category",
   "franchise",
@@ -58,12 +60,17 @@ const editableFields = new Set<ListingEditField>([
   "externalListingPlatform",
   "actualPhoto",
   "conditionReviewed"
-]);
+] as const satisfies readonly ListingEditField[];
+
+const editableFields = new Set<ListingEditField>(editableFieldNames);
+const booleanFields = new Set<ListingEditField>(["checkoutEnabled", "actualPhoto", "conditionReviewed"]);
+const numberFields = new Set<ListingEditField>(["price", "sitePrice", "quantity"]);
+const priceFields = new Set<ListingEditField>(["price", "sitePrice"]);
 
 type ListingUpdatePayload = {
   productId: string;
   slug: string;
-  updates: Partial<Pick<Product, ListingEditField>>;
+  updates: Partial<Record<ListingEditField, ListingEditValue>>;
 };
 
 export function getListingEditUrl(productId: string) {
@@ -80,39 +87,56 @@ export function listingEditorConfigured(productId: string) {
   return Boolean(getListingEditUrl(productId));
 }
 
-export function parseListingUpdates(formData: FormData): Partial<Pick<Product, ListingEditField>> {
-  const updates: Partial<Pick<Product, ListingEditField>> = {};
+export function parseListingUpdates(formData: FormData): Partial<Record<ListingEditField, ListingEditValue>> {
+  const updates: Partial<Record<ListingEditField, ListingEditValue>> = {};
+  const allowPricingUpdate = formData.get("allowPricingUpdate") === "on";
 
   for (const field of editableFields) {
-    if (field === "checkoutEnabled" || field === "actualPhoto" || field === "conditionReviewed") {
+    if (priceFields.has(field) && !allowPricingUpdate) {
+      continue;
+    }
+
+    const previousValue = formData.get(originalFieldName(field));
+    if (previousValue === null && !formData.has(field)) {
+      continue;
+    }
+
+    const nextValue = booleanFields.has(field) ? String(formData.has(field)) : String(formData.get(field) ?? "");
+
+    if (previousValue !== null && normalizeComparableValue(nextValue) === normalizeComparableValue(String(previousValue))) {
+      continue;
+    }
+
+    if (booleanFields.has(field)) {
       updates[field] = formData.has(field);
       continue;
     }
 
-    const rawValue = formData.get(field);
-    if (rawValue === null) continue;
-
-    if (field === "price" || field === "sitePrice") {
-      const value = String(rawValue).trim();
-      if (value) updates[field] = Number(value);
+    const trimmedValue = nextValue.trim();
+    if (numberFields.has(field)) {
+      updates[field] = trimmedValue ? Number(trimmedValue) : null;
       continue;
     }
 
-    if (field === "quantity") {
-      const value = String(rawValue).trim();
-      if (value) updates.quantity = Number.parseInt(value, 10);
-      continue;
-    }
-
-    const value = String(rawValue).trim();
-    if (value) {
-      updates[field] = value as never;
-    } else {
-      updates[field] = undefined as never;
-    }
+    updates[field] = trimmedValue || null;
   }
 
   return updates;
+}
+
+export function originalFieldName(field: ListingEditField) {
+  return `__original_${field}`;
+}
+
+export function originalFieldValue(value: unknown) {
+  if (typeof value === "boolean") return String(value);
+  if (typeof value === "number") return Number.isFinite(value) ? String(value) : "";
+  if (typeof value === "string") return value;
+  return "";
+}
+
+function normalizeComparableValue(value: string) {
+  return value.trim();
 }
 
 export async function updateListing(payload: ListingUpdatePayload) {

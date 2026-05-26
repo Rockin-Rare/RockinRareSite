@@ -5,10 +5,13 @@ import { Button } from "@/components/ui/Button";
 import { hasAdminSession } from "@/lib/admin-session";
 import {
   conditionOptions,
+  editableFieldNames,
   externalListingPlatformOptions,
   gradeCompanyOptions,
   languageOptions,
   listingEditorConfigured,
+  originalFieldName,
+  originalFieldValue,
   parseListingUpdates,
   productCategoryOptions,
   publicStatusOptions,
@@ -104,6 +107,9 @@ export default async function EditListingPage({ params, searchParams }: PageProp
       <form action={saveListing} className="mt-8 grid gap-6 rounded-2xl border border-vault-border bg-vault-card p-6">
         <input name="productId" type="hidden" value={product.id} />
         <input name="slug" type="hidden" value={product.slug} />
+        {editableFieldNames.map((field) => (
+          <input key={field} name={originalFieldName(field)} type="hidden" value={originalFieldValue(product[field])} />
+        ))}
 
         <section className="grid gap-4 md:grid-cols-2">
           <TextField label="Name" name="name" required value={product.name} />
@@ -124,6 +130,10 @@ export default async function EditListingPage({ params, searchParams }: PageProp
         <section className="grid gap-4 md:grid-cols-2">
           <NumberField label="Site Price" min={0} name="price" step="0.01" value={product.price} />
           <NumberField label="Direct Checkout Price" min={0} name="sitePrice" step="0.01" value={product.sitePrice} />
+          <label className="flex min-h-12 items-center gap-3 rounded-xl border border-vault-border bg-vault-secondary px-4 py-3 text-sm font-semibold text-vault-text md:col-span-2">
+            <input className="size-4 accent-vault-gold" name="allowPricingUpdate" type="checkbox" />
+            <span>Update prices on save</span>
+          </label>
           <SelectField label="Internal Status" name="status" options={statusOptions} value={product.status} />
           <SelectField label="Public Status" name="publicStatus" options={publicStatusOptions} value={product.publicStatus} />
           <SelectField label="Primary Channel" name="primaryChannel" options={salesChannelOptions} value={product.primaryChannel} />
