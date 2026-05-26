@@ -49,6 +49,9 @@ DISCORD_SALES_WEBHOOK_URL=
 CARD_INTAKE_SALES_WEBHOOK_URL=
 CARD_INTAKE_SALES_WEBHOOK_TOKEN=
 CARD_INTAKE_RESERVATION_URL=
+ROCKIN_RARE_ADMIN_TOKEN=
+CARD_INTAKE_LISTING_EDIT_URL=
+CARD_INTAKE_LISTING_EDIT_TOKEN=
 ```
 
 The sell/trade and contact forms work locally without webhooks, but submissions are only delivered to Discord when `DISCORD_SELL_TRADE_WEBHOOK_URL` and `DISCORD_CONTACT_WEBHOOK_URL` are set. Collector Club signups are saved to Neon when `DATABASE_URL` is set and can also be mirrored to Discord when `DISCORD_COLLECTOR_CLUB_WAITLIST_WEBHOOK_URL` is set. Set `COLLECTOR_CLUB_SESSION_SECRET` to issue signed Collector Club session cookies after signup. Supabase values are legacy placeholders from the original v1 plan.
@@ -64,7 +67,19 @@ The sell/trade and contact forms work locally without webhooks, but submissions 
 - Typed mock product data that imitates scanner output
 - Supabase schema draft and safe client placeholders
 
-Direct checkout is implemented with Stripe Checkout. User accounts and an admin dashboard are not implemented in v1.
+Direct checkout is implemented with Stripe Checkout. User accounts are not implemented in v1.
+
+## Listing Editor
+
+Set `ROCKIN_RARE_ADMIN_TOKEN` to enable the password-protected listing editor at `/admin`. The editor updates public listing metadata such as language, grade company, grade, condition, pricing, status, description, and condition notes.
+
+Inventory edits are sent back to Card Intake Router instead of writing website tables directly. Set `CARD_INTAKE_LISTING_EDIT_URL` when the write endpoint has a custom URL, or the site defaults to:
+
+```text
+${CARD_INTAKE_API_BASE_URL}/api/admin/inventory/:productId
+```
+
+`CARD_INTAKE_LISTING_EDIT_TOKEN` is used as the bearer token for edits. If it is not set, the site falls back to `CARD_INTAKE_API_TOKEN`.
 
 ## Inventory Data
 

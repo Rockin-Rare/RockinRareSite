@@ -55,7 +55,8 @@ export default async function HomePage() {
               width={128}
             />
             <p className="max-w-md text-sm font-medium leading-6 text-vault-secondaryText">
-              Southern California based, with Pokemon first, then One Piece and Magic above the rest of the catalog.
+              Southern California based, serving collectors with clear listings, careful packaging, and direct support
+              for buying, selling, and trading.
             </p>
           </div>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
