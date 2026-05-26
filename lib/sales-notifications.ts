@@ -1,3 +1,5 @@
+import { releaseCheckoutReservationByInput } from "./checkout-reservations";
+
 type CheckoutSale = {
   productId: string;
   sku: string;
@@ -75,6 +77,11 @@ async function notifyDiscord(sale: CheckoutSale) {
 async function notifyCardIntake(sale: CheckoutSale) {
   const callbackUrl = process.env.CARD_INTAKE_SALES_WEBHOOK_URL;
   if (!callbackUrl) {
+    if (sale.status === "expired") {
+      await releaseExpiredReservations(sale);
+      return;
+    }
+
     throw new Error("Card Intake sales webhook is not configured.");
   }
 
@@ -114,4 +121,21 @@ async function notifyCardIntake(sale: CheckoutSale) {
     const errorText = await response.text().catch(() => "");
     throw new Error(errorText || `Card Intake sales sync failed (${response.status}).`);
   }
+}
+
+async function releaseExpiredReservations(sale: CheckoutSale) {
+  const items = sale.items?.length ? sale.items : [sale];
+
+  await Promise.all(
+    items
+      .filter((item) => item.productId && item.sku && item.slug && item.reservationId)
+      .map((item) =>
+        releaseCheckoutReservationByInput({
+          productId: item.productId,
+          sku: item.sku,
+          slug: item.slug,
+          reservationId: item.reservationId as string
+        })
+      )
+  );
 }

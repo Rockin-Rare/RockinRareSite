@@ -7,6 +7,7 @@ type StripeWebhookEventState = {
 
 const store = globalThis as typeof globalThis & {
   stripeWebhookEventState?: StripeWebhookEventState;
+  stripeWebhookPersistenceDisabled?: boolean;
 };
 
 function getStore() {
@@ -20,6 +21,14 @@ function getStore() {
   return store.stripeWebhookEventState;
 }
 
+function isMissingWebhookEventsTableError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    ("code" in error ? error.code === "42P01" : false)
+  ) || (error instanceof Error && error.message.includes("billing.webhook_events"));
+}
+
 export function beginStripeWebhookEvent(eventId: string) {
   const state = getStore();
 
@@ -31,6 +40,8 @@ export function beginStripeWebhookEvent(eventId: string) {
 }
 
 export async function beginPersistentStripeWebhookEvent(eventId: string, eventType: string) {
+  if (store.stripeWebhookPersistenceDisabled) return beginStripeWebhookEvent(eventId);
+
   const sql = getNeonSql();
   if (!sql) return beginStripeWebhookEvent(eventId);
 
@@ -66,6 +77,12 @@ export async function beginPersistentStripeWebhookEvent(eventId: string, eventTy
     beginStripeWebhookEvent(eventId);
     return "started" as const;
   } catch (error) {
+    if (isMissingWebhookEventsTableError(error)) {
+      store.stripeWebhookPersistenceDisabled = true;
+      console.warn("Stripe webhook persistence table is missing; falling back to process memory.");
+      return beginStripeWebhookEvent(eventId);
+    }
+
     console.error("Stripe webhook event persistence failed; falling back to process memory", error);
     return beginStripeWebhookEvent(eventId);
   }
@@ -78,6 +95,11 @@ export function completeStripeWebhookEvent(eventId: string) {
 }
 
 export async function completePersistentStripeWebhookEvent(eventId: string) {
+  if (store.stripeWebhookPersistenceDisabled) {
+    completeStripeWebhookEvent(eventId);
+    return;
+  }
+
   const sql = getNeonSql();
   completeStripeWebhookEvent(eventId);
 
@@ -90,6 +112,11 @@ export async function completePersistentStripeWebhookEvent(eventId: string) {
       where event_id = ${eventId}
     `;
   } catch (error) {
+    if (isMissingWebhookEventsTableError(error)) {
+      store.stripeWebhookPersistenceDisabled = true;
+      return;
+    }
+
     console.error("Stripe webhook event completion persistence failed", error);
   }
 }
@@ -99,6 +126,11 @@ export function failStripeWebhookEvent(eventId: string) {
 }
 
 export async function failPersistentStripeWebhookEvent(eventId: string) {
+  if (store.stripeWebhookPersistenceDisabled) {
+    failStripeWebhookEvent(eventId);
+    return;
+  }
+
   const sql = getNeonSql();
   failStripeWebhookEvent(eventId);
 
@@ -111,6 +143,11 @@ export async function failPersistentStripeWebhookEvent(eventId: string) {
       where event_id = ${eventId}
     `;
   } catch (error) {
+    if (isMissingWebhookEventsTableError(error)) {
+      store.stripeWebhookPersistenceDisabled = true;
+      return;
+    }
+
     console.error("Stripe webhook event failure persistence failed", error);
   }
 }

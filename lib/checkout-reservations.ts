@@ -11,7 +11,7 @@ type CheckoutReservation = {
   reservedUntil: string;
 };
 
-type CheckoutReservationReleaseInput = {
+export type CheckoutReservationReleaseInput = {
   productId: string;
   sku: string;
   slug: string;
@@ -126,6 +126,8 @@ export async function releaseCheckoutReservationByInput(input: CheckoutReservati
 
   if (!response.ok) {
     const errorText = await response.text().catch(() => "");
+    if (response.status === 404 && errorText.includes("Reservation not found")) return;
+
     throw new Error(errorText || `Card Intake reservation release failed (${response.status}).`);
   }
 }
