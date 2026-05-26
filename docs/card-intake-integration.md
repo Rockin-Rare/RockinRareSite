@@ -11,7 +11,10 @@ Set these values in `.env.local` for local development and in Vercel for product
 ```bash
 CARD_INTAKE_API_BASE_URL=
 CARD_INTAKE_API_TOKEN=
+CARD_INTAKE_ADMIN_BASE_URL=
 ```
+
+`CARD_INTAKE_ADMIN_BASE_URL` is optional. When set, the website admin listing view opens Card Intake Router edit pages instead of editing inventory in the website.
 
 If these are not set, the website falls back to mock inventory.
 

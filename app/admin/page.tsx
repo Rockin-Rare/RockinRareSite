@@ -43,12 +43,12 @@ export default async function AdminLoginPage({ searchParams }: PageProps) {
       <div className="rounded-2xl border border-vault-border bg-vault-card p-6">
         <h1 className="text-2xl font-black text-vault-text">Listing Admin</h1>
         <p className="mt-3 text-sm leading-6 text-vault-secondaryText">
-          Sign in to edit live listing metadata, condition notes, language, grading details, and listing status.
+          Sign in to open storefront listings and jump to their source records in Card Intake Router.
         </p>
 
         {!listingAdminConfigured() ? (
           <div className="mt-5 rounded-xl border border-vault-border bg-vault-secondary px-4 py-3 text-sm text-vault-secondaryText">
-            Set <code>ROCKIN_RARE_ADMIN_TOKEN</code> before using the listing editor.
+            Set <code>ROCKIN_RARE_ADMIN_TOKEN</code> before using the admin listing handoff.
           </div>
         ) : null}
 

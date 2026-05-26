@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { hasAdminSession } from "@/lib/admin-session";
-import { listingEditorConfigured } from "@/lib/listing-editor";
+import { cardIntakeAdminConfigured, getCardIntakeListingEditUrl } from "@/lib/card-intake-admin";
 import { getProducts } from "@/lib/products";
 import { categoryLabel, formatPrice } from "@/lib/utils";
 
@@ -15,6 +15,7 @@ export default async function AdminListingsPage() {
   }
 
   const products = await getProducts();
+  const intakeAdminConfigured = cardIntakeAdminConfigured();
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-10">
@@ -27,6 +28,12 @@ export default async function AdminListingsPage() {
           View Storefront
         </Button>
       </div>
+
+      {!intakeAdminConfigured ? (
+        <div className="mt-6 rounded-xl border border-vault-border bg-vault-secondary px-4 py-3 text-sm text-vault-secondaryText">
+          Set <code>CARD_INTAKE_ADMIN_BASE_URL</code> to open listings in Card Intake Router.
+        </div>
+      ) : null}
 
       <div className="mt-8 overflow-hidden rounded-2xl border border-vault-border bg-vault-card">
         <div className="grid grid-cols-[1fr_auto] gap-4 border-b border-vault-border bg-vault-secondary px-4 py-3 text-sm font-semibold text-vault-secondaryText md:grid-cols-[1.6fr_0.8fr_0.8fr_0.7fr_auto]">
@@ -64,10 +71,12 @@ export default async function AdminListingsPage() {
               </div>
               <div className="hidden font-semibold text-vault-highlight md:block">{formatPrice(product.price)}</div>
               <div className="flex items-center justify-end gap-3">
-                {!listingEditorConfigured(product.id) ? <Badge>Read Only</Badge> : null}
-                <Button href={`/admin/listings/${product.slug}/edit`} variant="secondary">
-                  Edit
-                </Button>
+                {!intakeAdminConfigured ? <Badge>Read Only</Badge> : null}
+                {intakeAdminConfigured ? (
+                  <Button href={getCardIntakeListingEditUrl(product)} rel="noreferrer" target="_blank" variant="secondary">
+                    Edit in Card Intake
+                  </Button>
+                ) : null}
               </div>
             </div>
           ))}
