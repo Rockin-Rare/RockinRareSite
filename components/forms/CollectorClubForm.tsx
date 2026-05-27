@@ -158,7 +158,8 @@ export function CollectorClubForm() {
         <span>
           <span className="block text-sm font-semibold text-vault-text">I may be interested in a Founding Pro spot.</span>
           <span className="mt-1 block text-xs leading-5 text-vault-secondaryText">
-            This helps us test early access, priority wishlist matching, deal previews, and custom bundles before a public paid tier.
+            We&apos;ll contact interested collectors first when early access, priority wishlist matching, deal previews,
+            and custom bundle requests become available.
           </span>
         </span>
       </label>

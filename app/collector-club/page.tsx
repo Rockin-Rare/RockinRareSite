@@ -57,8 +57,8 @@ export default function CollectorClubPage() {
           <div className="mt-8 rounded-2xl border border-vault-border bg-vault-card p-5">
             <h2 className="text-lg font-black text-vault-text">Founding Collector Club Pro</h2>
             <p className="mt-3 text-sm leading-6 text-vault-secondaryText">
-              Pro will start as a limited founding test before a public subscription. The first perks should stay practical:
-              early access, priority wishlist matching, deal previews, bundle requests, and collection estimate priority.
+              Founding Pro interest helps us invite collectors who want early access, priority wishlist matching, deal
+              previews, custom bundle requests, and faster collection estimate reviews.
             </p>
           </div>
         </div>
@@ -78,11 +78,11 @@ export default function CollectorClubPage() {
 
       <section className="grid gap-5 py-6 lg:grid-cols-[0.8fr_1.2fr]">
         <div>
-          <p className="text-sm font-semibold uppercase text-vault-gold">Founding Pro Test</p>
-          <h2 className="mt-3 text-3xl font-black text-vault-text">Start small before opening paid memberships.</h2>
+          <p className="text-sm font-semibold uppercase text-vault-gold">Founding Pro Interest</p>
+          <h2 className="mt-3 text-3xl font-black text-vault-text">Get first notice when early-access spots open.</h2>
           <p className="mt-4 text-base leading-7 text-vault-secondaryText">
-            Founding Pro spots will be used to test whether priority access and personalized collecting help are useful
-            before store credit and automated subscriptions are added.
+            Tell us you&apos;re interested and we&apos;ll reach out when Founding Pro spots are available for collectors who
+            want priority access and more personalized collecting help.
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
