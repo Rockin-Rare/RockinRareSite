@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { InventoryClient } from "@/components/inventory/InventoryClient";
 import { Container } from "@/components/layout/Container";
+import { Button } from "@/components/ui/Button";
 import { getCurrentCollectorClubEntitlement } from "@/lib/collector-club/current";
 import { isCollectorClubPro } from "@/lib/collector-club/entitlements";
 import { getPublishedProductsForEntitlement } from "@/lib/products";
@@ -34,6 +35,16 @@ export default async function InventoryPage() {
           Browse current Pokemon, One Piece, Magic, singles, sealed product, slabs, and collector pieces with real photos
           and clear condition notes. Sold items stay visible to show recent activity.
         </p>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <Button
+            href="https://www.tcgplayer.com/search/all/product?seller=472d0061&view=grid"
+            rel="noreferrer"
+            target="_blank"
+            variant="secondary"
+          >
+            Shop Our TCGplayer Store
+          </Button>
+        </div>
       </div>
       <InventoryClient products={products} />
     </Container>
