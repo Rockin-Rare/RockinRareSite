@@ -20,8 +20,17 @@ const maxLengths = {
   message: 3000
 };
 
-export function ContactForm() {
-  const [form, setForm] = useState(initialState);
+type ContactFormProps = {
+  initialSubject?: string;
+  initialMessage?: string;
+};
+
+export function ContactForm({ initialSubject = "", initialMessage = "" }: ContactFormProps) {
+  const [form, setForm] = useState<FormState>({
+    ...initialState,
+    subject: initialSubject,
+    message: initialMessage
+  });
   const [errors, setErrors] = useState<Partial<FormState>>({});
   const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);

@@ -11,7 +11,22 @@ export const metadata: Metadata = {
   }
 };
 
-export default function ContactPage() {
+type PageProps = {
+  searchParams?: Promise<{
+    subject?: string | string[];
+    message?: string | string[];
+  }>;
+};
+
+function firstParam(value?: string | string[]) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function ContactPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const initialSubject = firstParam(params?.subject) ?? "";
+  const initialMessage = firstParam(params?.message) ?? "";
+
   return (
     <Container className="grid gap-10 py-14 lg:grid-cols-[0.8fr_1.2fr]">
       <div>
@@ -28,7 +43,7 @@ export default function ContactPage() {
           <span>Southern California based</span>
         </div>
       </div>
-      <ContactForm />
+      <ContactForm initialMessage={initialMessage} initialSubject={initialSubject} />
     </Container>
   );
 }

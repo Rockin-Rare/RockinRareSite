@@ -17,7 +17,7 @@ import { getCurrentCollectorClubEntitlement } from "@/lib/collector-club/current
 import { canCheckoutProductForEntitlement } from "@/lib/collector-club/gates";
 import { getProductBySlug, getProductBySlugForEntitlement, getRelatedProductsForEntitlement } from "@/lib/products";
 import { canCheckoutOnSite, getSitePrice } from "@/lib/commerce";
-import { absoluteUrl, contactEmail, siteName } from "@/lib/site";
+import { absoluteUrl, siteName } from "@/lib/site";
 import { categoryLabel, formatPrice } from "@/lib/utils";
 
 type PageProps = {
@@ -86,8 +86,11 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
   const cartItem = canBuyDirect ? cartItemFromProduct(product) : undefined;
   const directPrice = getSitePrice(product);
   const description = publicDescription(product.description);
-  const mailSubject = encodeURIComponent(`Question about ${product.name}`);
   const productUrl = absoluteUrl(`/inventory/${product.slug}`);
+  const contactHref = `/contact?${new URLSearchParams({
+    subject: `Question about ${product.name}`,
+    message: `Hi, I have a question about ${product.name}.\n\nItem: ${productUrl}`
+  }).toString()}`;
   const productImage = product.primaryImageUrl ? absoluteUrl(product.primaryImageUrl) : undefined;
   const productSchema = {
     "@context": "https://schema.org",
@@ -199,7 +202,7 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
                 View on {product.externalListingPlatform ?? "Listing"}
               </Button>
             ) : !canBuyDirect ? (
-              <Button href={`mailto:${contactEmail}?subject=${mailSubject}`}>
+              <Button href={contactHref}>
                 {sold ? "Contact About Similar Items" : "Contact About This Item"}
               </Button>
             ) : null}
