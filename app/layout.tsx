@@ -11,18 +11,19 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   applicationName: siteName,
   title: {
-    default: "Rockin Rare Collectibles | Pokemon, One Piece, Magic & Trading Cards",
+    default: "Rockin Rare Collectibles | Trading Card Games & Collectibles",
     template: `%s | ${siteName}`
   },
   description: defaultDescription,
   keywords: [
     "Pokemon cards",
     "One Piece cards",
+    "Riftbound cards",
     "Magic The Gathering cards",
     "trading cards",
     "graded cards",
-    "sealed Pokemon",
-    "Japanese Pokemon cards",
+    "sealed trading cards",
+    "Japanese trading cards",
     "Southern California collectibles"
   ],
   authors: [{ name: siteName }],
@@ -112,7 +113,7 @@ export default function RootLayout({
     areaServed: "Southern California",
     sameAs: [`https://www.instagram.com/${instagramHandle}/`],
     description: defaultDescription,
-    knowsAbout: ["Pokemon cards", "One Piece cards", "Magic: The Gathering cards", "graded cards", "sealed trading card products"]
+    knowsAbout: ["Pokemon cards", "One Piece cards", "Riftbound cards", "Magic: The Gathering cards", "graded cards", "sealed trading card products"]
   };
 
   const websiteSchema = {

@@ -1,6 +1,6 @@
 import { mockProducts } from "@/lib/mock-products";
 import { getCardIntakeProductBySlug, getCardIntakeProducts, hasCardIntakeApi } from "@/lib/card-intake-api";
-import { compareByFranchisePriority } from "@/lib/catalog-priority";
+import { compareByRecentInventory } from "@/lib/catalog-sort";
 import { getAnonymousCollectorClubEntitlement } from "@/lib/collector-club/entitlements";
 import { canViewProductForEntitlement } from "@/lib/collector-club/gates";
 import type { CollectorClubEntitlement } from "@/lib/collector-club/types";
@@ -106,7 +106,7 @@ export async function getFeaturedProducts(limit = 8): Promise<Product[]> {
   const products = await getPublishedProducts();
   return products
     .filter((product) => product.publicStatus === "available" || product.publicStatus === "listed")
-    .sort(compareByFranchisePriority)
+    .sort(compareByRecentInventory)
     .slice(0, limit);
 }
 

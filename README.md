@@ -1,6 +1,6 @@
 # Rockin Rare Collectibles
 
-V1 legitimacy-first website for Rockin Rare Collectibles, a collector-first trading card business focused first on Pokemon, then One Piece and Magic: The Gathering, followed by Japanese cards, English singles, sealed product, slabs, collector bundles, and collection buying/trading.
+V1 legitimacy-first website for Rockin Rare Collectibles, a collector-first trading card business supporting Pokemon, One Piece, Riftbound, Magic: The Gathering, Japanese cards, English singles, sealed product, slabs, collector bundles, and collection buying/trading.
 
 ## Tech Stack
 

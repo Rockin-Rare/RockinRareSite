@@ -14,15 +14,15 @@ export const metadata: Metadata = {
 const items = [
   {
     question: "Do you buy collections?",
-    answer: "Yes. We review Pokemon first, then One Piece and Magic: The Gathering, plus singles, slabs, sealed product, bulk, and mixed collections. Use the Sell / Trade page to send details and photos."
+    answer: "Yes. We review Pokemon, One Piece, Riftbound, Magic: The Gathering, singles, slabs, sealed product, bulk, and mixed collections. Use the Sell / Trade page to send details and photos."
   },
   {
-    question: "Do you sell One Piece and Magic: The Gathering?",
-    answer: "Yes. Pokemon is still our top focus, with One Piece and Magic: The Gathering prioritized above other secondary categories."
+    question: "Which trading card games do you sell?",
+    answer: "We support Pokemon, One Piece, Riftbound, Magic: The Gathering, and other collector card categories as inventory is available."
   },
   {
     question: "Do you sell Japanese cards?",
-    answer: "Yes. Japanese Pokemon cards and sealed products are a core part of the Rockin Rare inventory."
+    answer: "Yes. Japanese cards and sealed products are part of the Rockin Rare inventory when available."
   },
   {
     question: "Are your cards authentic?",

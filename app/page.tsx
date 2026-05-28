@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Rockin Rare Collectibles | Pokemon, One Piece, Magic & Trading Cards"
+    absolute: "Rockin Rare Collectibles | Trading Card Games & Collectibles"
   },
   description: defaultDescription,
   alternates: {
@@ -24,10 +24,11 @@ export const metadata: Metadata = {
 };
 
 const categories = [
-  { title: "Pokemon", description: "Pokemon singles, Japanese cards, sealed product, slabs, and collector favorites.", href: "/inventory" },
-  { title: "One Piece", description: "One Piece sealed product, singles, and collector-ready inventory as it comes in.", href: "/inventory" },
-  { title: "Magic: The Gathering", description: "Magic sealed product, singles, Commander staples, and collector pieces.", href: "/inventory" },
-  { title: "Sealed, Slabs & Bundles", description: "Booster boxes, packs, graded cards, collector bundles, and curated lots.", href: "/inventory" }
+  { title: "Pokemon", description: "Pokemon singles, sealed product, slabs, and collector favorites.", href: "/inventory?franchise=Pokemon" },
+  { title: "One Piece", description: "One Piece sealed product, singles, and collector-ready inventory as it comes in.", href: "/inventory?franchise=One%20Piece" },
+  { title: "Riftbound", description: "Riftbound cards, sealed product, and collector-ready inventory as the game grows.", href: "/inventory?franchise=Riftbound" },
+  { title: "Magic: The Gathering", description: "Magic sealed product, singles, Commander staples, and collector pieces.", href: "/inventory?franchise=Magic%3A%20The%20Gathering" },
+  { title: "Sealed, Slabs & Bundles", description: "Booster boxes, packs, graded cards, collector bundles, and curated lots.", href: "/inventory?category=sealed-slab-bundle" }
 ];
 
 export default async function HomePage() {
@@ -37,10 +38,10 @@ export default async function HomePage() {
     <Container>
       <section className="grid gap-10 py-10 lg:grid-cols-[1fr_0.9fr] lg:items-start lg:py-14">
         <div>
-          <p className="text-sm font-semibold uppercase text-vault-gold">Pokemon / One Piece / Magic / Japanese / Sealed / Slabs</p>
+          <p className="text-sm font-semibold uppercase text-vault-gold">Pokemon / One Piece / Riftbound / Magic / Sealed / Slabs</p>
           <h1 className="mt-5 text-5xl font-black text-vault-text sm:text-6xl lg:text-7xl">Rockin Rare Collectibles</h1>
           <p className="mt-5 text-xl font-semibold text-vault-secondaryText">
-            Collector-first Pokemon, One Piece, Magic, sealed product, slabs, and rare finds.
+            Collector-first trading card games, sealed product, slabs, and rare finds.
           </p>
           <p className="mt-6 max-w-2xl text-base leading-8 text-vault-secondaryText">
             Buy and sell collectibles with real product photos, transparent condition notes, and secure packaging from
@@ -74,7 +75,7 @@ export default async function HomePage() {
 
       <section className="py-8">
         <SectionHeader title="Collector Categories" description="Browse clean listings, clear condition details, and collector-focused card categories." />
-        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-5">
           {categories.map((category) => (
             <CategoryCard key={category.title} {...category} />
           ))}

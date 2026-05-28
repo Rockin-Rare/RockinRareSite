@@ -25,7 +25,7 @@ const initialState: FormState = {
   phone: "",
   preferredContactMethod: "Email",
   description: "",
-  franchise: "Pokemon",
+  franchise: "Mixed collection",
   approximateQuantity: "",
   conditionEstimate: "",
   message: ""
@@ -148,7 +148,7 @@ export function SellTradeForm() {
         <FormSelect
           label="Franchise/category"
           onChange={(event) => update("franchise", event.target.value)}
-          options={["Pokemon", "One Piece", "Magic: The Gathering", "Yu-Gi-Oh!", "Sports", "Mixed collection", "Other"]}
+          options={["Mixed collection", "Pokemon", "One Piece", "Riftbound", "Magic: The Gathering", "Yu-Gi-Oh!", "Sports", "Other"]}
           value={form.franchise}
         />
         <FormInput

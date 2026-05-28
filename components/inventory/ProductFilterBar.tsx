@@ -1,6 +1,6 @@
 "use client";
 
-import { sortByFranchisePriority } from "@/lib/catalog-priority";
+import { sortFranchisesAlphabetically } from "@/lib/catalog-sort";
 import type { Product } from "@/lib/types";
 
 export type InventoryFilters = {
@@ -13,6 +13,8 @@ export type InventoryFilters = {
   sort: string;
 };
 
+const categoryGroupOption = "sealed-slab-bundle";
+
 export function ProductFilterBar({
   products,
   filters,
@@ -22,8 +24,8 @@ export function ProductFilterBar({
   filters: InventoryFilters;
   onChange: (filters: InventoryFilters) => void;
 }) {
-  const categories = unique(products.map((product) => product.category));
-  const franchises = sortByFranchisePriority(unique(products.map((product) => product.franchise)));
+  const categories = [categoryGroupOption, ...unique(products.map((product) => product.category))];
+  const franchises = sortFranchisesAlphabetically(unique(products.map((product) => product.franchise)));
   const languages = unique(products.map((product) => product.language).filter(Boolean) as string[]);
   const conditions = unique(products.map((product) => product.condition).filter(Boolean) as string[]);
 
@@ -42,7 +44,7 @@ export function ProductFilterBar({
           value={filters.search}
         />
       </label>
-      <Select label="Category" value={filters.category} onChange={(value) => update("category", value)} options={categories} />
+      <Select label="Category" value={filters.category} onChange={(value) => update("category", value)} options={categories} getOptionLabel={categoryOptionLabel} />
       <Select label="Franchise" value={filters.franchise} onChange={(value) => update("franchise", value)} options={franchises} />
       <Select label="Language" value={filters.language} onChange={(value) => update("language", value)} options={languages} />
       <Select label="Condition" value={filters.condition} onChange={(value) => update("condition", value)} options={conditions} />
@@ -68,13 +70,15 @@ function Select({
   value,
   options,
   onChange,
-  includeAll = true
+  includeAll = true,
+  getOptionLabel
 }: {
   label: string;
   value: string;
   options: string[];
   onChange: (value: string) => void;
   includeAll?: boolean;
+  getOptionLabel?: (value: string) => string;
 }) {
   return (
     <label className="grid gap-2">
@@ -87,7 +91,7 @@ function Select({
         {includeAll ? <option value="">All</option> : null}
         {options.map((option) => (
           <option key={option} value={option}>
-            {option}
+            {getOptionLabel ? getOptionLabel(option) : option}
           </option>
         ))}
       </select>
@@ -97,4 +101,18 @@ function Select({
 
 function unique(values: string[]) {
   return Array.from(new Set(values)).sort();
+}
+
+function categoryOptionLabel(value: string) {
+  const labels: Record<string, string> = {
+    "sealed-slab-bundle": "Sealed, Slabs & Bundles",
+    single: "Singles",
+    sealed: "Sealed",
+    slab: "Slabs",
+    bundle: "Bundles",
+    bulk: "Bulk",
+    accessory: "Accessories"
+  };
+
+  return labels[value] ?? value;
 }

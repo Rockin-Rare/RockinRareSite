@@ -118,7 +118,7 @@ export async function POST(request: Request) {
   const submission: CollectorClubRequest = {
     name: cleanString(body.name, maxLengths.name),
     email: cleanString(body.email, maxLengths.email),
-    collectingFocus: cleanString(body.collectingFocus, maxLengths.collectingFocus) || "Pokemon",
+    collectingFocus: cleanString(body.collectingFocus, maxLengths.collectingFocus) || "Mixed collection",
     favoriteSets: cleanString(body.favoriteSets, maxLengths.favoriteSets),
     wishlist: cleanString(body.wishlist, maxLengths.wishlist),
     discordUsername: cleanString(body.discordUsername, maxLengths.discordUsername),

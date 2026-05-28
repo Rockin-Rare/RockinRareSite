@@ -7,7 +7,7 @@ const heroCards = [
   {
     label: "Featured Card",
     title: "Vault Spotlight",
-    meta: "Rotating Pokemon, One Piece, Magic, slabs, and favorites",
+    meta: "Rotating trading card games, slabs, and favorites",
     tone: "from-[#f2c76e] via-[#b8572f] to-[#16191f]"
   },
   {

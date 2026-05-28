@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/layout/BrandLogo";
 import { Container } from "@/components/layout/Container";
-import { contactEmail } from "@/lib/site";
+import { contactEmail, instagramHandle } from "@/lib/site";
 
 export function Footer() {
   const year = new Date().getFullYear();
@@ -12,8 +12,8 @@ export function Footer() {
         <div>
           <BrandLogo compact mark="gem" />
           <p className="mt-4 max-w-md text-sm leading-6 text-vault-secondaryText">
-            Collector-first Pokemon, One Piece, Magic, sealed product, slabs, and rare finds with real photos, clear
-            condition notes, and secure packaging. Southern California based.
+            Collector-first trading card games, sealed product, slabs, and rare finds with real photos, clear condition
+            notes, and secure packaging. Southern California based.
           </p>
         </div>
         <div>
@@ -31,8 +31,22 @@ export function Footer() {
           <h3 className="text-sm font-bold text-vault-text">Shop & Contact</h3>
           <div className="mt-4 grid gap-3 text-sm text-vault-secondaryText">
             <span>{contactEmail}</span>
-            <span>Instagram: @rockinrarecollectibles</span>
-            <span>eBay / TCGplayer / Whatnot listings coming online</span>
+            <a
+              className="transition hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-vault-highlight"
+              href={`https://www.instagram.com/${instagramHandle}/`}
+              rel="noreferrer"
+              target="_blank"
+            >
+              Instagram: @{instagramHandle}
+            </a>
+            <a
+              className="transition hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-vault-highlight"
+              href="https://www.tcgplayer.com/search/all/product?seller=472d0061&view=grid"
+              rel="noreferrer"
+              target="_blank"
+            >
+              Shop our TCGplayer store
+            </a>
           </div>
         </div>
       </Container>

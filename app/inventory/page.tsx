@@ -32,8 +32,9 @@ export default async function InventoryPage() {
           </p>
         ) : null}
         <p className="mt-4 text-base leading-7 text-vault-secondaryText">
-          Browse current Pokemon, One Piece, Magic, singles, sealed product, slabs, and collector pieces with real photos
-          and clear condition notes. Sold items stay visible to show recent activity.
+          Browse current trading card games, including Pokemon, One Piece, Riftbound, Magic, singles, sealed product,
+          slabs, and collector pieces with real photos and clear condition notes. Sold items stay visible to show recent
+          activity.
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
           <Button

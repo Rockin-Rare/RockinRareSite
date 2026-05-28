@@ -5,7 +5,7 @@ export const shortSiteName = "Rockin Rare";
 export const siteUrl = normalizeSiteUrl(process.env.NEXT_PUBLIC_SITE_URL || "https://rockinrarecollectibles.com");
 
 export const defaultDescription =
-  "Collector-first Pokemon, One Piece, Magic: The Gathering, sealed product, slabs, singles, and rare finds with real product photos and transparent condition notes.";
+  "Collector-first trading card games, including Pokemon, One Piece, Riftbound, Magic: The Gathering, sealed product, slabs, singles, and rare finds with real product photos and transparent condition notes.";
 
 export const contactEmail = "rockinrare@gmail.com";
 

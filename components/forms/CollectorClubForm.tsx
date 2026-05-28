@@ -20,7 +20,7 @@ type FormState = {
 const initialState: FormState = {
   name: "",
   email: "",
-  collectingFocus: "Pokemon",
+  collectingFocus: "Mixed collection",
   favoriteSets: "",
   wishlist: "",
   discordUsername: "",
@@ -123,7 +123,7 @@ export function CollectorClubForm() {
         <FormSelect
           label="Main collecting focus"
           onChange={(event) => update("collectingFocus", event.target.value)}
-          options={["Pokemon", "One Piece", "Magic: The Gathering", "Japanese cards", "English singles", "Sealed product", "Slabs", "Mixed collection", "Other"]}
+          options={["Mixed collection", "Pokemon", "One Piece", "Riftbound", "Magic: The Gathering", "Japanese cards", "English singles", "Sealed product", "Slabs", "Other"]}
           value={form.collectingFocus}
         />
         <FormInput

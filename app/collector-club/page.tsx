@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 const benefits = [
   {
     title: "Drop Alerts",
-    text: "Get notified when new Pokemon, One Piece, Magic, singles, sealed product, slabs, and themed drops are ready."
+    text: "Get notified when new Pokemon, One Piece, Riftbound, Magic, singles, sealed product, slabs, and themed drops are ready."
   },
   {
     title: "Wishlist Matching",
@@ -100,8 +100,8 @@ export default function CollectorClubPage() {
             <p className="text-sm font-semibold uppercase text-vault-gold">Have cards to sell?</p>
             <h2 className="mt-3 text-3xl font-black text-vault-text">Collector interest helps shape upcoming drops.</h2>
             <p className="mt-4 max-w-2xl text-base leading-7 text-vault-secondaryText">
-              If you have Pokemon, One Piece, Magic, singles, slabs, sealed product, or a collection, send the details
-              for review.
+              If you have Pokemon, One Piece, Riftbound, Magic, singles, slabs, sealed product, or a collection, send
+              the details for review.
             </p>
           </div>
           <Button href="/sell-trade" variant="secondary">
