@@ -1,4 +1,4 @@
-import type { Product } from "@/lib/types";
+import type { Product } from "./types";
 
 type PublicInventoryResponse = {
   products?: Product[];
@@ -44,12 +44,13 @@ export async function getCardIntakeProductBySlug(slug: string): Promise<Product 
   return payload.product ? normalizePublicProduct(payload.product) : undefined;
 }
 
-function normalizePublicProduct(product: Product): Product {
+export function normalizePublicProduct(product: Product): Product {
   const imageUrls = product.imageUrls ?? [];
   const primaryImageUrl = product.primaryImageUrl || imageUrls[0] || "";
 
   return {
     ...product,
+    status: normalizePublicProductStatus(product),
     imageUrls,
     primaryImageUrl,
     sku: product.sku ?? product.scanId ?? product.id,
@@ -57,6 +58,11 @@ function normalizePublicProduct(product: Product): Product {
     accessTier: product.accessTier ?? "public",
     checkoutEnabled: product.checkoutEnabled ?? product.publicStatus !== "coming_soon"
   };
+}
+
+function normalizePublicProductStatus(product: Product): Product["status"] {
+  if (product.publicStatus === "listed" || String(product.status) === "LISTED") return "listed";
+  return product.status;
 }
 
 function authHeaders() {
