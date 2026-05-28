@@ -4,6 +4,7 @@ export type ProductStatus =
   | "needs_review"
   | "ready_to_list"
   | "published"
+  | "listed"
   | "listed_externally"
   | "sold"
   | "hidden";

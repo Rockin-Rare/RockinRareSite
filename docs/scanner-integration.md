@@ -6,6 +6,6 @@ The v1 site uses typed mock inventory through `lib/products.ts`. The intended pr
 2. Raw records are normalized by `lib/scanner-adapter.ts`.
 3. Normalized products are stored in the inventory database with `status = "needs_review"` by default.
 4. An admin review step verifies name, category, condition, price, images, and listing destination.
-5. Only reviewed records with `status = "published"` or `status = "listed_externally"` appear in public inventory.
+5. Only reviewed records with `status = "listed"` appear in public inventory.
 
 Scanner records should never auto-publish unless a trusted review process explicitly marks the item reviewed and published.

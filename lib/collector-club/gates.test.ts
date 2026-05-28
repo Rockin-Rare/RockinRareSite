@@ -13,7 +13,7 @@ function product(overrides: Partial<Product> = {}): Product {
     franchise: "Pokemon",
     price: 10,
     quantity: 1,
-    status: "published",
+    status: "listed",
     publicStatus: "available",
     imageUrls: [],
     primaryImageUrl: "",

@@ -20,7 +20,7 @@ export type RawScannerProduct = {
 export function normalizeScannerProduct(raw: RawScannerProduct): Product {
   const reviewed = Boolean(raw.reviewed);
   const published = Boolean(raw.publishToSite && reviewed);
-  const status: ProductStatus = published ? "published" : "needs_review";
+  const status: ProductStatus = published ? "listed" : "needs_review";
   const publicStatus: PublicProductStatus = published ? "available" : "coming_soon";
   const createdAt = raw.createdAt ?? new Date().toISOString();
   const imageUrls = raw.imageUrls ?? [];

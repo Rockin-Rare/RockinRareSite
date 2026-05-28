@@ -14,7 +14,7 @@ function product(overrides: Partial<Product>): Product {
     price: 10,
     sitePrice: 10,
     quantity: 1,
-    status: "published",
+    status: "listed",
     publicStatus: "available",
     imageUrls: [],
     primaryImageUrl: "",

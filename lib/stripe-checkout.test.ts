@@ -12,7 +12,7 @@ const product: Product = {
   condition: "Sealed",
   price: 189.99,
   quantity: 1,
-  status: "published",
+  status: "listed",
   publicStatus: "available",
   imageUrls: ["/products/test.svg"],
   primaryImageUrl: "/products/test.svg",

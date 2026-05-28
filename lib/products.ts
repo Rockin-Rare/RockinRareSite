@@ -3,10 +3,10 @@ import { getCardIntakeProductBySlug, getCardIntakeProducts, hasCardIntakeApi } f
 import { compareByRecentInventory } from "@/lib/catalog-sort";
 import { getAnonymousCollectorClubEntitlement } from "@/lib/collector-club/entitlements";
 import { canViewProductForEntitlement } from "@/lib/collector-club/gates";
+import { isPublicInventoryProduct } from "@/lib/product-visibility";
 import type { CollectorClubEntitlement } from "@/lib/collector-club/types";
 import type { Product } from "@/lib/types";
 
-const publicStatuses = new Set(["published", "listed_externally", "sold"]);
 const localCheckoutTestProduct: Product = {
   id: "local-checkout-test-product",
   slug: "local-checkout-test-product",
@@ -19,7 +19,7 @@ const localCheckoutTestProduct: Product = {
   condition: "Sealed",
   price: 1,
   quantity: 1,
-  status: "published",
+  status: "listed",
   publicStatus: "available",
   primaryChannel: "site",
   checkoutEnabled: true,
@@ -75,7 +75,7 @@ export async function getPublishedProductsForEntitlement(entitlement: CollectorC
   const products = await getProducts();
 
   return products
-    .filter((product) => publicStatuses.has(product.status) && product.status !== "hidden")
+    .filter(isPublicInventoryProduct)
     .filter((product) => canViewProductForEntitlement(entitlement, product));
 }
 
@@ -91,7 +91,7 @@ export async function getProductBySlugForEntitlement(slug: string, entitlement: 
   if (hasCardIntakeApi()) {
     try {
       const product = await getCardIntakeProductBySlug(slug);
-      return product && canViewProductForEntitlement(entitlement, product) ? product : undefined;
+      return product && isPublicInventoryProduct(product) && canViewProductForEntitlement(entitlement, product) ? product : undefined;
     } catch (error) {
       logCardIntakeInventoryError("Failed to load Card Intake Router product", error);
       return undefined;
