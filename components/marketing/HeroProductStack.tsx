@@ -5,19 +5,19 @@ import { categoryLabel, formatPrice } from "@/lib/utils";
 
 const heroCards = [
   {
-    label: "Featured Card",
+    label: "Showcase",
     title: "Vault Spotlight",
     meta: "Rotating trading card games, slabs, and favorites",
     tone: "from-[#f2c76e] via-[#b8572f] to-[#16191f]"
   },
   {
-    label: "Fresh Pick",
+    label: "Showcase",
     title: "New Arrival",
     meta: "Recently reviewed cards and display pieces",
     tone: "from-[#5fd0ff] via-[#276b9f] to-[#111318]"
   },
   {
-    label: "Collector Ready",
+    label: "Showcase",
     title: "Clean Listing",
     meta: "Clear photos and condition notes",
     tone: "from-[#f4f1ea] via-[#7d8594] to-[#101216]"
@@ -48,11 +48,11 @@ export function HeroProductStack({ products }: { products: Product[] }) {
     <div className="vault-panel relative mx-auto grid w-full max-w-[520px] gap-4 overflow-hidden rounded-2xl p-5 lg:mt-4">
       <div className="grid gap-4 sm:grid-cols-[1.12fr_0.88fr] sm:items-start">
         <div className="grid gap-4 self-center">
-          <ProductShowpiece product={first} label="Top Value" featured />
+          <ProductShowpiece product={first} label="Vault Showcase" featured />
         </div>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-1">
-          {second ? <ProductShowpiece product={second} label="Collector Pick" compact /> : <VaultShowpiece card={fallbackSecond} compact />}
-          {third ? <ProductShowpiece product={third} label="Fresh Pick" compact /> : <VaultShowpiece card={fallbackThird} compact />}
+          {second ? <ProductShowpiece product={second} label="Featured Listing" compact /> : <VaultShowpiece card={fallbackSecond} compact />}
+          {third ? <ProductShowpiece product={third} label="Featured Listing" compact /> : <VaultShowpiece card={fallbackThird} compact />}
         </div>
       </div>
     </div>
