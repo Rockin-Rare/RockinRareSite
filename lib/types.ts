@@ -77,11 +77,13 @@ export type SellTradeSubmission = {
   email: string;
   phone?: string;
   preferredContactMethod: "Email" | "Phone" | "Instagram";
+  offerPreference?: "Cash payout" | "Trade credit" | "Decide after final review";
   description: string;
   franchise?: string;
   approximateQuantity?: string;
   conditionEstimate?: string;
   imageUrls?: string[];
+  quoteId?: string;
   quoteSummary?: string;
   message?: string;
   createdAt: string;

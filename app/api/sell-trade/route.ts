@@ -10,14 +10,17 @@ type ParsedRequest = {
 };
 
 const contactMethods = new Set(["Email", "Phone", "Instagram"]);
+const offerPreferences = new Set(["Cash payout", "Trade credit", "Decide after final review"]);
 const maxLengths = {
   name: 120,
   email: 254,
   phone: 40,
+  offerPreference: 40,
   description: 3000,
   franchise: 80,
   approximateQuantity: 120,
   conditionEstimate: 120,
+  quoteId: 120,
   quoteSummary: 1000,
   imageUrl: 160
 };
@@ -195,6 +198,7 @@ export async function POST(request: Request) {
   }
 
   const contactMethod = cleanString(fields.preferredContactMethod, 20);
+  const offerPreference = cleanString(fields.offerPreference, maxLengths.offerPreference);
   const submission: SellTradeRequest = {
     name: cleanString(fields.name, maxLengths.name),
     email: cleanString(fields.email, maxLengths.email),
@@ -202,11 +206,15 @@ export async function POST(request: Request) {
     preferredContactMethod: contactMethods.has(contactMethod)
       ? (contactMethod as SellTradeRequest["preferredContactMethod"])
       : "Email",
+    offerPreference: offerPreferences.has(offerPreference)
+      ? (offerPreference as NonNullable<SellTradeRequest["offerPreference"]>)
+      : "Decide after final review",
     description: cleanString(fields.description, maxLengths.description),
     franchise: cleanString(fields.franchise, maxLengths.franchise),
     approximateQuantity: cleanString(fields.approximateQuantity, maxLengths.approximateQuantity),
     conditionEstimate: cleanString(fields.conditionEstimate, maxLengths.conditionEstimate),
     imageUrls: files.length > 0 ? files.map((file) => file.name.slice(0, maxLengths.imageUrl)) : cleanStringArray(fields.imageUrls),
+    quoteId: cleanString(fields.quoteId, maxLengths.quoteId),
     quoteSummary: cleanString(fields.quoteSummary, maxLengths.quoteSummary)
   };
 
@@ -241,9 +249,11 @@ export async function POST(request: Request) {
     formatField("Email", submission.email),
     formatField("Phone", submission.phone),
     formatField("Preferred contact", submission.preferredContactMethod),
+    formatField("Preferred offer type", submission.offerPreference),
     formatField("Franchise/category", submission.franchise),
     formatField("Approx. quantity", submission.approximateQuantity),
     formatField("Condition estimate", submission.conditionEstimate),
+    formatField("Quote ID", submission.quoteId),
     submission.quoteSummary ? `**Instant quote shown:**\n${escapeDiscordMentions(submission.quoteSummary)}` : "",
     formatField("Photo file names", submission.imageUrls),
     "",

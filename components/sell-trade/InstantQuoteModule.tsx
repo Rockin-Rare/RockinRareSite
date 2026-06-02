@@ -272,7 +272,7 @@ export function InstantQuoteModule({
   }
 
   return (
-    <section className="grid content-start gap-4 rounded-2xl border border-vault-border bg-vault-card p-5 shadow-vault">
+    <section className="grid min-w-0 content-start gap-4 rounded-2xl border border-vault-border bg-vault-card p-5 shadow-vault">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold uppercase text-vault-gold">Step 1</p>
@@ -282,7 +282,7 @@ export function InstantQuoteModule({
           {selectedPhotoCount}/{sellTradeMaxPhotos} front photos
         </span>
       </div>
-      <p className="border-l-2 border-vault-gold/50 pl-3 text-sm leading-6 text-vault-secondaryText">
+      <p className="min-w-0 break-words border-l-2 border-vault-gold/50 pl-3 text-sm leading-6 text-vault-secondaryText">
         Instant quotes are for raw singles only. Slabs, sealed product, bulk, binders, and full collections can be uploaded with your details in Step 2.
       </p>
       <input name="photoSession" type="hidden" value={photoSession} />
@@ -302,8 +302,8 @@ export function InstantQuoteModule({
         ))}
       </div>
 
-      <div className={`grid gap-4 ${quote ? "lg:grid-cols-[1fr_0.8fr]" : ""}`}>
-        <div className="grid gap-3">
+      <div className={`grid min-w-0 gap-4 ${quote ? "lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)]" : ""}`}>
+        <div className="grid min-w-0 gap-3">
           {mode === "camera" ? (
             <>
               <div className={`${cameraActive ? "aspect-[4/3]" : "min-h-[220px]"} overflow-hidden rounded-xl border border-vault-border bg-vault-card`}>
@@ -488,6 +488,13 @@ export function InstantQuoteModule({
               </div>
             ) : null}
             {quote.source === "site-estimate" ? <p className="text-xs leading-5 text-vault-muted">Preliminary site estimate until the scan is confirmed.</p> : null}
+            <a
+              className="mt-1 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-vault-gold px-4 py-3 text-sm font-semibold text-[#111318] shadow-vault transition hover:-translate-y-0.5 hover:bg-vault-highlight"
+              href="#sell-trade-details"
+            >
+              Continue with this quote
+            </a>
+            <p className="text-xs leading-5 text-vault-muted">You can choose cash payout, trade credit, or decide after final review in Step 2.</p>
           </div>
         ) : null}
       </div>

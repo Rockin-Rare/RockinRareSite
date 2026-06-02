@@ -13,6 +13,7 @@ type FormState = {
   email: string;
   phone: string;
   preferredContactMethod: "Email" | "Phone" | "Instagram";
+  offerPreference: "Cash payout" | "Trade credit" | "Decide after final review";
   description: string;
   franchise: string;
   approximateQuantity: string;
@@ -24,6 +25,7 @@ const initialState: FormState = {
   email: "",
   phone: "",
   preferredContactMethod: "Email",
+  offerPreference: "Decide after final review",
   description: "",
   franchise: "Mixed collection",
   approximateQuantity: "",
@@ -93,10 +95,12 @@ export function SellTradeForm({ quoteState = emptyQuoteState }: { quoteState?: I
     payload.append("email", form.email);
     payload.append("phone", form.phone);
     payload.append("preferredContactMethod", form.preferredContactMethod);
+    payload.append("offerPreference", form.offerPreference);
     payload.append("description", form.description);
     payload.append("franchise", form.franchise);
     payload.append("approximateQuantity", form.approximateQuantity);
     payload.append("conditionEstimate", form.conditionEstimate);
+    payload.append("quoteId", quoteState.quote?.id ?? "");
     payload.append("quoteSummary", formatQuoteSummary(quoteState.quote));
     payload.append("company", String(currentFormData.get("company") ?? ""));
     payload.append("photoSession", detailPhonePhotoCount > 0 ? detailPhotoSession : quoteState.photoSession || String(currentFormData.get("photoSession") ?? ""));
@@ -129,16 +133,25 @@ export function SellTradeForm({ quoteState = emptyQuoteState }: { quoteState?: I
   }
 
   if (submitted) {
+    const hasQuote = Boolean(quoteState.quote);
     return (
       <div className="rounded-2xl border border-vault-success/30 bg-vault-success/10 p-6 shadow-vault" role="status">
-        <h3 className="text-xl font-black text-vault-text">Thanks - your collection details were submitted.</h3>
-        <p className="mt-2 text-sm text-vault-secondaryText">We&apos;ll review and reach out with next steps.</p>
+        <p className="text-sm font-semibold uppercase text-vault-gold">Submission received</p>
+        <h3 className="mt-2 text-xl font-black text-vault-text">{hasQuote ? "Your quote was sent with your details." : "Your collection details were submitted."}</h3>
+        <div className="mt-4 grid gap-3 text-sm leading-6 text-vault-secondaryText">
+          <p>We&apos;ll review the submission and reply with the best next step: mail-in instructions, a prepaid label when appropriate, or a Southern California drop-off option for larger collections.</p>
+          <ol className="grid gap-2 pl-5 [list-style:decimal]">
+            <li>Send or drop off the cards after we confirm the shipping plan.</li>
+            <li>We inspect identity, condition, demand, and current pricing after the cards arrive.</li>
+            <li>You approve the final offer before we issue cash payout or store credit.</li>
+          </ol>
+        </div>
       </div>
     );
   }
 
   return (
-    <form className="grid content-start gap-4 rounded-2xl border border-vault-border bg-vault-card p-5 shadow-vault" onSubmit={handleSubmit} noValidate>
+    <form className="grid min-w-0 content-start gap-4 rounded-2xl border border-vault-border bg-vault-card p-5 shadow-vault" id="sell-trade-details" onSubmit={handleSubmit} noValidate>
       <input aria-hidden="true" autoComplete="off" className="hidden" name="company" tabIndex={-1} type="text" />
       <div>
         <p className="text-sm font-semibold uppercase text-vault-gold">Step 2</p>
@@ -170,6 +183,30 @@ export function SellTradeForm({ quoteState = emptyQuoteState }: { quoteState?: I
           value={form.preferredContactMethod}
         />
       </div>
+      <fieldset className="grid gap-2">
+        <legend className="text-sm font-bold text-vault-text">Preferred offer type</legend>
+        <div className="grid min-w-0 gap-2 md:grid-cols-3">
+          {(["Cash payout", "Trade credit", "Decide after final review"] as const).map((option) => (
+            <label
+              className={`grid min-w-0 cursor-pointer gap-1 rounded-xl border px-3 py-3 text-sm transition ${
+                form.offerPreference === option ? "border-vault-gold bg-vault-gold/10 text-vault-text" : "border-vault-border bg-vault-card text-vault-secondaryText hover:border-vault-gold"
+              }`}
+              key={option}
+            >
+              <span className="break-words font-semibold">{option}</span>
+              <input
+                checked={form.offerPreference === option}
+                className="sr-only"
+                name="offerPreference"
+                onChange={() => update("offerPreference", option)}
+                type="radio"
+                value={option}
+              />
+            </label>
+          ))}
+        </div>
+        <p className="text-xs leading-5 text-vault-muted">Final cash payout or store credit is issued after we receive the cards, verify them, and you approve the final offer.</p>
+      </fieldset>
       <FormTextarea
         error={errors.description}
         label="What are you selling/trading?"
