@@ -88,11 +88,26 @@ export type SellTradeSubmission = {
 };
 
 export type SellTradeQuoteDetectedCard = {
+  cardReferenceId?: string;
   name: string;
   franchise?: string;
+  setName?: string;
+  cardNumber?: string;
   condition?: string;
   marketPriceCents?: number;
   confidence?: number;
+  catalogCandidates?: SellTradeQuoteCatalogCandidate[];
+};
+
+export type SellTradeQuoteCatalogCandidate = {
+  id: string;
+  name: string;
+  franchise?: string;
+  setName?: string;
+  cardNumber?: string;
+  variant?: string;
+  score?: number;
+  imageUrl?: string;
 };
 
 export type SellTradeQuote = {

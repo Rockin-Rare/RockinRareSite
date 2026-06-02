@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { compressImageFile, compressImageFiles } from "@/lib/browser-image-compression";
 import { createId } from "@/lib/id";
 import { sellTradeMaxPhotoSizeMb, sellTradeMaxPhotos } from "@/lib/sell-trade-upload-limits";
-import type { SellTradeQuote } from "@/lib/types";
+import type { SellTradeQuote, SellTradeQuoteCatalogCandidate } from "@/lib/types";
 
 export type InstantQuoteModuleState = {
   files: File[];
@@ -63,6 +63,12 @@ export function InstantQuoteModule({
   const [uploadUrl, setUploadUrl] = useState("");
   const [quote, setQuote] = useState<SellTradeQuote | null>(null);
   const [quoteError, setQuoteError] = useState("");
+  const [editingMatchIndex, setEditingMatchIndex] = useState<number | null>(null);
+  const [matchSearchQuery, setMatchSearchQuery] = useState("");
+  const [matchSearchResults, setMatchSearchResults] = useState<SellTradeQuoteCatalogCandidate[]>([]);
+  const [matchCorrectionError, setMatchCorrectionError] = useState("");
+  const [isSearchingMatches, setIsSearchingMatches] = useState(false);
+  const [isCorrectingMatch, setIsCorrectingMatch] = useState(false);
   const [isPreparingPhotos, setIsPreparingPhotos] = useState(false);
   const [isQuoting, setIsQuoting] = useState(false);
   const selectedPhotoCount = files.length + phonePhotos.length;
@@ -200,11 +206,69 @@ export function InstantQuoteModule({
       }
 
       setQuote(result.quote);
+      setEditingMatchIndex(null);
+      setMatchSearchQuery("");
+      setMatchSearchResults([]);
+      setMatchCorrectionError("");
     } catch (error) {
       setQuoteError(error instanceof Error ? error.message : "Unable to generate a quote.");
     } finally {
       setIsQuoting(false);
     }
+  }
+
+  async function searchCatalogMatches() {
+    setMatchCorrectionError("");
+    const query = matchSearchQuery.trim();
+    if (query.length < 2) {
+      setMatchSearchResults([]);
+      return;
+    }
+
+    setIsSearchingMatches(true);
+    try {
+      const response = await fetch(`/api/sell-trade/catalog?q=${encodeURIComponent(query)}&productType=TCG`);
+      const result = (await response.json().catch(() => ({}))) as { cards?: SellTradeQuoteCatalogCandidate[]; error?: string };
+      if (!response.ok) throw new Error(result.error || "Unable to search catalog.");
+      setMatchSearchResults(result.cards ?? []);
+    } catch (error) {
+      setMatchCorrectionError(error instanceof Error ? error.message : "Unable to search catalog.");
+    } finally {
+      setIsSearchingMatches(false);
+    }
+  }
+
+  async function applyCatalogMatch(index: number, candidate: SellTradeQuoteCatalogCandidate) {
+    if (!quote) return;
+
+    setMatchCorrectionError("");
+    setIsCorrectingMatch(true);
+
+    try {
+      const cardReferenceIds = quote.detectedCards
+        .map((card, cardIndex) => (cardIndex === index ? candidate.id : card.cardReferenceId))
+        .filter((id): id is string => Boolean(id));
+      const response = await fetch("/api/sell-trade/quote/corrections", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cardReferenceIds, conditionEstimate })
+      });
+      const result = (await response.json().catch(() => ({}))) as { quote?: SellTradeQuote; error?: string };
+      if (!response.ok || !result.quote) throw new Error(result.error || "Unable to update quote.");
+
+      setQuote(result.quote);
+      setEditingMatchIndex(null);
+      setMatchSearchQuery("");
+      setMatchSearchResults([]);
+    } catch (error) {
+      setMatchCorrectionError(error instanceof Error ? error.message : "Unable to update quote.");
+    } finally {
+      setIsCorrectingMatch(false);
+    }
+  }
+
+  function candidateMeta(candidate: Pick<SellTradeQuoteCatalogCandidate, "franchise" | "setName" | "cardNumber" | "variant">) {
+    return [candidate.franchise, candidate.setName, candidate.cardNumber ? `#${candidate.cardNumber}` : "", candidate.variant].filter(Boolean).join(" / ");
   }
 
   return (
@@ -359,10 +423,65 @@ export function InstantQuoteModule({
                 <ul className="grid gap-2">
                   {quote.detectedCards.map((card, index) => (
                     <li className="grid gap-1 rounded-lg border border-vault-border bg-vault-secondary px-3 py-2 text-xs" key={`${card.name}-${index}`}>
-                      <span className="font-semibold text-vault-text">{card.name}</span>
+                      <div className="flex items-start justify-between gap-3">
+                        <span className="font-semibold text-vault-text">{card.name}</span>
+                        {card.catalogCandidates && card.catalogCandidates.length > 0 ? (
+                          <button
+                            className="shrink-0 font-semibold text-vault-gold hover:text-vault-highlight"
+                            onClick={() => {
+                              setEditingMatchIndex(editingMatchIndex === index ? null : index);
+                              setMatchSearchQuery(card.name);
+                              setMatchSearchResults(card.catalogCandidates ?? []);
+                              setMatchCorrectionError("");
+                            }}
+                            type="button"
+                          >
+                            Change
+                          </button>
+                        ) : null}
+                      </div>
                       <span className="text-vault-muted">
-                        {[card.franchise, card.condition, typeof card.confidence === "number" ? `${Math.round(card.confidence * 100)}% match` : ""].filter(Boolean).join(" / ")}
+                        {[card.franchise, card.setName, card.cardNumber ? `#${card.cardNumber}` : "", card.condition, typeof card.confidence === "number" ? `${Math.round(card.confidence * 100)}% match` : ""].filter(Boolean).join(" / ")}
                       </span>
+                      {editingMatchIndex === index ? (
+                        <div className="mt-2 grid gap-2 border-t border-vault-border pt-2">
+                          <div className="flex gap-2">
+                            <input
+                              className="min-h-10 min-w-0 flex-1 rounded-lg border border-vault-border bg-vault-card px-3 py-2 text-xs text-vault-text outline-none placeholder:text-vault-muted focus:border-vault-gold"
+                              onChange={(event) => setMatchSearchQuery(event.target.value)}
+                              onKeyDown={(event) => {
+                                if (event.key === "Enter") {
+                                  event.preventDefault();
+                                  void searchCatalogMatches();
+                                }
+                              }}
+                              placeholder="Search catalog"
+                              value={matchSearchQuery}
+                            />
+                            <button className="rounded-lg border border-vault-border px-3 py-2 font-semibold text-vault-text hover:border-vault-gold" disabled={isSearchingMatches} onClick={() => void searchCatalogMatches()} type="button">
+                              {isSearchingMatches ? "..." : "Search"}
+                            </button>
+                          </div>
+                          {matchCorrectionError ? <p className="text-vault-error">{matchCorrectionError}</p> : null}
+                          {matchSearchResults.length > 0 ? (
+                            <ul className="grid gap-1">
+                              {matchSearchResults.map((candidate) => (
+                                <li key={candidate.id}>
+                                  <button
+                                    className="grid w-full gap-1 rounded-lg border border-vault-border bg-vault-card px-3 py-2 text-left hover:border-vault-gold"
+                                    disabled={isCorrectingMatch}
+                                    onClick={() => void applyCatalogMatch(index, candidate)}
+                                    type="button"
+                                  >
+                                    <span className="font-semibold text-vault-text">{candidate.name}</span>
+                                    {candidateMeta(candidate) ? <span className="text-vault-muted">{candidateMeta(candidate)}</span> : null}
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : null}
+                        </div>
+                      ) : null}
                     </li>
                   ))}
                 </ul>

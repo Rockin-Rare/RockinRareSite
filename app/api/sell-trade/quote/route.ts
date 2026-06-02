@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createId } from "@/lib/id";
 import { sellTradeAllowedImageTypes, sellTradeMaxPhotoSizeBytes, sellTradeMaxPhotoSizeMb, sellTradeMaxPhotos, sellTradeMaxTotalPhotoSizeBytes, sellTradeMaxTotalPhotoSizeMb } from "@/lib/sell-trade-upload-limits";
 import { getPhotoSession } from "@/lib/sell-trade-photo-sessions";
-import type { SellTradeQuote, SellTradeQuoteDetectedCard } from "@/lib/types";
+import type { SellTradeQuote, SellTradeQuoteCatalogCandidate, SellTradeQuoteDetectedCard } from "@/lib/types";
 
 function cleanString(value: FormDataEntryValue | null, maxLength: number) {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
@@ -71,12 +71,35 @@ function normalizeDetectedCards(value: unknown): SellTradeQuoteDetectedCard[] {
     .slice(0, 12)
     .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object" && !Array.isArray(item))
     .map((item) => ({
+      cardReferenceId: typeof item.cardReferenceId === "string" ? item.cardReferenceId.trim().slice(0, 120) : undefined,
       name: typeof item.name === "string" && item.name.trim() ? item.name.trim().slice(0, 120) : "Detected card",
       franchise: typeof item.franchise === "string" ? item.franchise.trim().slice(0, 80) : undefined,
+      setName: typeof item.setName === "string" ? item.setName.trim().slice(0, 120) : undefined,
+      cardNumber: typeof item.cardNumber === "string" ? item.cardNumber.trim().slice(0, 80) : undefined,
       condition: typeof item.condition === "string" ? item.condition.trim().slice(0, 80) : undefined,
       marketPriceCents: toCents(item.marketPriceCents ?? item.marketPrice),
-      confidence: typeof item.confidence === "number" ? Math.max(0, Math.min(1, item.confidence)) : undefined
+      confidence: typeof item.confidence === "number" ? Math.max(0, Math.min(1, item.confidence)) : undefined,
+      catalogCandidates: normalizeCatalogCandidates(item.catalogCandidates)
     }));
+}
+
+function normalizeCatalogCandidates(value: unknown): SellTradeQuoteCatalogCandidate[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .slice(0, 8)
+    .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object" && !Array.isArray(item))
+    .map((item) => ({
+      id: typeof item.id === "string" ? item.id.trim().slice(0, 120) : "",
+      name: typeof item.name === "string" && item.name.trim() ? item.name.trim().slice(0, 120) : "Catalog card",
+      franchise: typeof item.franchise === "string" ? item.franchise.trim().slice(0, 80) : undefined,
+      setName: typeof item.setName === "string" ? item.setName.trim().slice(0, 120) : undefined,
+      cardNumber: typeof item.cardNumber === "string" ? item.cardNumber.trim().slice(0, 80) : undefined,
+      variant: typeof item.variant === "string" ? item.variant.trim().slice(0, 120) : undefined,
+      score: typeof item.score === "number" ? Math.max(0, Math.min(1, item.score)) : undefined,
+      imageUrl: typeof item.imageUrl === "string" ? item.imageUrl.trim().slice(0, 500) : undefined
+    }))
+    .filter((item) => item.id);
 }
 
 function normalizeRouterQuote(value: unknown): SellTradeQuote | null {
