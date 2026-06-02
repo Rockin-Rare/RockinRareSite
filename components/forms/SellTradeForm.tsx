@@ -198,7 +198,7 @@ export function SellTradeForm({ quoteDescriptionFill, quoteState = emptyQuoteSta
         />
       </div>
       <fieldset className="grid gap-3">
-        <legend className="text-sm font-bold text-vault-text">Preferred offer type</legend>
+        <legend className="mb-2 text-sm font-bold text-vault-text">Preferred offer type</legend>
         <div className="grid min-w-0 gap-2 md:grid-cols-3">
           {(["Cash payout", "Trade credit", "Decide after final review"] as const).map((option) => (
             <label
