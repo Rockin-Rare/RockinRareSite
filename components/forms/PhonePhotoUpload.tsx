@@ -140,7 +140,7 @@ export function PhonePhotoUpload({ sessionId }: { sessionId: string }) {
           </p>
         ) : null}
 
-        <Button disabled={isPreparingPhotos || isUploading} type="submit">
+        <Button disabled={files.length === 0 || isPreparingPhotos || isUploading} type="submit">
           {isPreparingPhotos ? "Preparing Photos..." : isUploading ? "Uploading..." : "Add Photos"}
         </Button>
       </form>
