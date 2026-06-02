@@ -20,6 +20,7 @@ type InstantQuoteModuleProps = {
   conditionEstimate?: string;
   description?: string;
   onChange?: (state: InstantQuoteModuleState) => void;
+  onContinueWithQuote?: (quote: SellTradeQuote) => void;
 };
 
 type PhonePhoto = {
@@ -50,7 +51,8 @@ export function InstantQuoteModule({
   approximateQuantity = "",
   conditionEstimate = "",
   description = "",
-  onChange
+  onChange,
+  onContinueWithQuote
 }: InstantQuoteModuleProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -271,6 +273,18 @@ export function InstantQuoteModule({
     return [candidate.franchise, candidate.setName, candidate.cardNumber ? `#${candidate.cardNumber}` : "", candidate.variant].filter(Boolean).join(" / ");
   }
 
+  function continueWithQuote() {
+    if (quote) onContinueWithQuote?.(quote);
+
+    const detailsForm = document.getElementById("sell-trade-details");
+    detailsForm?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    window.setTimeout(() => {
+      const firstField = detailsForm?.querySelector<HTMLTextAreaElement>("#sell-trade-description");
+      firstField?.focus({ preventScroll: true });
+    }, 350);
+  }
+
   return (
     <section className="grid min-w-0 content-start gap-4 rounded-2xl border border-vault-border bg-vault-card p-5 shadow-vault">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -350,13 +364,13 @@ export function InstantQuoteModule({
           ) : null}
 
           {mode === "phone" ? (
-            <div className="grid justify-items-center gap-4 rounded-xl border border-vault-border bg-vault-card p-5 text-center 2xl:grid-cols-[auto_minmax(0,1fr)] 2xl:items-center 2xl:justify-items-start 2xl:text-left">
+            <div className="grid min-w-0 justify-items-center gap-4 rounded-xl border border-vault-border bg-vault-card p-5 text-center">
               {uploadUrl ? (
                 <img alt="Sell trade upload QR code" className="h-[168px] w-[168px] rounded-lg bg-white p-2 sm:h-[180px] sm:w-[180px]" height={180} src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=12&data=${encodeURIComponent(uploadUrl)}`} width={180} />
               ) : (
                 <div className="h-[168px] w-[168px] rounded-lg bg-vault-elevated sm:h-[180px] sm:w-[180px]" />
               )}
-              <div className="min-w-0 max-w-sm">
+              <div className="min-w-0 max-w-[22rem]">
                 <p className="text-sm font-semibold text-vault-text">Scan to add front photos from your phone</p>
                 <p className="mt-2 text-sm leading-6 text-vault-secondaryText">The QR opens a photo-only upload page. Photos added there will appear here automatically.</p>
               </div>
@@ -394,12 +408,13 @@ export function InstantQuoteModule({
 
           <div className="flex flex-wrap items-center gap-3 border-t border-vault-border pt-3">
             <Button
-              className="w-full disabled:border-vault-border disabled:bg-vault-secondary/70 disabled:text-vault-muted disabled:shadow-none"
+              className={`${quote ? "w-fit" : "w-full"} disabled:border-vault-border disabled:bg-vault-secondary/70 disabled:text-vault-muted disabled:shadow-none`}
               disabled={isPreparingPhotos || isQuoting || selectedPhotoCount === 0}
               onClick={requestQuote}
               type="button"
+              variant={quote ? "secondary" : "primary"}
             >
-              {isPreparingPhotos ? "Preparing Photos..." : isQuoting ? "Scanning..." : "Get Instant Quote"}
+              {isPreparingPhotos ? "Preparing Photos..." : isQuoting ? "Scanning..." : quote ? "Refresh quote" : "Get Instant Quote"}
             </Button>
             {quoteError ? <p className="text-sm text-vault-error">{quoteError}</p> : null}
           </div>
@@ -488,13 +503,14 @@ export function InstantQuoteModule({
               </div>
             ) : null}
             {quote.source === "site-estimate" ? <p className="text-xs leading-5 text-vault-muted">Preliminary site estimate until the scan is confirmed.</p> : null}
-            <a
-              className="mt-1 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-vault-gold px-4 py-3 text-sm font-semibold text-[#111318] shadow-vault transition hover:-translate-y-0.5 hover:bg-vault-highlight"
-              href="#sell-trade-details"
+            <button
+              className="mt-1 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-vault-gold px-4 py-3 text-sm font-semibold text-[#111318] shadow-vault transition hover:-translate-y-0.5 hover:bg-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-highlight"
+              onClick={continueWithQuote}
+              type="button"
             >
               Continue with this quote
-            </a>
-            <p className="text-xs leading-5 text-vault-muted">You can choose cash payout, trade credit, or decide after final review in Step 2.</p>
+            </button>
+            <p className="text-xs leading-5 text-vault-muted">Moves you to Step 2, where you can choose cash payout, trade credit, or decide after final review.</p>
           </div>
         ) : null}
       </div>

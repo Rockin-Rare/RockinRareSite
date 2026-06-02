@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { FileUploadPlaceholder } from "@/components/forms/FileUploadPlaceholder";
 import { FormInput } from "@/components/forms/FormInput";
 import { FormSelect } from "@/components/forms/FormSelect";
@@ -48,7 +48,15 @@ const emptyQuoteState: InstantQuoteModuleState = {
   selectedPhotoCount: 0
 };
 
-export function SellTradeForm({ quoteState = emptyQuoteState }: { quoteState?: InstantQuoteModuleState }) {
+type SellTradeFormProps = {
+  quoteDescriptionFill?: {
+    text: string;
+    requestId: number;
+  };
+  quoteState?: InstantQuoteModuleState;
+};
+
+export function SellTradeForm({ quoteDescriptionFill, quoteState = emptyQuoteState }: SellTradeFormProps) {
   const [form, setForm] = useState(initialState);
   const [errors, setErrors] = useState<Partial<FormState>>({});
   const [submitError, setSubmitError] = useState("");
@@ -61,6 +69,12 @@ export function SellTradeForm({ quoteState = emptyQuoteState }: { quoteState?: I
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
   }
+
+  useEffect(() => {
+    if (!quoteDescriptionFill?.text || quoteDescriptionFill.requestId <= 0) return;
+
+    setForm((current) => ({ ...current, description: quoteDescriptionFill.text }));
+  }, [quoteDescriptionFill]);
 
   function formatQuoteSummary(currentQuote: InstantQuoteModuleState["quote"]) {
     if (!currentQuote) return "";
@@ -183,7 +197,7 @@ export function SellTradeForm({ quoteState = emptyQuoteState }: { quoteState?: I
           value={form.preferredContactMethod}
         />
       </div>
-      <fieldset className="grid gap-2">
+      <fieldset className="grid gap-3">
         <legend className="text-sm font-bold text-vault-text">Preferred offer type</legend>
         <div className="grid min-w-0 gap-2 md:grid-cols-3">
           {(["Cash payout", "Trade credit", "Decide after final review"] as const).map((option) => (
@@ -209,6 +223,7 @@ export function SellTradeForm({ quoteState = emptyQuoteState }: { quoteState?: I
       </fieldset>
       <FormTextarea
         error={errors.description}
+        id="sell-trade-description"
         label="What are you selling/trading?"
         maxLength={maxLengths.description}
         onChange={(event) => update("description", event.target.value)}
