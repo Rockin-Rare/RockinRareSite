@@ -286,13 +286,13 @@ export function InstantQuoteModule({
           ) : null}
 
           {mode === "phone" ? (
-            <div className="grid gap-4 rounded-xl border border-vault-border bg-vault-card p-5 sm:grid-cols-[auto_1fr] sm:items-center">
+            <div className="grid justify-items-center gap-4 rounded-xl border border-vault-border bg-vault-card p-5 text-center 2xl:grid-cols-[auto_minmax(0,1fr)] 2xl:items-center 2xl:justify-items-start 2xl:text-left">
               {uploadUrl ? (
-                <img alt="Sell trade upload QR code" className="h-[180px] w-[180px] rounded-lg bg-white p-2" height={180} src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=12&data=${encodeURIComponent(uploadUrl)}`} width={180} />
+                <img alt="Sell trade upload QR code" className="h-[168px] w-[168px] rounded-lg bg-white p-2 sm:h-[180px] sm:w-[180px]" height={180} src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=12&data=${encodeURIComponent(uploadUrl)}`} width={180} />
               ) : (
-                <div className="h-[180px] w-[180px] rounded-lg bg-vault-elevated" />
+                <div className="h-[168px] w-[168px] rounded-lg bg-vault-elevated sm:h-[180px] sm:w-[180px]" />
               )}
-              <div>
+              <div className="min-w-0 max-w-sm">
                 <p className="text-sm font-semibold text-vault-text">Scan to add front photos from your phone</p>
                 <p className="mt-2 text-sm leading-6 text-vault-secondaryText">The QR opens a photo-only upload page. Photos added there will appear here automatically.</p>
               </div>
@@ -344,28 +344,22 @@ export function InstantQuoteModule({
         {quote ? (
           <div className="grid content-start gap-3 rounded-xl border border-vault-border bg-vault-card p-4" role="status">
             <div className="grid grid-cols-2 gap-2">
-              <div className="rounded-xl border border-vault-border bg-vault-secondary p-3">
-                <p className="text-xs font-semibold uppercase text-vault-muted">Cash offer</p>
-                <p className="mt-1 text-xl font-black text-vault-text">{formatCurrency(quote.cashOfferCents)}</p>
+              <div className="grid content-start rounded-xl border border-vault-border bg-vault-secondary p-3">
+                <p className="min-h-8 text-xs font-semibold uppercase leading-4 text-vault-muted">Cash offer</p>
+                <p className="text-xl font-black text-vault-text">{formatCurrency(quote.cashOfferCents)}</p>
               </div>
-              <div className="rounded-xl border border-vault-border bg-vault-secondary p-3">
-                <p className="text-xs font-semibold uppercase text-vault-muted">Trade credit</p>
-                <p className="mt-1 text-xl font-black text-vault-text">{formatCurrency(quote.tradeCreditCents)}</p>
+              <div className="grid content-start rounded-xl border border-vault-border bg-vault-secondary p-3">
+                <p className="min-h-8 text-xs font-semibold uppercase leading-4 text-vault-muted">Trade credit</p>
+                <p className="text-xl font-black text-vault-text">{formatCurrency(quote.tradeCreditCents)}</p>
               </div>
             </div>
-            <p className="text-sm leading-6 text-vault-secondaryText">
-              Expected range: {formatCurrency(quote.rangeLowCents)} - {formatCurrency(quote.rangeHighCents)}. Confidence: {quote.confidence}.
-            </p>
             {quote.detectedCards.length > 0 ? (
               <div className="grid gap-2 border-t border-vault-border pt-3">
                 <p className="text-xs font-semibold uppercase text-vault-gold">Matched cards</p>
                 <ul className="grid gap-2">
                   {quote.detectedCards.map((card, index) => (
                     <li className="grid gap-1 rounded-lg border border-vault-border bg-vault-secondary px-3 py-2 text-xs" key={`${card.name}-${index}`}>
-                      <div className="flex items-start justify-between gap-3">
-                        <span className="font-semibold text-vault-text">{card.name}</span>
-                        {card.marketPriceCents ? <span className="shrink-0 text-vault-muted">{formatCurrency(card.marketPriceCents)}</span> : null}
-                      </div>
+                      <span className="font-semibold text-vault-text">{card.name}</span>
                       <span className="text-vault-muted">
                         {[card.franchise, card.condition, typeof card.confidence === "number" ? `${Math.round(card.confidence * 100)}% match` : ""].filter(Boolean).join(" / ")}
                       </span>
@@ -374,9 +368,7 @@ export function InstantQuoteModule({
                 </ul>
               </div>
             ) : null}
-            <p className="text-xs leading-5 text-vault-muted">
-              {quote.source === "card-intake" ? "Powered by Card Intake Router." : "Preliminary site estimate until Card Intake Router confirms the scan."}
-            </p>
+            {quote.source === "site-estimate" ? <p className="text-xs leading-5 text-vault-muted">Preliminary site estimate until the scan is confirmed.</p> : null}
           </div>
         ) : null}
       </div>

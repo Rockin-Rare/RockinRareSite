@@ -25,10 +25,23 @@ export function PhonePhotoUpload({ sessionId }: { sessionId: string }) {
 
   async function handleFilesSelected(selectedFiles: FileList | null) {
     setError("");
+    const incomingFiles = Array.from(selectedFiles ?? []);
+    if (incomingFiles.length === 0) return;
+
     setIsPreparingPhotos(true);
 
     try {
-      setFiles(await compressImageFiles(Array.from(selectedFiles ?? []).slice(0, sellTradeMaxPhotos)));
+      const compressedFiles = await compressImageFiles(incomingFiles);
+      setFiles((currentFiles) => {
+        const remainingSlots = Math.max(0, sellTradeMaxPhotos - currentFiles.length);
+        const nextFiles = [...currentFiles, ...compressedFiles.slice(0, remainingSlots)];
+
+        if (compressedFiles.length > remainingSlots) {
+          setError(`You can add up to ${sellTradeMaxPhotos} photos before uploading.`);
+        }
+
+        return nextFiles;
+      });
     } finally {
       setIsPreparingPhotos(false);
     }
@@ -83,20 +96,35 @@ export function PhonePhotoUpload({ sessionId }: { sessionId: string }) {
             accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif"
             className="sr-only"
             multiple
-            onChange={(event) => void handleFilesSelected(event.target.files)}
+            onChange={(event) => {
+              const input = event.currentTarget;
+              void handleFilesSelected(input.files).finally(() => {
+                input.value = "";
+              });
+            }}
             type="file"
           />
         </label>
 
         {files.length > 0 ? (
-          <ul className="grid gap-1 rounded-xl border border-vault-border bg-vault-secondary p-4 text-xs text-vault-secondaryText">
-            {files.map((file) => (
-              <li className="flex justify-between gap-3" key={`${file.name}-${file.size}`}>
-                <span className="truncate">{file.name}</span>
-                <span className="shrink-0 text-vault-muted">{formatFileSize(file.size)}</span>
-              </li>
-            ))}
-          </ul>
+          <div className="grid gap-3 rounded-xl border border-vault-border bg-vault-secondary p-4">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs font-semibold uppercase text-vault-gold">
+                {files.length}/{sellTradeMaxPhotos} ready to upload
+              </span>
+              <button className="text-xs font-semibold text-vault-secondaryText hover:text-vault-highlight" onClick={() => setFiles([])} type="button">
+                Clear
+              </button>
+            </div>
+            <ul className="grid gap-1 text-xs text-vault-secondaryText">
+              {files.map((file, index) => (
+                <li className="flex justify-between gap-3" key={`${file.name}-${file.size}-${index}`}>
+                  <span className="truncate">{file.name}</span>
+                  <span className="shrink-0 text-vault-muted">{formatFileSize(file.size)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         ) : null}
 
         {photos.length > 0 ? (

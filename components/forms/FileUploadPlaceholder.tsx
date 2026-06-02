@@ -119,13 +119,13 @@ export function FileUploadPlaceholder({
           />
         </label>
       ) : (
-        <div className="grid gap-4 rounded-xl border border-vault-border bg-vault-secondary p-5 sm:grid-cols-[auto_1fr] sm:items-center">
+        <div className="grid justify-items-center gap-4 rounded-xl border border-vault-border bg-vault-secondary p-5 text-center md:grid-cols-[auto_minmax(0,1fr)] md:items-center md:justify-items-start md:text-left">
           {qrCodeUrl ? (
-            <img alt="Sell trade upload QR code" className="h-[180px] w-[180px] rounded-lg bg-white p-2" height={180} src={qrCodeUrl} width={180} />
+            <img alt="Sell trade upload QR code" className="h-[168px] w-[168px] rounded-lg bg-white p-2 sm:h-[180px] sm:w-[180px]" height={180} src={qrCodeUrl} width={180} />
           ) : (
-            <div className="h-[180px] w-[180px] rounded-lg bg-vault-elevated" />
+            <div className="h-[168px] w-[168px] rounded-lg bg-vault-elevated sm:h-[180px] sm:w-[180px]" />
           )}
-          <div>
+          <div className="min-w-0 max-w-sm">
             <p className="text-sm font-semibold text-vault-text">Scan to add photos from your phone</p>
             <p className="mt-2 text-sm leading-6 text-vault-secondaryText">The QR opens a photo-only upload page. Photos added there will appear here automatically.</p>
           </div>
