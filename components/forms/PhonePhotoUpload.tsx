@@ -3,14 +3,14 @@
 import { FormEvent, useState } from "react";
 import { Container } from "@/components/layout/Container";
 import { Button } from "@/components/ui/Button";
+import { compressImageFiles } from "@/lib/browser-image-compression";
+import { sellTradeMaxPhotos } from "@/lib/sell-trade-upload-limits";
 
 type UploadedPhoto = {
   id: string;
   name: string;
   size: number;
 };
-
-const maxFiles = 8;
 
 function formatFileSize(size: number) {
   return `${(size / 1024 / 1024).toFixed(1)} MB`;
@@ -20,7 +20,19 @@ export function PhonePhotoUpload({ sessionId }: { sessionId: string }) {
   const [files, setFiles] = useState<File[]>([]);
   const [photos, setPhotos] = useState<UploadedPhoto[]>([]);
   const [error, setError] = useState("");
+  const [isPreparingPhotos, setIsPreparingPhotos] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+
+  async function handleFilesSelected(selectedFiles: FileList | null) {
+    setError("");
+    setIsPreparingPhotos(true);
+
+    try {
+      setFiles(await compressImageFiles(Array.from(selectedFiles ?? []).slice(0, sellTradeMaxPhotos)));
+    } finally {
+      setIsPreparingPhotos(false);
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -66,12 +78,12 @@ export function PhonePhotoUpload({ sessionId }: { sessionId: string }) {
 
         <label className="grid cursor-pointer gap-3 rounded-xl border border-dashed border-vault-border bg-vault-secondary p-5 text-center transition hover:border-vault-gold">
           <span className="text-sm font-semibold text-vault-text">Choose or take photos</span>
-          <span className="text-sm text-vault-secondaryText">Up to {maxFiles} photos. JPG, PNG, WebP, GIF, HEIC, or HEIF.</span>
+          <span className="text-sm text-vault-secondaryText">Up to {sellTradeMaxPhotos} photos. JPG, PNG, WebP, GIF, HEIC, or HEIF.</span>
           <input
             accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif"
             className="sr-only"
             multiple
-            onChange={(event) => setFiles(Array.from(event.target.files ?? []).slice(0, maxFiles))}
+            onChange={(event) => void handleFilesSelected(event.target.files)}
             type="file"
           />
         </label>
@@ -100,8 +112,8 @@ export function PhonePhotoUpload({ sessionId }: { sessionId: string }) {
           </p>
         ) : null}
 
-        <Button disabled={isUploading} type="submit">
-          {isUploading ? "Uploading..." : "Add Photos"}
+        <Button disabled={isPreparingPhotos || isUploading} type="submit">
+          {isPreparingPhotos ? "Preparing Photos..." : isUploading ? "Uploading..." : "Add Photos"}
         </Button>
       </form>
     </Container>

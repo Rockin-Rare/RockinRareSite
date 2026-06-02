@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { sellTradeAllowedImageTypes, sellTradeMaxPhotoSizeBytes, sellTradeMaxPhotoSizeMb, sellTradeMaxPhotos, sellTradeMaxTotalPhotoSizeBytes, sellTradeMaxTotalPhotoSizeMb } from "@/lib/sell-trade-upload-limits";
 import { clearPhotoSession, getPhotoSession } from "@/lib/sell-trade-photo-sessions";
 import type { SellTradeSubmission } from "@/lib/types";
 
@@ -17,14 +18,10 @@ const maxLengths = {
   franchise: 80,
   approximateQuantity: 120,
   conditionEstimate: 120,
-  message: 2000,
+  quoteSummary: 1000,
   imageUrl: 160
 };
-const maxImageUrls = 12;
-const maxFiles = 8;
-const maxFileSizeBytes = 8 * 1024 * 1024;
-const maxTotalFileSizeBytes = 24 * 1024 * 1024;
-const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/heic", "image/heif"]);
+const maxImageUrls = sellTradeMaxPhotos;
 const rateLimitWindowMs = 10 * 60 * 1000;
 const rateLimitMax = 5;
 const rateLimits = new Map<string, { count: number; resetAt: number }>();
@@ -57,7 +54,7 @@ async function parseRequest(request: Request): Promise<ParsedRequest | null> {
     const files = formData
       .getAll("photos")
       .filter((value): value is File => value instanceof File && value.size > 0)
-      .slice(0, maxFiles);
+      .slice(0, sellTradeMaxPhotos);
 
     return { fields, files };
   }
@@ -132,17 +129,17 @@ function validateFiles(files: File[]) {
   for (const file of files) {
     totalSize += file.size;
 
-    if (!allowedImageTypes.has(file.type)) {
+    if (!sellTradeAllowedImageTypes.has(file.type)) {
       return "Photos must be JPG, PNG, WebP, GIF, HEIC, or HEIF images.";
     }
 
-    if (file.size > maxFileSizeBytes) {
-      return "Each photo must be 8 MB or smaller.";
+    if (file.size > sellTradeMaxPhotoSizeBytes) {
+      return `Each photo must be ${sellTradeMaxPhotoSizeMb} MB or smaller.`;
     }
   }
 
-  if (totalSize > maxTotalFileSizeBytes) {
-    return "Photo uploads must be 24 MB total or smaller.";
+  if (totalSize > sellTradeMaxTotalPhotoSizeBytes) {
+    return `Photo uploads must be ${sellTradeMaxTotalPhotoSizeMb} MB total or smaller.`;
   }
 
   return "";
@@ -183,8 +180,8 @@ export async function POST(request: Request) {
   const sessionFiles = getSessionFiles(fields);
   const files = [...parsed.files, ...sessionFiles.files];
 
-  if (files.length > maxFiles) {
-    return NextResponse.json({ error: `Upload ${maxFiles} photos or fewer.` }, { status: 400 });
+  if (files.length > sellTradeMaxPhotos) {
+    return NextResponse.json({ error: `Upload ${sellTradeMaxPhotos} photos or fewer.` }, { status: 400 });
   }
 
   const fileError = validateFiles(files);
@@ -210,7 +207,7 @@ export async function POST(request: Request) {
     approximateQuantity: cleanString(fields.approximateQuantity, maxLengths.approximateQuantity),
     conditionEstimate: cleanString(fields.conditionEstimate, maxLengths.conditionEstimate),
     imageUrls: files.length > 0 ? files.map((file) => file.name.slice(0, maxLengths.imageUrl)) : cleanStringArray(fields.imageUrls),
-    message: cleanString(fields.message, maxLengths.message)
+    quoteSummary: cleanString(fields.quoteSummary, maxLengths.quoteSummary)
   };
 
   if (!submission.name) {
@@ -247,11 +244,11 @@ export async function POST(request: Request) {
     formatField("Franchise/category", submission.franchise),
     formatField("Approx. quantity", submission.approximateQuantity),
     formatField("Condition estimate", submission.conditionEstimate),
+    submission.quoteSummary ? `**Instant quote shown:**\n${escapeDiscordMentions(submission.quoteSummary)}` : "",
     formatField("Photo file names", submission.imageUrls),
     "",
     "**Collection details:**",
-    escapeDiscordMentions(submission.description),
-    submission.message ? `\n**Message:**\n${escapeDiscordMentions(submission.message)}` : ""
+    escapeDiscordMentions(submission.description)
   ]
     .filter(Boolean)
     .join("\n");

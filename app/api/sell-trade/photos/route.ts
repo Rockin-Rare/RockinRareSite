@@ -1,11 +1,7 @@
 import { NextResponse } from "next/server";
 import { createId } from "@/lib/id";
+import { sellTradeAllowedImageTypes, sellTradeMaxPhotoSizeBytes, sellTradeMaxPhotoSizeMb, sellTradeMaxPhotos, sellTradeMaxTotalPhotoSizeBytes, sellTradeMaxTotalPhotoSizeMb } from "@/lib/sell-trade-upload-limits";
 import { getPhotoSession, setPhotoSession, summarizePhotos, type StoredPhoto } from "@/lib/sell-trade-photo-sessions";
-
-const maxFiles = 8;
-const maxFileSizeBytes = 8 * 1024 * 1024;
-const maxTotalFileSizeBytes = 24 * 1024 * 1024;
-const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/heic", "image/heif"]);
 
 function getSessionId(request: Request) {
   return new URL(request.url).searchParams.get("session")?.trim() ?? "";
@@ -21,17 +17,17 @@ function validateFiles(files: File[]) {
   for (const file of files) {
     totalSize += file.size;
 
-    if (!allowedImageTypes.has(file.type)) {
+    if (!sellTradeAllowedImageTypes.has(file.type)) {
       return "Photos must be JPG, PNG, WebP, GIF, HEIC, or HEIF images.";
     }
 
-    if (file.size > maxFileSizeBytes) {
-      return "Each photo must be 8 MB or smaller.";
+    if (file.size > sellTradeMaxPhotoSizeBytes) {
+      return `Each photo must be ${sellTradeMaxPhotoSizeMb} MB or smaller.`;
     }
   }
 
-  if (totalSize > maxTotalFileSizeBytes) {
-    return "Photo uploads must be 24 MB total or smaller.";
+  if (totalSize > sellTradeMaxTotalPhotoSizeBytes) {
+    return `Photo uploads must be ${sellTradeMaxTotalPhotoSizeMb} MB total or smaller.`;
   }
 
   return "";
@@ -66,7 +62,7 @@ export async function POST(request: Request) {
   const files = formData
     .getAll("photos")
     .filter((value): value is File => value instanceof File && value.size > 0)
-    .slice(0, Math.max(0, maxFiles - existingPhotos.length));
+    .slice(0, Math.max(0, sellTradeMaxPhotos - existingPhotos.length));
   const fileError = validateFiles([...existingPhotos.map((photo) => new File([photo.bytes], photo.name, { type: photo.type })), ...files]);
 
   if (fileError) {
@@ -84,7 +80,7 @@ export async function POST(request: Request) {
     }))
   );
 
-  const nextPhotos = [...existingPhotos, ...uploadedPhotos].slice(0, maxFiles);
+  const nextPhotos = [...existingPhotos, ...uploadedPhotos].slice(0, sellTradeMaxPhotos);
   setPhotoSession(sessionId, nextPhotos);
 
   return NextResponse.json({ photos: summarizePhotos(nextPhotos) });

@@ -51,6 +51,8 @@ CARD_INTAKE_SALES_WEBHOOK_TOKEN=
 CARD_INTAKE_RESERVATION_URL=
 ROCKIN_RARE_ADMIN_TOKEN=
 CARD_INTAKE_ADMIN_BASE_URL=
+CARD_INTAKE_QUOTE_API_URL=
+CARD_INTAKE_WISHLIST_API_URL=
 ```
 
 The sell/trade and contact forms work locally without webhooks, but submissions are only delivered to Discord when `DISCORD_SELL_TRADE_WEBHOOK_URL` and `DISCORD_CONTACT_WEBHOOK_URL` are set. Collector Club signups are saved to Neon when `DATABASE_URL` is set and can also be mirrored to Discord when `DISCORD_COLLECTOR_CLUB_WAITLIST_WEBHOOK_URL` is set. Set `COLLECTOR_CLUB_SESSION_SECRET` to issue signed Collector Club session cookies after signup. Supabase values are legacy placeholders from the original v1 plan.
@@ -60,7 +62,7 @@ The sell/trade and contact forms work locally without webhooks, but submissions 
 - Home page with trust-first brand positioning and inventory preview
 - Inventory catalog with client-side search, filters, sorting, sold states, and empty states
 - Product detail pages for all mock products
-- Sell / Trade intake form with photo uploads, phone QR option, validation, and Discord webhook route
+- Sell / Trade intake form with front-photo camera scanning, instant quote estimates, computer uploads, phone QR uploads, validation, and Discord webhook route
 - Contact form with validation and Discord webhook route
 - About and FAQ pages
 - Typed mock product data that imitates scanner output
@@ -130,7 +132,25 @@ Required website env vars:
 ```bash
 CARD_INTAKE_API_BASE_URL=
 CARD_INTAKE_API_TOKEN=
+CARD_INTAKE_QUOTE_API_URL=
+CARD_INTAKE_WISHLIST_API_URL=
 ```
+
+The About page wishlist can pull public-safe card catalog records from Card Intake Router. By default it reads:
+
+```text
+${CARD_INTAKE_API_BASE_URL}/api/public/wishlist
+```
+
+Set `CARD_INTAKE_WISHLIST_API_URL` if that feed lives at a different URL. If the wishlist endpoint is unavailable, the site keeps rendering local fallback wishlist items.
+
+The Sell / Trade scanner can post seller front photos to Card Intake Router for quotes. Set `CARD_INTAKE_QUOTE_API_URL` for an explicit endpoint, or the site will try:
+
+```text
+${CARD_INTAKE_API_BASE_URL}/api/public/seller-quotes
+```
+
+If no Card Intake quote endpoint is configured or reachable, `/api/sell-trade/quote` returns a preliminary local estimate and labels it as a site estimate. Final seller submissions include the quote summary in the Discord notification.
 
 ## Stripe Checkout
 

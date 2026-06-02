@@ -82,7 +82,30 @@ export type SellTradeSubmission = {
   approximateQuantity?: string;
   conditionEstimate?: string;
   imageUrls?: string[];
+  quoteSummary?: string;
   message?: string;
+  createdAt: string;
+};
+
+export type SellTradeQuoteDetectedCard = {
+  name: string;
+  franchise?: string;
+  condition?: string;
+  marketPriceCents?: number;
+  confidence?: number;
+};
+
+export type SellTradeQuote = {
+  id: string;
+  status: "quoted" | "needs_review";
+  source: "card-intake" | "site-estimate";
+  confidence: "high" | "medium" | "low";
+  cashOfferCents: number;
+  tradeCreditCents: number;
+  rangeLowCents: number;
+  rangeHighCents: number;
+  detectedCards: SellTradeQuoteDetectedCard[];
+  notes: string[];
   createdAt: string;
 };
 

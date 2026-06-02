@@ -6,6 +6,7 @@ import { FormInput } from "@/components/forms/FormInput";
 import { FormSelect } from "@/components/forms/FormSelect";
 import { FormTextarea } from "@/components/forms/FormTextarea";
 import { Button } from "@/components/ui/Button";
+import type { InstantQuoteModuleState } from "@/components/sell-trade/InstantQuoteModule";
 
 type FormState = {
   name: string;
@@ -16,7 +17,6 @@ type FormState = {
   franchise: string;
   approximateQuantity: string;
   conditionEstimate: string;
-  message: string;
 };
 
 const initialState: FormState = {
@@ -27,8 +27,7 @@ const initialState: FormState = {
   description: "",
   franchise: "Mixed collection",
   approximateQuantity: "",
-  conditionEstimate: "",
-  message: ""
+  conditionEstimate: ""
 };
 
 const maxLengths = {
@@ -37,20 +36,43 @@ const maxLengths = {
   phone: 40,
   description: 3000,
   approximateQuantity: 120,
-  conditionEstimate: 120,
-  message: 2000
+  conditionEstimate: 120
 };
 
-export function SellTradeForm() {
+const emptyQuoteState: InstantQuoteModuleState = {
+  files: [],
+  photoSession: "",
+  quote: null,
+  selectedPhotoCount: 0
+};
+
+export function SellTradeForm({ quoteState = emptyQuoteState }: { quoteState?: InstantQuoteModuleState }) {
   const [form, setForm] = useState(initialState);
-  const [files, setFiles] = useState<File[]>([]);
   const [errors, setErrors] = useState<Partial<FormState>>({});
   const [submitError, setSubmitError] = useState("");
+  const [detailFiles, setDetailFiles] = useState<File[]>([]);
+  const [detailPhotoSession, setDetailPhotoSession] = useState("");
+  const [detailPhonePhotoCount, setDetailPhonePhotoCount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
+  }
+
+  function formatQuoteSummary(currentQuote: InstantQuoteModuleState["quote"]) {
+    if (!currentQuote) return "";
+
+    const currency = new Intl.NumberFormat("en-US", { currency: "USD", style: "currency" });
+    return [
+      `Quote ID: ${currentQuote.id}`,
+      `Source: ${currentQuote.source}`,
+      `Status: ${currentQuote.status}`,
+      `Confidence: ${currentQuote.confidence}`,
+      `Cash offer: ${currency.format(currentQuote.cashOfferCents / 100)}`,
+      `Trade credit: ${currency.format(currentQuote.tradeCreditCents / 100)}`,
+      `Range: ${currency.format(currentQuote.rangeLowCents / 100)} - ${currency.format(currentQuote.rangeHighCents / 100)}`
+    ].join("\n");
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -75,10 +97,11 @@ export function SellTradeForm() {
     payload.append("franchise", form.franchise);
     payload.append("approximateQuantity", form.approximateQuantity);
     payload.append("conditionEstimate", form.conditionEstimate);
-    payload.append("message", form.message);
+    payload.append("quoteSummary", formatQuoteSummary(quoteState.quote));
     payload.append("company", String(currentFormData.get("company") ?? ""));
-    payload.append("photoSession", String(currentFormData.get("photoSession") ?? ""));
-    files.forEach((file) => payload.append("photos", file));
+    payload.append("photoSession", detailPhonePhotoCount > 0 ? detailPhotoSession : quoteState.photoSession || String(currentFormData.get("photoSession") ?? ""));
+    quoteState.files.forEach((file) => payload.append("photos", file));
+    detailFiles.forEach((file) => payload.append("photos", file));
 
     setIsSubmitting(true);
 
@@ -95,8 +118,9 @@ export function SellTradeForm() {
       }
 
       setSubmitted(true);
-      setFiles([]);
       setForm(initialState);
+      setDetailFiles([]);
+      setDetailPhonePhotoCount(0);
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "Submission failed. Please try again.");
     } finally {
@@ -114,8 +138,17 @@ export function SellTradeForm() {
   }
 
   return (
-    <form className="grid gap-4 rounded-2xl border border-vault-border bg-vault-card p-5 shadow-vault" onSubmit={handleSubmit} noValidate>
+    <form className="grid content-start gap-4 rounded-2xl border border-vault-border bg-vault-card p-5 shadow-vault" onSubmit={handleSubmit} noValidate>
       <input aria-hidden="true" autoComplete="off" className="hidden" name="company" tabIndex={-1} type="text" />
+      <div>
+        <p className="text-sm font-semibold uppercase text-vault-gold">Step 2</p>
+        <h2 className="mt-2 text-2xl font-black text-vault-text">Send your details</h2>
+        {quoteState.quote ? (
+          <p className="mt-2 text-sm leading-6 text-vault-secondaryText">Your quote will be included with this submission.</p>
+        ) : (
+          <p className="mt-2 text-sm leading-6 text-vault-secondaryText">You can submit details with or without a quote.</p>
+        )}
+      </div>
       <div className="grid gap-4 md:grid-cols-2">
         <FormInput error={errors.name} label="Name" maxLength={maxLengths.name} onChange={(event) => update("name", event.target.value)} value={form.name} />
         <FormInput
@@ -144,7 +177,7 @@ export function SellTradeForm() {
         onChange={(event) => update("description", event.target.value)}
         value={form.description}
       />
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] 2xl:grid-cols-3">
         <FormSelect
           label="Franchise/category"
           onChange={(event) => update("franchise", event.target.value)}
@@ -166,15 +199,19 @@ export function SellTradeForm() {
           value={form.conditionEstimate}
         />
       </div>
-      <FileUploadPlaceholder files={files} onFilesSelected={setFiles} />
-      <FormTextarea label="Message" maxLength={maxLengths.message} onChange={(event) => update("message", event.target.value)} value={form.message} />
+      <FileUploadPlaceholder
+        files={detailFiles}
+        onFilesSelected={setDetailFiles}
+        onPhonePhotoCountChange={setDetailPhonePhotoCount}
+        onSessionChange={setDetailPhotoSession}
+      />
       {submitError ? (
         <p className="rounded-xl border border-vault-error/30 bg-vault-error/10 px-4 py-3 text-sm text-vault-error" role="alert">
           {submitError}
         </p>
       ) : null}
       <Button disabled={isSubmitting} type="submit">
-        {isSubmitting ? "Submitting..." : "Submit Collection Details"}
+        {isSubmitting ? "Submitting..." : quoteState.quote ? "Submit This Quote" : "Submit Collection Details"}
       </Button>
     </form>
   );

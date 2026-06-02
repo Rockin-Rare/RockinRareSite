@@ -11,10 +11,16 @@ Set these values in `.env.local` for local development and in Vercel for product
 ```bash
 CARD_INTAKE_API_BASE_URL=
 CARD_INTAKE_API_TOKEN=
+CARD_INTAKE_QUOTE_API_URL=
+CARD_INTAKE_WISHLIST_API_URL=
 CARD_INTAKE_ADMIN_BASE_URL=
 ```
 
 `CARD_INTAKE_ADMIN_BASE_URL` is optional. When set, the website admin listing view opens Card Intake Router edit pages instead of editing inventory in the website.
+
+`CARD_INTAKE_QUOTE_API_URL` is optional. When set, the Sell / Trade scanner posts seller photos and collection details there for instant quote generation. When omitted, the website tries `${CARD_INTAKE_API_BASE_URL}/api/public/seller-quotes`. If no Card Intake quote route is available, the website returns a preliminary local estimate and marks it as a site estimate.
+
+`CARD_INTAKE_WISHLIST_API_URL` is optional. When omitted, the About page tries `${CARD_INTAKE_API_BASE_URL}/api/public/wishlist` for collector wishlist cards. If the endpoint is not available, the page uses local fallback wishlist items.
 
 If these are not set, the website falls back to mock inventory.
 
@@ -36,7 +42,64 @@ CARD_INTAKE_PUBLIC_INVENTORY_LIMIT=250
 ```text
 GET /api/public/inventory
 GET /api/public/inventory/:slug
+GET /api/public/wishlist
+POST /api/public/seller-quotes
 GET /api/public/images/:key?sig=...
+```
+
+Wishlist payloads should return public-safe card catalog data, not owned inventory state:
+
+```json
+{
+  "items": [
+    {
+      "id": "umbreon-vmax-alt-art",
+      "name": "Umbreon VMAX Alt Art",
+      "franchise": "Pokemon",
+      "setName": "Evolving Skies",
+      "cardNumber": "215/203",
+      "language": "English",
+      "desiredCondition": "Clean raw or graded",
+      "notes": "Looking for strong centering and clean edges.",
+      "imageUrl": "https://..."
+    }
+  ]
+}
+```
+
+Seller quote requests are multipart form posts from the website:
+
+```text
+photos[] # Front photos only. JPG, PNG, WebP, GIF, HEIC, or HEIF, up to 8 files
+photoSession # optional website phone QR upload session
+franchise
+approximateQuantity
+conditionEstimate
+description
+```
+
+Expected seller quote response:
+
+```json
+{
+  "id": "quote_123",
+  "status": "quoted",
+  "confidence": "medium",
+  "cashOfferCents": 5500,
+  "tradeCreditCents": 7000,
+  "rangeLowCents": 4500,
+  "rangeHighCents": 6500,
+  "detectedCards": [
+    {
+      "name": "Charizard ex",
+      "franchise": "Pokemon",
+      "condition": "Near Mint",
+      "marketPriceCents": 10000,
+      "confidence": 0.82
+    }
+  ],
+  "notes": ["Final offer requires condition review."]
+}
 ```
 
 ## Public Rules
