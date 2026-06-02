@@ -188,6 +188,7 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
             <ProductMetaRow label="Franchise" value={product.franchise} />
             <ProductMetaRow label="Set" value={product.setName} />
             <ProductMetaRow label="Card Number" value={product.cardNumber} />
+            <ProductMetaRow label="Finish" value={product.isFoil === undefined ? undefined : product.isFoil ? "Foil" : "Non-foil"} />
             <ProductMetaRow label="Language" value={product.language} />
             <ProductMetaRow label="Condition" value={product.condition} />
             <ProductMetaRow label="Grade" value={product.gradeCompany && product.grade ? `${product.gradeCompany} ${product.grade}` : undefined} />

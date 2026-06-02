@@ -8,6 +8,11 @@ import { canCheckoutOnSite } from "@/lib/commerce";
 import type { Product } from "@/lib/types";
 import { categoryLabel, cn, formatPrice } from "@/lib/utils";
 
+function foilLabel(product: Product) {
+  if (product.isFoil === undefined) return null;
+  return product.isFoil ? "Foil" : "Non-foil";
+}
+
 export function ProductCard({ product, priorityImage = false }: { product: Product; priorityImage?: boolean }) {
   const sold = product.publicStatus === "sold";
   const cta = product.publicStatus === "coming_soon" ? "Preview" : "View Details";
@@ -16,6 +21,7 @@ export function ProductCard({ product, priorityImage = false }: { product: Produ
   const detailItems = [
     product.setName,
     product.cardNumber ? `#${product.cardNumber}` : null,
+    foilLabel(product),
     product.quantity && product.quantity > 1 ? `Qty ${product.quantity}` : null
   ].filter(Boolean);
 

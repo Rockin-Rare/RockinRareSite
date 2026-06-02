@@ -28,6 +28,7 @@ export type Product = {
   franchise: string;
   setName?: string;
   cardNumber?: string;
+  isFoil?: boolean;
   language?: "English" | "Spanish" | "Japanese" | "Korean" | "Chinese" | "Other";
   condition?:
     | "Mint"

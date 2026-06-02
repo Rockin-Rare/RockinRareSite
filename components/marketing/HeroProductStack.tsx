@@ -74,7 +74,8 @@ function ProductShowpiece({
 }) {
   const imageUrl = product.primaryImageUrl || product.imageUrls[0] || "";
   const displayPrice = formatPrice(product.price);
-  const details = [categoryLabel(product.category), product.condition].filter(Boolean).join(" / ");
+  const foil = product.isFoil === undefined ? undefined : product.isFoil ? "Foil" : "Non-foil";
+  const details = [categoryLabel(product.category), product.condition, foil].filter(Boolean).join(" / ");
 
   return (
     <Link

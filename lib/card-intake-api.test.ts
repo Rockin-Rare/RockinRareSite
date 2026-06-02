@@ -31,4 +31,9 @@ describe("Card Intake public product normalization", () => {
   it("does not promote available draft inventory to listed", () => {
     expect(normalizePublicProduct(product({ status: "published", publicStatus: "available" })).status).toBe("published");
   });
+
+  it("preserves explicit foil and non-foil distinctions", () => {
+    expect(normalizePublicProduct(product({ isFoil: true })).isFoil).toBe(true);
+    expect(normalizePublicProduct(product({ isFoil: false })).isFoil).toBe(false);
+  });
 });

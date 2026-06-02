@@ -108,6 +108,12 @@ Card Intake Router owns public visibility rules. Its API excludes `DO_NOT_LIST` 
 
 Operational scan IDs, cost basis, owner names, and route rationale are not returned to the website.
 
+Card finish is returned as:
+
+```text
+isFoil # boolean; true for scanned-card foil or batch-level all-cards-foil inventory
+```
+
 ## Optional Commerce Fields
 
 The website can accept these public-safe commerce fields when Card Intake Router is ready to send them:

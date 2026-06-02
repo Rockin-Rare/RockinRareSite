@@ -31,6 +31,7 @@ export function InventoryClient({ products }: { products: Product[] }) {
     return products
       .filter((product) => {
         const searchable = [product.name, product.franchise, product.setName, product.cardNumber, product.description]
+          .concat(product.isFoil === undefined ? [] : [product.isFoil ? "foil" : "non-foil non foil"])
           .filter(Boolean)
           .join(" ")
           .toLowerCase();
