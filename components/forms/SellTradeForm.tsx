@@ -81,13 +81,8 @@ export function SellTradeForm({ quoteDescriptionFill, quoteState = emptyQuoteSta
 
     const currency = new Intl.NumberFormat("en-US", { currency: "USD", style: "currency" });
     return [
-      `Quote ID: ${currentQuote.id}`,
-      `Source: ${currentQuote.source}`,
-      `Status: ${currentQuote.status}`,
-      `Confidence: ${currentQuote.confidence}`,
       `Cash offer: ${currency.format(currentQuote.cashOfferCents / 100)}`,
-      `Trade credit: ${currency.format(currentQuote.tradeCreditCents / 100)}`,
-      `Range: ${currency.format(currentQuote.rangeLowCents / 100)} - ${currency.format(currentQuote.rangeHighCents / 100)}`
+      `Trade credit: ${currency.format(currentQuote.tradeCreditCents / 100)}`
     ].join("\n");
   }
 

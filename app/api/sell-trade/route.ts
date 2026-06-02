@@ -243,6 +243,7 @@ export async function POST(request: Request) {
     );
   }
 
+  const hasInstantQuote = Boolean(submission.quoteId || submission.quoteSummary);
   const content = [
     "**New Sell / Trade Submission**",
     formatField("Name", submission.name),
@@ -250,11 +251,11 @@ export async function POST(request: Request) {
     formatField("Phone", submission.phone),
     formatField("Preferred contact", submission.preferredContactMethod),
     formatField("Preferred offer type", submission.offerPreference),
-    formatField("Franchise/category", submission.franchise),
-    formatField("Approx. quantity", submission.approximateQuantity),
-    formatField("Condition estimate", submission.conditionEstimate),
+    hasInstantQuote ? "" : formatField("Franchise/category", submission.franchise),
+    hasInstantQuote ? "" : formatField("Approx. quantity", submission.approximateQuantity),
+    hasInstantQuote ? "" : formatField("Condition estimate", submission.conditionEstimate),
     formatField("Quote ID", submission.quoteId),
-    submission.quoteSummary ? `**Instant quote shown:**\n${escapeDiscordMentions(submission.quoteSummary)}` : "",
+    submission.quoteSummary ? `**Instant quote:**\n${escapeDiscordMentions(submission.quoteSummary)}` : "",
     formatField("Photo file names", submission.imageUrls),
     "",
     "**Collection details:**",

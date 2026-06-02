@@ -22,15 +22,7 @@ export function SellTradePageClient() {
       return `${index + 1}. ${card.name}${details ? ` (${details})` : ""}`;
     });
 
-    return [
-      "Instant quote submission:",
-      `Quote ID: ${quote.id}`,
-      `Cash offer: ${new Intl.NumberFormat("en-US", { currency: "USD", style: "currency" }).format(quote.cashOfferCents / 100)}`,
-      `Trade credit: ${new Intl.NumberFormat("en-US", { currency: "USD", style: "currency" }).format(quote.tradeCreditCents / 100)}`,
-      "",
-      "Matched cards:",
-      ...(matchedCards.length > 0 ? matchedCards : ["No matched cards returned."])
-    ].join("\n");
+    return ["Matched cards:", ...(matchedCards.length > 0 ? matchedCards : ["No matched cards returned."])].join("\n");
   }
 
   return (
