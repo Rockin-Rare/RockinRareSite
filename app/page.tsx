@@ -5,7 +5,6 @@ import { CategoryCard } from "@/components/marketing/CategoryCard";
 import { FeaturedInventory } from "@/components/marketing/FeaturedInventory";
 import { HeroProductStack } from "@/components/marketing/HeroProductStack";
 import { SectionHeader } from "@/components/marketing/SectionHeader";
-import { SellTradeCTA } from "@/components/marketing/SellTradeCTA";
 import { TrustPromise } from "@/components/marketing/TrustPromise";
 import { Button } from "@/components/ui/Button";
 import { getFeaturedProducts, getHeroShowcaseProducts } from "@/lib/products";
@@ -44,8 +43,8 @@ export default async function HomePage() {
             Collector-first trading card games, sealed product, slabs, and rare finds.
           </p>
           <p className="mt-6 max-w-2xl text-base leading-8 text-vault-secondaryText">
-            Buy and sell collectibles with real product photos, transparent condition notes, and secure packaging from
-            people who actually care about the hobby.
+            Buy, sell, and trade collectibles with real product photos, transparent condition notes, secure packaging,
+            and instant preliminary quotes for raw singles.
           </p>
           <div className="mt-7 flex items-center gap-4">
             <Image
@@ -63,14 +62,44 @@ export default async function HomePage() {
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button href="/inventory">Shop Current Inventory</Button>
             <Button href="/sell-trade" variant="secondary">
-              Sell or Trade Cards
+              Get Instant Quote
             </Button>
-            <Button href="/collector-club" variant="secondary">
+          </div>
+          <p className="mt-4 text-sm leading-6 text-vault-muted">
+            Want drop alerts and wishlist matching?{" "}
+            <a className="font-semibold text-vault-secondaryText transition hover:text-vault-highlight" href="/collector-club">
               Join Collector Club
+            </a>
+            .
+          </p>
+        </div>
+        <HeroProductStack products={heroProducts} />
+      </section>
+
+      <section className="rounded-2xl border border-vault-gold/30 bg-vault-elevated p-6 shadow-gold md:p-8">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.75fr)] lg:items-center">
+          <div>
+            <p className="text-sm font-semibold uppercase text-vault-gold">Instant Quote Scanner</p>
+            <h2 className="mt-3 text-3xl font-black text-vault-text">Get a preliminary cash or trade offer before you ship.</h2>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-vault-secondaryText">
+              Scan raw singles with your camera, upload front photos, or use the phone QR option. We&apos;ll match the cards,
+              estimate cash and trade credit, and confirm the final offer after review.
+            </p>
+          </div>
+          <div className="grid gap-3">
+            <div className="rounded-xl border border-vault-border bg-vault-card p-4">
+              <p className="text-sm font-semibold text-vault-text">1. Add front photos</p>
+              <p className="mt-1 text-sm leading-6 text-vault-secondaryText">Camera, computer upload, or phone QR.</p>
+            </div>
+            <div className="rounded-xl border border-vault-border bg-vault-card p-4">
+              <p className="text-sm font-semibold text-vault-text">2. Review the estimate</p>
+              <p className="mt-1 text-sm leading-6 text-vault-secondaryText">See preliminary cash and trade-credit values.</p>
+            </div>
+            <Button href="/sell-trade" className="w-full">
+              Start Instant Quote
             </Button>
           </div>
         </div>
-        <HeroProductStack products={heroProducts} />
       </section>
 
       <section className="py-8">
@@ -84,7 +113,6 @@ export default async function HomePage() {
 
       <FeaturedInventory products={featured} />
       <TrustPromise />
-      <SellTradeCTA />
     </Container>
   );
 }

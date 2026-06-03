@@ -6,13 +6,13 @@ export function SellTradeCTA() {
       <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-center">
         <div>
           <p className="text-sm font-semibold uppercase text-vault-gold">Sell or Trade</p>
-          <h2 className="mt-3 text-3xl font-black text-vault-text">Have cards you&apos;re ready to move?</h2>
+          <h2 className="mt-3 text-3xl font-black text-vault-text">Ready to see what your cards are worth?</h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-vault-secondaryText">
-            Send us photos and details for Pokemon, One Piece, Riftbound, Magic, singles, slabs, sealed product, or bulk
-            collections. We&apos;ll review and get back to you with next steps.
+            Use the instant quote scanner for raw singles, or upload collection photos for slabs, sealed product, bulk,
+            and larger collections. Cash and trade-credit offers are confirmed after review.
           </p>
         </div>
-        <Button href="/sell-trade">Start a Submission</Button>
+        <Button href="/sell-trade">Get Instant Quote</Button>
       </div>
     </section>
   );
