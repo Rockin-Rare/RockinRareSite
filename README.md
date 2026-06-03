@@ -40,6 +40,8 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 DATABASE_URL=
 COLLECTOR_CLUB_SESSION_SECRET=
+NEON_AUTH_BASE_URL=
+NEON_AUTH_COOKIE_SECRET=
 NEXT_PUBLIC_SITE_URL=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
@@ -55,7 +57,7 @@ CARD_INTAKE_QUOTE_API_URL=
 CARD_INTAKE_WISHLIST_API_URL=
 ```
 
-The sell/trade and contact forms work locally without webhooks, but submissions are only delivered to Discord when `DISCORD_SELL_TRADE_WEBHOOK_URL` and `DISCORD_CONTACT_WEBHOOK_URL` are set. Collector Club signups are saved to Neon when `DATABASE_URL` is set and can also be mirrored to Discord when `DISCORD_COLLECTOR_CLUB_WAITLIST_WEBHOOK_URL` is set. Set `COLLECTOR_CLUB_SESSION_SECRET` to issue signed Collector Club session cookies after signup. Supabase values are legacy placeholders from the original v1 plan.
+The sell/trade and contact forms work locally without webhooks, but submissions are only delivered to Discord when `DISCORD_SELL_TRADE_WEBHOOK_URL` and `DISCORD_CONTACT_WEBHOOK_URL` are set. Collector Club signups are saved to Neon when `DATABASE_URL` is set and can also be mirrored to Discord when `DISCORD_COLLECTOR_CLUB_WAITLIST_WEBHOOK_URL` is set. Set `COLLECTOR_CLUB_SESSION_SECRET` to issue signed Collector Club session cookies after signup. Rare Radar user accounts use Neon Auth; set `NEON_AUTH_BASE_URL` and a 32+ character `NEON_AUTH_COOKIE_SECRET`, then apply `docs/neon-collector-club-schema.sql` so wishlist items can be stored. Supabase values are legacy placeholders from the original v1 plan.
 
 ## Current V1 Features
 
@@ -64,11 +66,12 @@ The sell/trade and contact forms work locally without webhooks, but submissions 
 - Product detail pages for all mock products
 - Sell / Trade intake form with front-photo camera scanning, instant quote estimates, computer uploads, phone QR uploads, validation, and Discord webhook route
 - Contact form with validation and Discord webhook route
+- Rare Radar account sign-in/sign-up and authenticated wishlist management
 - About and FAQ pages
 - Typed mock product data that imitates scanner output
 - Supabase schema draft and safe client placeholders
 
-Direct checkout is implemented with Stripe Checkout. User accounts are not implemented in v1.
+Direct checkout is implemented with Stripe Checkout.
 
 ## Listing Admin Handoff
 
@@ -134,6 +137,8 @@ CARD_INTAKE_API_BASE_URL=
 CARD_INTAKE_API_TOKEN=
 CARD_INTAKE_QUOTE_API_URL=
 CARD_INTAKE_WISHLIST_API_URL=
+CARD_INTAKE_INTERNAL_MATCHES_URL=
+CARD_INTAKE_INTERNAL_API_TOKEN=
 ```
 
 The About page wishlist can pull public-safe card catalog records from Card Intake Router. By default it reads:
@@ -143,6 +148,14 @@ ${CARD_INTAKE_API_BASE_URL}/api/public/wishlist
 ```
 
 Set `CARD_INTAKE_WISHLIST_API_URL` if that feed lives at a different URL. If the wishlist endpoint is unavailable, the site keeps rendering local fallback wishlist items.
+
+The Rare Radar admin page can use Card Intake Router private inventory matching before items are public. Set `CARD_INTAKE_INTERNAL_MATCHES_URL` to the Card Intake endpoint, or omit it to use:
+
+```text
+${CARD_INTAKE_API_BASE_URL}/api/internal/rare-radar/matches
+```
+
+Set `CARD_INTAKE_INTERNAL_API_TOKEN` to the same value configured in Card Intake Router. If the internal endpoint is unavailable, `/admin/wishlist` falls back to public storefront inventory matching.
 
 The Sell / Trade scanner can post seller front photos to Card Intake Router for quotes. Set `CARD_INTAKE_QUOTE_API_URL` for an explicit endpoint, or the site will try:
 

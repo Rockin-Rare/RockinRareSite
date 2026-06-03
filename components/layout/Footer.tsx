@@ -20,6 +20,7 @@ export function Footer() {
           <h3 className="text-sm font-bold text-vault-text">Quick Links</h3>
           <div className="mt-4 grid gap-3 text-sm text-vault-secondaryText">
             <Link href="/inventory">Inventory</Link>
+            <Link href="/wishlist">Rare Radar</Link>
             <Link href="/collector-club">Collector Club</Link>
             <Link href="/sell-trade">Sell / Trade</Link>
             <Link href="/about">About</Link>

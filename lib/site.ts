@@ -23,6 +23,11 @@ export const staticRoutes = [
     changeFrequency: "daily" as const
   },
   {
+    path: "/wishlist",
+    priority: 0.8,
+    changeFrequency: "monthly" as const
+  },
+  {
     path: "/sell-trade",
     priority: 0.8,
     changeFrequency: "monthly" as const

@@ -64,6 +64,44 @@ create table if not exists collector_club.wishlist_requests (
   updated_at timestamptz not null default now()
 );
 
+do $$ begin
+  create type collector_club.rare_radar_wishlist_status as enum (
+    'waiting',
+    'matched',
+    'offered',
+    'claimed',
+    'passed',
+    'expired'
+  );
+exception
+  when duplicate_object then null;
+end $$;
+
+create table if not exists collector_club.rare_radar_wishlist_items (
+  id uuid primary key default gen_random_uuid(),
+  auth_user_id text not null,
+  user_email text not null,
+  user_name text,
+  product_name text not null,
+  game text not null default 'Pokemon',
+  category text not null default 'Single',
+  set_name text,
+  card_number text,
+  language text not null default 'Either',
+  desired_condition text not null default 'Any',
+  max_price_cents integer,
+  alert_threshold text not null default 'Strong price',
+  notes text,
+  status collector_club.rare_radar_wishlist_status not null default 'waiting',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists rare_radar_wishlist_items_auth_user_idx on collector_club.rare_radar_wishlist_items (auth_user_id);
+create index if not exists rare_radar_wishlist_items_status_idx on collector_club.rare_radar_wishlist_items (status);
+create index if not exists rare_radar_wishlist_items_game_idx on collector_club.rare_radar_wishlist_items (game);
+create index if not exists rare_radar_wishlist_items_product_name_idx on collector_club.rare_radar_wishlist_items using gin (to_tsvector('simple', product_name));
+
 create table if not exists collector_club.custom_bundle_requests (
   id uuid primary key default gen_random_uuid(),
   member_id uuid references collector_club.members (id) on delete set null,
