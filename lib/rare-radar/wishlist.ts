@@ -66,10 +66,21 @@ export async function rareRadarWishlistTableReady() {
 
   try {
     const rows = (await sql`
-      select to_regclass('collector_club.rare_radar_wishlist_items') as table_name
-    `) as unknown as Array<{ table_name: string | null }>;
+      select
+        current_database() as database_name,
+        current_user as database_user,
+        to_regclass('collector_club.rare_radar_wishlist_items') as table_name
+    `) as unknown as Array<{ database_name: string; database_user: string; table_name: string | null }>;
 
-    return Boolean(rows[0]?.table_name);
+    const row = rows[0];
+    const tableReady = Boolean(row?.table_name);
+    if (!tableReady) {
+      console.warn(
+        `Rare Radar wishlist schema check did not find collector_club.rare_radar_wishlist_items in database ${row?.database_name || "unknown"} as ${row?.database_user || "unknown user"}.`
+      );
+    }
+
+    return tableReady;
   } catch (error) {
     logRareRadarStorageError("Failed to check Rare Radar wishlist schema", error);
     return false;

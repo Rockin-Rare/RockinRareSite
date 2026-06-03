@@ -62,7 +62,7 @@ export default async function WishlistPage() {
           ) : !storageReady ? (
             <SetupNotice
               title="Rare Radar setup is almost ready"
-              text="Your account is working, but the wishlist database table has not been applied yet. Please check back shortly."
+              text="Your account is working, but this deployment cannot see the wishlist table yet. Check that DATABASE_URL points to the Neon branch where the Rare Radar schema was applied."
             />
           ) : user ? (
             <>
