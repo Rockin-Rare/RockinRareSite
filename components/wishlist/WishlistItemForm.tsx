@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useFormStatus } from "react-dom";
 import type { InputHTMLAttributes } from "react";
 import {
   wishlistAlertThresholdOptions,
@@ -17,9 +18,10 @@ type WishlistItemFormProps = {
   action: (formData: FormData) => Promise<void>;
   buttonLabel: string;
   item?: RareRadarWishlistItem;
+  pendingLabel?: string;
 };
 
-export function WishlistItemForm({ action, buttonLabel, item }: WishlistItemFormProps) {
+export function WishlistItemForm({ action, buttonLabel, item, pendingLabel }: WishlistItemFormProps) {
   const [productName, setProductName] = useState(item?.productName ?? "");
   const [game, setGame] = useState(item?.game ?? wishlistGameOptions[0]);
   const [category, setCategory] = useState(item?.category ?? wishlistCategoryOptions[0]);
@@ -35,6 +37,22 @@ export function WishlistItemForm({ action, buttonLabel, item }: WishlistItemForm
   const [isSearchingCatalog, setIsSearchingCatalog] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const skipNextSearchRef = useRef(false);
+
+  useEffect(() => {
+    setProductName(item?.productName ?? "");
+    setGame(item?.game ?? wishlistGameOptions[0]);
+    setCategory(item?.category ?? wishlistCategoryOptions[0]);
+    setSetName(item?.setName ?? "");
+    setCardNumber(item?.cardNumber ?? "");
+    setLanguage(item?.language ?? wishlistLanguageOptions[0]);
+    setDesiredCondition(item?.desiredCondition ?? wishlistConditionOptions[0]);
+    setMaxPrice(formatCentsForInput(item?.maxPriceCents));
+    setAlertThreshold(item?.alertThreshold ?? wishlistAlertThresholdOptions[0]);
+    setNotes(item?.notes ?? "");
+    setCatalogResults([]);
+    setCatalogError("");
+    setCatalogOpen(false);
+  }, [item]);
 
   useEffect(() => {
     if (skipNextSearchRef.current) {
@@ -129,8 +147,18 @@ export function WishlistItemForm({ action, buttonLabel, item }: WishlistItemForm
           value={notes}
         />
       </label>
-      <Button type="submit">{buttonLabel}</Button>
+      <SubmitButton label={buttonLabel} pendingLabel={pendingLabel ?? `${buttonLabel}...`} />
     </form>
+  );
+}
+
+function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button disabled={pending} type="submit">
+      {pending ? pendingLabel : label}
+    </Button>
   );
 }
 
