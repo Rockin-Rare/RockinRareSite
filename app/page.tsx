@@ -30,6 +30,30 @@ const categories = [
   { title: "Sealed, Slabs & Bundles", description: "Booster boxes, packs, graded cards, collector bundles, and curated lots.", href: "/inventory?category=sealed-slab-bundle" }
 ];
 
+const collectorActions = [
+  {
+    title: "Shop the case",
+    description: "Browse current singles, sealed product, slabs, bundles, and collector-ready listings.",
+    href: "/inventory",
+    cta: "Shop Inventory",
+    primary: true
+  },
+  {
+    title: "Track your chases",
+    description: "Add cards, slabs, sealed product, or sets to Rare Radar so we know what to watch for.",
+    href: "/wishlist",
+    cta: "Open Rare Radar",
+    primary: false
+  },
+  {
+    title: "Sell or trade",
+    description: "Scan raw singles for a preliminary cash or trade-credit estimate before final review.",
+    href: "/sell-trade",
+    cta: "Start Instant Quote",
+    primary: false
+  }
+];
+
 export default async function HomePage() {
   const [featured, heroProducts] = await Promise.all([getFeaturedProducts(8), getHeroShowcaseProducts(3)]);
 
@@ -43,8 +67,8 @@ export default async function HomePage() {
             Collector-first trading card games, sealed product, slabs, and rare finds.
           </p>
           <p className="mt-6 max-w-2xl text-base leading-8 text-vault-secondaryText">
-            Buy, sell, and trade collectibles with real product photos, transparent condition notes, secure packaging,
-            and instant preliminary quotes for raw singles.
+            Buy, sell, trade, and tell us what you&apos;re chasing. Rare Radar keeps your wishlist private and helps us
+            match incoming cards, slabs, sealed product, and sets before every find goes public.
           </p>
           <div className="mt-7 flex items-center gap-4">
             <Image
@@ -61,12 +85,16 @@ export default async function HomePage() {
           </div>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button href="/inventory">Shop Current Inventory</Button>
-            <Button href="/sell-trade" variant="secondary">
-              Get Instant Quote
+            <Button href="/wishlist" variant="secondary">
+              Start Rare Radar
             </Button>
           </div>
           <p className="mt-4 text-sm leading-6 text-vault-muted">
-            Want drop alerts and wishlist matching?{" "}
+            Selling instead?{" "}
+            <a className="font-semibold text-vault-secondaryText transition hover:text-vault-highlight" href="/sell-trade">
+              Start an instant quote
+            </a>
+            . Want drop alerts too?{" "}
             <a className="font-semibold text-vault-secondaryText transition hover:text-vault-highlight" href="/collector-club">
               Join Collector Club
             </a>
@@ -74,6 +102,53 @@ export default async function HomePage() {
           </p>
         </div>
         <HeroProductStack products={heroProducts} />
+      </section>
+
+      <section className="py-4">
+        <div className="grid gap-4 lg:grid-cols-3">
+          {collectorActions.map((action) => (
+            <article className="rounded-xl border border-vault-border bg-vault-card p-5 shadow-vault" key={action.title}>
+              <h2 className="text-xl font-black text-vault-text">{action.title}</h2>
+              <p className="mt-3 min-h-16 text-sm leading-6 text-vault-secondaryText">{action.description}</p>
+              <Button href={action.href} className="mt-5 w-full" variant={action.primary ? "primary" : "secondary"}>
+                {action.cta}
+              </Button>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="my-8 rounded-2xl border border-vault-gold/30 bg-vault-elevated p-6 shadow-gold md:p-8">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(320px,1fr)] lg:items-center">
+          <div>
+            <p className="text-sm font-semibold uppercase text-vault-gold">Rare Radar Wishlist</p>
+            <h2 className="mt-3 text-3xl font-black text-vault-text">Tell us what belongs in your collection next.</h2>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-vault-secondaryText">
+              Add chase cards, sealed product, slabs, sets, and condition notes to your private wishlist. When Rockin Rare
+              can offer a strong match, your radar helps us reach the right collector before the item is just another public listing.
+            </p>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <Button href="/wishlist">Build Your Wishlist</Button>
+              <Button href="/auth/sign-in?redirectTo=/wishlist" variant="secondary">
+                Sign In
+              </Button>
+            </div>
+          </div>
+          <div className="grid gap-3">
+            <div className="rounded-xl border border-vault-border bg-vault-card p-4">
+              <p className="text-sm font-semibold text-vault-text">1. Save the exact chase</p>
+              <p className="mt-1 text-sm leading-6 text-vault-secondaryText">Game, product name, condition, language, max price, and notes.</p>
+            </div>
+            <div className="rounded-xl border border-vault-border bg-vault-card p-4">
+              <p className="text-sm font-semibold text-vault-text">2. We watch incoming supply</p>
+              <p className="mt-1 text-sm leading-6 text-vault-secondaryText">Rare Radar gives new inventory a collector-first destination.</p>
+            </div>
+            <div className="rounded-xl border border-vault-border bg-vault-card p-4">
+              <p className="text-sm font-semibold text-vault-text">3. Strong matches get surfaced</p>
+              <p className="mt-1 text-sm leading-6 text-vault-secondaryText">Your list helps us prioritize relevant offer alerts and deal previews.</p>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section className="rounded-2xl border border-vault-gold/30 bg-vault-elevated p-6 shadow-gold md:p-8">
