@@ -123,7 +123,7 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
                     <form action={deleteItemAndReturnToAdd}>
                       <input name="itemId" type="hidden" value={item.id} />
                       <button
-                        className="rounded-lg border border-vault-border px-3 py-2 text-xs font-bold uppercase text-vault-muted transition hover:border-vault-error hover:text-vault-error"
+                        className="rounded-lg border border-vault-error/70 px-3 py-2 text-xs font-bold uppercase text-vault-error/85 transition hover:border-vault-error hover:bg-vault-error/10 hover:text-vault-error focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-error"
                         type="submit"
                       >
                         Delete
