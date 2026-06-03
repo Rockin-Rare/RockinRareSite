@@ -36,6 +36,8 @@ export function WishlistItemForm({ action, buttonLabel, item, pendingLabel }: Wi
   const [catalogError, setCatalogError] = useState("");
   const [isSearchingCatalog, setIsSearchingCatalog] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
+  const [catalogMatchLabel, setCatalogMatchLabel] = useState(item ? wishlistItemMeta(item) : "");
+  const [advancedOpen, setAdvancedOpen] = useState(Boolean(item));
   const skipNextSearchRef = useRef(false);
 
   useEffect(() => {
@@ -52,6 +54,8 @@ export function WishlistItemForm({ action, buttonLabel, item, pendingLabel }: Wi
     setCatalogResults([]);
     setCatalogError("");
     setCatalogOpen(false);
+    setCatalogMatchLabel(item ? wishlistItemMeta(item) : "");
+    setAdvancedOpen(Boolean(item));
   }, [item]);
 
   useEffect(() => {
@@ -102,6 +106,7 @@ export function WishlistItemForm({ action, buttonLabel, item, pendingLabel }: Wi
     setCategory("Single");
     setSetName(candidate.setName ?? "");
     setCardNumber(candidate.cardNumber ?? "");
+    setCatalogMatchLabel(candidateMeta(candidate) || candidate.name);
     setCatalogResults([]);
     setCatalogError("");
     setCatalogOpen(false);
@@ -110,36 +115,29 @@ export function WishlistItemForm({ action, buttonLabel, item, pendingLabel }: Wi
   return (
     <form action={action} className="grid gap-4">
       {item ? <input name="itemId" type="hidden" value={item.id} /> : null}
-      <div className="grid gap-4 md:grid-cols-2">
-        <CatalogNameField
-          catalogError={catalogError}
-          catalogOpen={catalogOpen}
-          isSearchingCatalog={isSearchingCatalog}
-          name="productName"
-          onBlur={() => window.setTimeout(() => setCatalogOpen(false), 150)}
-          onCandidateSelect={applyCatalogCandidate}
-          onChange={setProductName}
-          onFocus={() => setCatalogOpen(true)}
-          results={catalogResults}
-          value={productName}
-        />
-        <SelectField label="Game" name="game" onChange={setGame} options={wishlistGameOptions} value={game} />
-      </div>
-      <div className="grid gap-4 md:grid-cols-3">
-        <SelectField label="Type" name="category" onChange={setCategory} options={wishlistCategoryOptions} value={category} />
-        <Field label="Set or version" name="setName" onChange={setSetName} value={setName} />
-        <Field label="Card number" name="cardNumber" onChange={setCardNumber} value={cardNumber} />
-      </div>
-      <div className="grid gap-4 md:grid-cols-3">
-        <SelectField label="Language" name="language" onChange={setLanguage} options={wishlistLanguageOptions} value={language} />
-        <SelectField label="Condition" name="desiredCondition" onChange={setDesiredCondition} options={wishlistConditionOptions} value={desiredCondition} />
-        <Field inputMode="decimal" label="Max price optional" name="maxPrice" onChange={setMaxPrice} placeholder="Example: 75" value={maxPrice} />
-      </div>
-      <SelectField label="Alert threshold" name="alertThreshold" onChange={setAlertThreshold} options={wishlistAlertThresholdOptions} value={alertThreshold} />
+      <CatalogNameField
+        catalogError={catalogError}
+        catalogOpen={catalogOpen}
+        isSearchingCatalog={isSearchingCatalog}
+        matchLabel={catalogMatchLabel}
+        name="productName"
+        onBlur={() => window.setTimeout(() => setCatalogOpen(false), 150)}
+        onCandidateSelect={applyCatalogCandidate}
+        onChange={(value) => {
+          setProductName(value);
+          if (catalogMatchLabel) setCatalogMatchLabel("");
+        }}
+        onFocus={() => setCatalogOpen(true)}
+        results={catalogResults}
+        value={productName}
+      />
+
+      <Field inputMode="decimal" label="Max price optional" name="maxPrice" onChange={setMaxPrice} placeholder="Example: 75" value={maxPrice} />
+
       <label className="grid gap-2">
         <span className="text-sm font-semibold text-vault-text">Notes optional</span>
         <textarea
-          className="min-h-28 rounded-xl border border-vault-border bg-vault-secondary px-4 py-3 text-sm text-vault-text outline-none transition placeholder:text-vault-muted focus:border-vault-gold focus:ring-2 focus:ring-vault-gold/20"
+          className="min-h-24 rounded-xl border border-vault-border bg-vault-secondary px-4 py-3 text-sm text-vault-text outline-none transition placeholder:text-vault-muted focus:border-vault-gold focus:ring-2 focus:ring-vault-gold/20"
           maxLength={800}
           name="notes"
           onChange={(event) => setNotes(event.target.value)}
@@ -147,6 +145,30 @@ export function WishlistItemForm({ action, buttonLabel, item, pendingLabel }: Wi
           value={notes}
         />
       </label>
+
+      <button
+        className="w-fit rounded-lg border border-vault-border px-3 py-2 text-xs font-bold uppercase text-vault-secondaryText transition hover:border-vault-gold hover:text-vault-highlight"
+        onClick={() => setAdvancedOpen((current) => !current)}
+        type="button"
+      >
+        {advancedOpen ? "Hide Details" : "More Details"}
+      </button>
+
+      <div className={advancedOpen ? "grid gap-4 border-t border-vault-border pt-4" : "hidden"}>
+        <div className="grid gap-4 md:grid-cols-2">
+          <SelectField label="Game" name="game" onChange={setGame} options={wishlistGameOptions} value={game} />
+          <SelectField label="Type" name="category" onChange={setCategory} options={wishlistCategoryOptions} value={category} />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field label="Set or version" name="setName" onChange={setSetName} value={setName} />
+          <Field label="Card number" name="cardNumber" onChange={setCardNumber} value={cardNumber} />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <SelectField label="Language" name="language" onChange={setLanguage} options={wishlistLanguageOptions} value={language} />
+          <SelectField label="Condition" name="desiredCondition" onChange={setDesiredCondition} options={wishlistConditionOptions} value={desiredCondition} />
+        </div>
+        <SelectField label="Alert threshold" name="alertThreshold" onChange={setAlertThreshold} options={wishlistAlertThresholdOptions} value={alertThreshold} />
+      </div>
       <SubmitButton label={buttonLabel} pendingLabel={pendingLabel ?? `${buttonLabel}...`} />
     </form>
   );
@@ -166,6 +188,7 @@ function CatalogNameField({
   catalogError,
   catalogOpen,
   isSearchingCatalog,
+  matchLabel,
   name,
   onBlur,
   onCandidateSelect,
@@ -177,6 +200,7 @@ function CatalogNameField({
   catalogError: string;
   catalogOpen: boolean;
   isSearchingCatalog: boolean;
+  matchLabel: string;
   name: string;
   onBlur: () => void;
   onCandidateSelect: (candidate: SellTradeQuoteCatalogCandidate) => void;
@@ -217,6 +241,11 @@ function CatalogNameField({
             </button>
           ))}
         </div>
+      ) : null}
+      {matchLabel ? (
+        <span className="w-fit rounded-lg border border-vault-gold/30 bg-vault-gold/10 px-3 py-2 text-xs font-semibold text-vault-highlight">
+          Catalog match selected: {matchLabel}
+        </span>
       ) : null}
     </label>
   );
@@ -294,4 +323,8 @@ function normalizeGame(franchise?: string) {
 
 function candidateMeta(candidate: Pick<SellTradeQuoteCatalogCandidate, "franchise" | "setName" | "cardNumber" | "variant">) {
   return [candidate.franchise, candidate.setName, candidate.cardNumber ? `#${candidate.cardNumber}` : "", candidate.variant].filter(Boolean).join(" / ");
+}
+
+function wishlistItemMeta(item: RareRadarWishlistItem) {
+  return [item.game, item.setName, item.cardNumber ? `#${item.cardNumber}` : "", item.language].filter(Boolean).join(" / ");
 }

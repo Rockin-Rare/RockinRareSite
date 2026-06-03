@@ -15,21 +15,27 @@ type WishlistWorkspaceProps = {
 export function WishlistWorkspace({ createAction, deleteAction, items, updateAction }: WishlistWorkspaceProps) {
   const [editingItemId, setEditingItemId] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
+  const [highlightedItemId, setHighlightedItemId] = useState("");
   const previousItemCountRef = useRef(items.length);
   const editingItem = useMemo(() => items.find((item) => item.id === editingItemId), [editingItemId, items]);
   const isEditing = Boolean(editingItem);
 
   useEffect(() => {
     if (items.length > previousItemCountRef.current) {
+      const addedItemId = items[0]?.id ?? "";
       setStatusMessage("Added to your Rare Radar.");
-      const timeoutId = window.setTimeout(() => setStatusMessage(""), 3200);
+      setHighlightedItemId(addedItemId);
+      const timeoutId = window.setTimeout(() => {
+        setStatusMessage("");
+        setHighlightedItemId("");
+      }, 3200);
       previousItemCountRef.current = items.length;
       return () => window.clearTimeout(timeoutId);
     }
 
     previousItemCountRef.current = items.length;
     return undefined;
-  }, [items.length]);
+  }, [items]);
 
   useEffect(() => {
     if (editingItemId && !items.some((item) => item.id === editingItemId)) {
@@ -48,21 +54,34 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
           <p className="shrink-0 text-sm text-vault-secondaryText">{items.length} saved</p>
         </div>
 
+        {statusMessage ? (
+          <p className="mb-3 rounded-xl border border-vault-gold/30 bg-vault-gold/10 px-4 py-3 text-sm font-semibold text-vault-highlight" role="status">
+            {statusMessage}
+          </p>
+        ) : null}
+
         {items.length > 0 ? (
           <ul className="grid gap-2">
             {items.map((item) => {
               const selected = item.id === editingItem?.id;
+              const highlighted = item.id === highlightedItemId;
+              const metadata = wishlistItemMeta(item);
 
               return (
                 <li
                   className={`flex min-w-0 items-center justify-between gap-3 rounded-xl border p-3 transition ${
-                    selected ? "border-vault-gold bg-vault-gold/10" : "border-vault-border bg-vault-secondary/70"
+                    selected || highlighted ? "border-vault-gold bg-vault-gold/10" : "border-vault-border bg-vault-secondary/70"
                   }`}
                   key={item.id}
                 >
-                  <span className="min-w-0 truncate text-sm font-semibold text-vault-text">{item.productName}</span>
+                  <span className="grid min-w-0 gap-1">
+                    <span className="min-w-0 truncate text-sm font-semibold text-vault-text">{item.productName}</span>
+                    {metadata ? <span className="min-w-0 truncate text-xs text-vault-muted">{metadata}</span> : null}
+                  </span>
                   <button
-                    className="shrink-0 rounded-lg border border-vault-border px-3 py-2 text-xs font-bold uppercase text-vault-secondaryText transition hover:border-vault-gold hover:text-vault-highlight"
+                    className={`shrink-0 rounded-lg border px-3 py-2 text-xs font-bold uppercase transition ${
+                      selected ? "border-vault-gold text-vault-highlight" : "border-vault-border text-vault-secondaryText hover:border-vault-gold hover:text-vault-highlight"
+                    }`}
                     onClick={() => setEditingItemId(item.id)}
                     type="button"
                   >
@@ -74,7 +93,7 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
           </ul>
         ) : (
           <div className="rounded-xl border border-dashed border-vault-border bg-vault-secondary/50 p-5 text-sm leading-6 text-vault-secondaryText">
-            No wishlist items yet. Add your first chase to start building your Rare Radar.
+            Start with one chase card. Search by name, then set a max price if you want deal alerts.
           </div>
         )}
       </div>
@@ -83,13 +102,13 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
         <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase text-vault-gold">{isEditing ? "Edit wishlist item" : "Add wishlist item"}</p>
-            <h2 className="mt-2 text-2xl font-black text-vault-text">{isEditing ? editingItem?.productName : "Add to Rare Radar"}</h2>
+            <h2 className="mt-2 text-2xl font-black text-vault-text">{isEditing ? `Editing: ${editingItem?.productName}` : "Add to Rare Radar"}</h2>
             <p className="mt-2 text-sm leading-6 text-vault-secondaryText">
-              Keep entries specific when you can. Set names, card numbers, and max prices make matching more reliable.
+              Search the catalog first, then add price or notes. Detailed fields are available when you need them.
             </p>
           </div>
           {isEditing ? (
-            <Button onClick={() => setEditingItemId("")} type="button" variant="secondary">
+            <Button className="shrink-0" onClick={() => setEditingItemId("")} type="button" variant="secondary">
               Add New
             </Button>
           ) : null}
@@ -103,12 +122,6 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
           pendingLabel={isEditing ? "Saving..." : "Adding..."}
         />
 
-        {statusMessage ? (
-          <p className="mt-3 rounded-xl border border-vault-gold/30 bg-vault-gold/10 px-4 py-3 text-sm font-semibold text-vault-highlight" role="status">
-            {statusMessage}
-          </p>
-        ) : null}
-
         {isEditing && editingItem ? (
           <form action={deleteAction} className="mt-3">
             <input name="itemId" type="hidden" value={editingItem.id} />
@@ -120,4 +133,8 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
       </div>
     </section>
   );
+}
+
+function wishlistItemMeta(item: RareRadarWishlistItem) {
+  return [item.game, item.setName, item.cardNumber ? `#${item.cardNumber}` : "", item.language].filter(Boolean).join(" / ");
 }
