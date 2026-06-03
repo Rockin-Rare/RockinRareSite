@@ -6,6 +6,7 @@ import { getCurrentAuthUser } from "@/lib/auth/current";
 import {
   createWishlistItem,
   deleteWishlistItem,
+  rareRadarWishlistTableReady,
   updateWishlistItem,
   type WishlistItemInput
 } from "@/lib/rare-radar/wishlist";
@@ -48,6 +49,10 @@ function assertValidInput(input: WishlistItemInput) {
 export async function createWishlistItemAction(formData: FormData) {
   const user = await getCurrentAuthUser();
   if (!user) redirect("/auth/sign-in?redirectTo=/wishlist");
+  if (!(await rareRadarWishlistTableReady())) {
+    revalidatePath("/wishlist");
+    return;
+  }
 
   const input = getWishlistInput(formData);
   assertValidInput(input);
@@ -59,6 +64,10 @@ export async function createWishlistItemAction(formData: FormData) {
 export async function updateWishlistItemAction(formData: FormData) {
   const user = await getCurrentAuthUser();
   if (!user) redirect("/auth/sign-in?redirectTo=/wishlist");
+  if (!(await rareRadarWishlistTableReady())) {
+    revalidatePath("/wishlist");
+    return;
+  }
 
   const itemId = cleanString(formData.get("itemId"), 80);
   const input = getWishlistInput(formData);
@@ -74,6 +83,10 @@ export async function updateWishlistItemAction(formData: FormData) {
 export async function deleteWishlistItemAction(formData: FormData) {
   const user = await getCurrentAuthUser();
   if (!user) redirect("/auth/sign-in?redirectTo=/wishlist");
+  if (!(await rareRadarWishlistTableReady())) {
+    revalidatePath("/wishlist");
+    return;
+  }
 
   const itemId = cleanString(formData.get("itemId"), 80);
   if (itemId) {

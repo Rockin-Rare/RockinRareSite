@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { WishlistItemForm } from "@/components/wishlist/WishlistItemForm";
 import { getCurrentAuthUser } from "@/lib/auth/current";
 import { hasNeonAuth } from "@/lib/auth/server";
-import { rareRadarStorageConfigured, getWishlistItemsForUser } from "@/lib/rare-radar/wishlist";
+import { getWishlistItemsForUser, rareRadarStorageConfigured, rareRadarWishlistTableReady } from "@/lib/rare-radar/wishlist";
 import { createWishlistItemAction, deleteWishlistItemAction, updateWishlistItemAction } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -20,7 +20,9 @@ export const metadata: Metadata = {
 
 export default async function WishlistPage() {
   const user = await getCurrentAuthUser();
-  const items = user ? await getWishlistItemsForUser(user.id) : [];
+  const storageConfigured = rareRadarStorageConfigured();
+  const storageReady = storageConfigured ? await rareRadarWishlistTableReady() : false;
+  const items = user && storageReady ? await getWishlistItemsForUser(user.id) : [];
 
   return (
     <Container className="py-14">
@@ -55,8 +57,13 @@ export default async function WishlistPage() {
         <div className="rounded-2xl border border-vault-border bg-vault-card p-5 shadow-vault">
           {!hasNeonAuth() ? (
             <SetupNotice title="Neon Auth is not configured" text="Set NEON_AUTH_BASE_URL and NEON_AUTH_COOKIE_SECRET before account sign-in can run." />
-          ) : !rareRadarStorageConfigured() ? (
+          ) : !storageConfigured ? (
             <SetupNotice title="Database is not configured" text="Set DATABASE_URL and apply the Rare Radar schema before wishlists can be stored." />
+          ) : !storageReady ? (
+            <SetupNotice
+              title="Rare Radar setup is almost ready"
+              text="Your account is working, but the wishlist database table has not been applied yet. Please check back shortly."
+            />
           ) : user ? (
             <>
               <h2 className="text-2xl font-black text-vault-text">Add a wishlist item</h2>
@@ -76,7 +83,7 @@ export default async function WishlistPage() {
         </div>
       </div>
 
-      {user ? (
+      {user && storageReady ? (
         <section className="mt-10">
           <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>

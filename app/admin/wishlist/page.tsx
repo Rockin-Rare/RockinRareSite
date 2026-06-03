@@ -9,7 +9,7 @@ import {
   hasCardIntakeRareRadarMatchesApi
 } from "@/lib/rare-radar/card-intake-matches";
 import { getWishlistMatches } from "@/lib/rare-radar/matching";
-import { getAdminWishlistItems, rareRadarStorageConfigured } from "@/lib/rare-radar/wishlist";
+import { getAdminWishlistItems, rareRadarStorageConfigured, rareRadarWishlistTableReady } from "@/lib/rare-radar/wishlist";
 import { getProducts } from "@/lib/products";
 import { formatPrice } from "@/lib/utils";
 import { updateWishlistStatusAction } from "./actions";
@@ -24,8 +24,10 @@ export default async function AdminWishlistPage() {
   }
 
   const internalMatches = hasCardIntakeRareRadarMatchesApi() ? await getCardIntakeRareRadarMatches() : null;
-  const items = internalMatches?.results.map((result) => result.wishlist) ?? (rareRadarStorageConfigured() ? await getAdminWishlistItems() : []);
-  const products = internalMatches ? [] : rareRadarStorageConfigured() ? await getProducts() : [];
+  const storageConfigured = rareRadarStorageConfigured();
+  const storageReady = storageConfigured ? await rareRadarWishlistTableReady() : false;
+  const items = internalMatches?.results.map((result) => result.wishlist) ?? (storageReady ? await getAdminWishlistItems() : []);
+  const products = internalMatches ? [] : storageReady ? await getProducts() : [];
   const internalMatchesByWishlistId = new Map((internalMatches?.results ?? []).map((result) => [result.wishlist.id, result.matches]));
   const openCount = items.filter((item) => item.status === "waiting" || item.status === "matched").length;
   const matchSource = internalMatches ? "private Card Intake inventory" : "public storefront inventory";
@@ -50,9 +52,15 @@ export default async function AdminWishlistPage() {
         </div>
       </div>
 
-      {!rareRadarStorageConfigured() ? (
+      {!storageConfigured ? (
         <div className="mt-8 rounded-xl border border-vault-border bg-vault-secondary px-4 py-3 text-sm text-vault-secondaryText">
           Set <code>DATABASE_URL</code> and apply the Rare Radar schema to manage wishlist entries directly from this admin page.
+        </div>
+      ) : null}
+
+      {storageConfigured && !storageReady && !internalMatches ? (
+        <div className="mt-8 rounded-xl border border-vault-border bg-vault-secondary px-4 py-3 text-sm text-vault-secondaryText">
+          Apply the Rare Radar table in <code>docs/neon-collector-club-schema.sql</code> before managing wishlist entries.
         </div>
       ) : null}
 
@@ -126,7 +134,7 @@ export default async function AdminWishlistPage() {
         })}
       </div>
 
-      {(rareRadarStorageConfigured() || internalMatches) && items.length === 0 ? (
+      {(storageReady || internalMatches) && items.length === 0 ? (
         <div className="mt-8 rounded-2xl border border-vault-border bg-vault-card p-8 text-sm text-vault-secondaryText">
           No Rare Radar wishlist entries yet.
         </div>
