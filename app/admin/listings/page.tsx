@@ -24,9 +24,14 @@ export default async function AdminListingsPage() {
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-vault-highlight">Admin</p>
           <h1 className="mt-2 text-3xl font-black text-vault-text">Listings</h1>
         </div>
-        <Button href="/inventory" variant="secondary">
-          View Storefront
-        </Button>
+        <div className="flex flex-wrap gap-3">
+          <Button href="/admin/wishlist" variant="secondary">
+            Rare Radar
+          </Button>
+          <Button href="/inventory" variant="secondary">
+            View Storefront
+          </Button>
+        </div>
       </div>
 
       {!intakeAdminConfigured ? (
