@@ -17,24 +17,32 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
   const [statusMessage, setStatusMessage] = useState("");
   const [highlightedItemId, setHighlightedItemId] = useState("");
   const previousItemCountRef = useRef(items.length);
+  const statusTimeoutRef = useRef<number | null>(null);
   const editingItem = useMemo(() => items.find((item) => item.id === editingItemId), [editingItemId, items]);
   const isEditing = Boolean(editingItem);
+
+  function showStatus(message: string, highlightedId = "") {
+    if (statusTimeoutRef.current) {
+      window.clearTimeout(statusTimeoutRef.current);
+    }
+
+    setStatusMessage(message);
+    setHighlightedItemId(highlightedId);
+    statusTimeoutRef.current = window.setTimeout(() => {
+      setStatusMessage("");
+      setHighlightedItemId("");
+      statusTimeoutRef.current = null;
+    }, 3200);
+  }
 
   useEffect(() => {
     if (items.length > previousItemCountRef.current) {
       const addedItemId = items[0]?.id ?? "";
-      setStatusMessage("Added to your Rare Radar.");
-      setHighlightedItemId(addedItemId);
-      const timeoutId = window.setTimeout(() => {
-        setStatusMessage("");
-        setHighlightedItemId("");
-      }, 3200);
+      showStatus("Added to your Rare Radar.", addedItemId);
       previousItemCountRef.current = items.length;
-      return () => window.clearTimeout(timeoutId);
     }
 
     previousItemCountRef.current = items.length;
-    return undefined;
   }, [items]);
 
   useEffect(() => {
@@ -42,6 +50,30 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
       setEditingItemId("");
     }
   }, [editingItemId, items]);
+
+  useEffect(() => {
+    return () => {
+      if (statusTimeoutRef.current) {
+        window.clearTimeout(statusTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  async function saveEditAndReturnToAdd(formData: FormData) {
+    const itemId = String(formData.get("itemId") ?? "");
+    await updateAction(formData);
+    setEditingItemId("");
+    showStatus("Changes saved.", itemId);
+  }
+
+  async function deleteItemAndReturnToAdd(formData: FormData) {
+    await deleteAction(formData);
+    const itemId = String(formData.get("itemId") ?? "");
+    if (itemId === editingItemId) {
+      setEditingItemId("");
+    }
+    showStatus("Removed from your Rare Radar.");
+  }
 
   return (
     <section className="grid gap-5 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
@@ -78,15 +110,26 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
                     <span className="min-w-0 truncate text-sm font-semibold text-vault-text">{item.productName}</span>
                     {metadata ? <span className="min-w-0 truncate text-xs text-vault-muted">{metadata}</span> : null}
                   </span>
-                  <button
-                    className={`shrink-0 rounded-lg border px-3 py-2 text-xs font-bold uppercase transition ${
-                      selected ? "border-vault-gold text-vault-highlight" : "border-vault-border text-vault-secondaryText hover:border-vault-gold hover:text-vault-highlight"
-                    }`}
-                    onClick={() => setEditingItemId(item.id)}
-                    type="button"
-                  >
-                    Edit
-                  </button>
+                  <span className="flex shrink-0 items-center gap-2">
+                    <button
+                      className={`rounded-lg border px-3 py-2 text-xs font-bold uppercase transition ${
+                        selected ? "border-vault-gold text-vault-highlight" : "border-vault-border text-vault-secondaryText hover:border-vault-gold hover:text-vault-highlight"
+                      }`}
+                      onClick={() => setEditingItemId(item.id)}
+                      type="button"
+                    >
+                      Edit
+                    </button>
+                    <form action={deleteItemAndReturnToAdd}>
+                      <input name="itemId" type="hidden" value={item.id} />
+                      <button
+                        className="rounded-lg border border-vault-border px-3 py-2 text-xs font-bold uppercase text-vault-muted transition hover:border-vault-error hover:text-vault-error"
+                        type="submit"
+                      >
+                        Delete
+                      </button>
+                    </form>
+                  </span>
                 </li>
               );
             })}
@@ -104,32 +147,25 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
             <p className="text-sm font-semibold uppercase text-vault-gold">{isEditing ? "Edit wishlist item" : "Add wishlist item"}</p>
             <h2 className="mt-2 text-2xl font-black text-vault-text">{isEditing ? `Editing: ${editingItem?.productName}` : "Add to Rare Radar"}</h2>
             <p className="mt-2 text-sm leading-6 text-vault-secondaryText">
-              Search the catalog first, then add price or notes. Detailed fields are available when you need them.
+              {isEditing
+                ? "Save changes to return to the add item form, or use the button to add a different card now."
+                : "Search the catalog first, then add price or notes. Detailed fields are available when you need them."}
             </p>
           </div>
           {isEditing ? (
             <Button className="shrink-0" onClick={() => setEditingItemId("")} type="button" variant="secondary">
-              Add New
+              Back to Add New Item
             </Button>
           ) : null}
         </div>
 
         <WishlistItemForm
-          action={isEditing ? updateAction : createAction}
+          action={isEditing ? saveEditAndReturnToAdd : createAction}
           buttonLabel={isEditing ? "Save Changes" : "Add to Rare Radar"}
           item={editingItem}
           key={editingItem?.id ?? `add-${items.length}`}
           pendingLabel={isEditing ? "Saving..." : "Adding..."}
         />
-
-        {isEditing && editingItem ? (
-          <form action={deleteAction} className="mt-3">
-            <input name="itemId" type="hidden" value={editingItem.id} />
-            <Button type="submit" variant="ghost">
-              Delete Item
-            </Button>
-          </form>
-        ) : null}
       </div>
     </section>
   );
