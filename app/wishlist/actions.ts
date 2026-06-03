@@ -32,7 +32,7 @@ function getWishlistInput(formData: FormData): WishlistItemInput {
     category: cleanString(formData.get("category"), 80) || "Single",
     setName: cleanString(formData.get("setName"), 120),
     cardNumber: cleanString(formData.get("cardNumber"), 60),
-    language: cleanString(formData.get("language"), 40) || "Either",
+    language: cleanString(formData.get("language"), 40) || "English",
     desiredCondition: cleanString(formData.get("desiredCondition"), 80) || "Any",
     maxPriceCents: parseMaxPriceCents(formData.get("maxPrice")),
     alertThreshold: cleanString(formData.get("alertThreshold"), 80) || "Strong price",

@@ -2,7 +2,7 @@ export const wishlistGameOptions = ["Pokemon", "One Piece", "Magic: The Gatherin
 
 export const wishlistCategoryOptions = ["Single", "Graded slab", "Sealed product", "Set", "Bundle", "Other"];
 
-export const wishlistLanguageOptions = ["Either", "English", "Japanese", "Korean", "Chinese", "Spanish", "Other"];
+export const wishlistLanguageOptions = ["English", "Any", "Japanese", "Korean", "Chinese", "Spanish", "Other"];
 
 export const wishlistConditionOptions = ["Any", "Near Mint", "Lightly Played", "Moderately Played", "Sealed", "Graded", "Display-worthy", "Other"];
 

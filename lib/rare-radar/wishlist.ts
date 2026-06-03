@@ -256,7 +256,7 @@ function mapWishlistItemRow(row: WishlistItemRow): RareRadarWishlistItem {
     category: row.category,
     setName: row.set_name || undefined,
     cardNumber: row.card_number || undefined,
-    language: row.language,
+    language: normalizeWishlistLanguage(row.language),
     desiredCondition: row.desired_condition,
     maxPriceCents: row.max_price_cents ?? undefined,
     alertThreshold: row.alert_threshold,
@@ -265,6 +265,10 @@ function mapWishlistItemRow(row: WishlistItemRow): RareRadarWishlistItem {
     createdAt: row.created_at,
     updatedAt: row.updated_at
   };
+}
+
+function normalizeWishlistLanguage(value: string) {
+  return value === "Either" ? "Any" : value;
 }
 
 function storageFailureReason(error: unknown) {

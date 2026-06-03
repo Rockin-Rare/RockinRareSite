@@ -49,7 +49,7 @@ function scoreWishlistMatch(item: RareRadarWishlistItem, product: Product): Wish
     reasons.push("category");
   }
 
-  if (item.language === "Either" || !product.language || item.language === product.language) {
+  if (isAnyLanguage(item.language) || !product.language || item.language === product.language) {
     score += 5;
     reasons.push("language");
   }
@@ -63,6 +63,10 @@ function scoreWishlistMatch(item: RareRadarWishlistItem, product: Product): Wish
   }
 
   return { product, score, reasons };
+}
+
+function isAnyLanguage(value: string) {
+  return value === "Any" || value === "Either";
 }
 
 function normalize(value: string) {

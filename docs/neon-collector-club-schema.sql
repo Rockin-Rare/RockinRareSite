@@ -87,7 +87,7 @@ create table if not exists collector_club.rare_radar_wishlist_items (
   category text not null default 'Single',
   set_name text,
   card_number text,
-  language text not null default 'Either',
+  language text not null default 'English',
   desired_condition text not null default 'Any',
   max_price_cents integer,
   alert_threshold text not null default 'Strong price',
