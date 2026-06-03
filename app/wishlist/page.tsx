@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { Container } from "@/components/layout/Container";
@@ -119,13 +118,6 @@ export default async function WishlistPage() {
         </section>
       ) : null}
 
-      <section className="mt-10 rounded-2xl border border-vault-gold/30 bg-vault-elevated p-8">
-        <h2 className="text-2xl font-black text-vault-text">Package insert URL</h2>
-        <p className="mt-3 text-sm leading-6 text-vault-secondaryText">
-          Use <Link className="font-semibold text-vault-highlight" href="/wishlist?ref=tcg-insert">rockinrarecollectibles.com/wishlist?ref=tcg-insert</Link>{" "}
-          for the QR card insert described in the Rare Radar plan.
-        </p>
-      </section>
     </Container>
   );
 }
