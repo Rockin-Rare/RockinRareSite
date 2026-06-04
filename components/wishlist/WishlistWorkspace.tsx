@@ -111,18 +111,20 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
               const selected = item.id === editingItem?.id;
               const highlighted = item.id === highlightedItemId;
               const metadata = wishlistItemMeta(item);
+              const hasImage = Boolean(item.imageUrl);
 
               return (
                 <li
-                  className={`grid min-w-0 gap-4 rounded-xl border p-3 transition sm:grid-cols-[144px_minmax(0,1fr)_auto] sm:items-center ${
+                  className={`grid min-w-0 rounded-xl border p-3 transition sm:items-center ${
                     selected || highlighted ? "border-vault-gold bg-vault-gold/10" : "border-vault-border bg-vault-secondary/70"
-                  }`}
+                  } ${hasImage ? "gap-4 sm:grid-cols-[144px_minmax(0,1fr)_auto]" : "gap-3 sm:grid-cols-[72px_minmax(0,1fr)_auto]"}`}
                   key={item.id}
                 >
-                  <span className="grid min-w-0 grid-cols-[112px_1fr] items-center gap-3 sm:contents">
-                    {item.imageUrl ? (
+                  <span className={`grid min-w-0 items-center gap-3 sm:contents ${hasImage ? "grid-cols-[112px_1fr]" : "grid-cols-[72px_1fr]"}`}>
+                    {hasImage ? (
                       <button
                         aria-label={`View larger image for ${item.productName}`}
+                        title={`View larger image for ${item.productName}`}
                         className="group relative aspect-[144/202] w-28 overflow-hidden rounded-lg border border-vault-border bg-vault-card p-1.5 transition hover:border-vault-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-gold sm:w-36"
                         onClick={() => setPreviewItem(item)}
                         type="button"
@@ -144,8 +146,8 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
                         </span>
                       </button>
                     ) : (
-                      <span className="flex aspect-[144/202] w-28 items-center justify-center rounded-lg border border-dashed border-vault-border bg-vault-card/60 px-2 text-center sm:w-36">
-                        <span className="text-[10px] font-bold uppercase leading-4 text-vault-muted">Image pending</span>
+                      <span className="flex aspect-[144/202] w-[72px] items-center justify-center rounded-lg border border-dashed border-vault-border bg-vault-card/60 px-1.5 text-center">
+                        <span className="text-[9px] font-bold uppercase leading-3 text-vault-muted">Image pending</span>
                       </span>
                     )}
                     <span className="min-w-0">
@@ -159,6 +161,7 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
                   <span className="flex shrink-0 items-center gap-2 sm:flex-col sm:items-stretch">
                     <button
                       aria-label={`Edit ${item.productName}`}
+                      title={`Edit ${item.productName}`}
                       className={`grid size-10 place-items-center rounded-lg border transition ${
                         selected ? "border-vault-gold text-vault-highlight" : "border-vault-border text-vault-secondaryText hover:border-vault-gold hover:text-vault-highlight"
                       }`}
@@ -173,6 +176,7 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
                       <input name="itemId" type="hidden" value={item.id} />
                       <button
                         aria-label={`Delete ${item.productName}`}
+                        title={`Delete ${item.productName}`}
                         className="grid size-10 place-items-center rounded-lg border border-vault-error/40 text-vault-error/70 transition hover:border-vault-error hover:bg-vault-error/10 hover:text-vault-error focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-error"
                         type="submit"
                       >
