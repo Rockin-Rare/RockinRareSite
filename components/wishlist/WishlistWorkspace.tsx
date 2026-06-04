@@ -114,16 +114,16 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
 
               return (
                 <li
-                  className={`grid min-w-0 gap-3 rounded-xl border p-3 transition sm:grid-cols-[104px_minmax(0,1fr)_auto] sm:items-center ${
+                  className={`grid min-w-0 gap-4 rounded-xl border p-3 transition sm:grid-cols-[144px_minmax(0,1fr)_auto] sm:items-center ${
                     selected || highlighted ? "border-vault-gold bg-vault-gold/10" : "border-vault-border bg-vault-secondary/70"
                   }`}
                   key={item.id}
                 >
-                  <span className="grid min-w-0 grid-cols-[88px_1fr] items-center gap-3 sm:contents">
+                  <span className="grid min-w-0 grid-cols-[112px_1fr] items-center gap-3 sm:contents">
                     {item.imageUrl ? (
                       <button
                         aria-label={`View larger image for ${item.productName}`}
-                        className="aspect-[5/7] w-[88px] overflow-hidden rounded-lg border border-vault-border bg-vault-card p-1.5 transition hover:border-vault-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-gold sm:w-[104px]"
+                        className="group relative aspect-[144/202] w-28 overflow-hidden rounded-lg border border-vault-border bg-vault-card p-1.5 transition hover:border-vault-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-gold sm:w-36"
                         onClick={() => setPreviewItem(item)}
                         type="button"
                       >
@@ -131,15 +131,20 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
                           alt=""
                           className="h-full w-full object-contain"
                           decoding="async"
-                          height={146}
+                          height={202}
                           loading="lazy"
                           referrerPolicy="no-referrer"
                           src={item.imageUrl}
-                          width={104}
+                          width={144}
                         />
+                        <span className="absolute right-2 top-2 grid size-7 place-items-center rounded-full border border-vault-border bg-vault-bg/80 text-vault-secondaryText opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100">
+                          <span aria-hidden="true" className="material-symbols-outlined text-[18px]">
+                            open_in_full
+                          </span>
+                        </span>
                       </button>
                     ) : (
-                      <span className="flex aspect-[5/7] w-[88px] items-center justify-center rounded-lg border border-dashed border-vault-border bg-vault-card/60 px-2 text-center sm:w-[104px]">
+                      <span className="flex aspect-[144/202] w-28 items-center justify-center rounded-lg border border-dashed border-vault-border bg-vault-card/60 px-2 text-center sm:w-36">
                         <span className="text-[10px] font-bold uppercase leading-4 text-vault-muted">Image pending</span>
                       </span>
                     )}
@@ -153,21 +158,27 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
                   </span>
                   <span className="flex shrink-0 items-center gap-2 sm:flex-col sm:items-stretch">
                     <button
-                      className={`rounded-lg border px-3 py-2 text-xs font-bold uppercase transition sm:min-w-20 ${
+                      aria-label={`Edit ${item.productName}`}
+                      className={`grid size-10 place-items-center rounded-lg border transition ${
                         selected ? "border-vault-gold text-vault-highlight" : "border-vault-border text-vault-secondaryText hover:border-vault-gold hover:text-vault-highlight"
                       }`}
                       onClick={() => startEditing(item)}
                       type="button"
                     >
-                      Edit
+                      <span aria-hidden="true" className="material-symbols-outlined">
+                        edit
+                      </span>
                     </button>
                     <form action={deleteAction}>
                       <input name="itemId" type="hidden" value={item.id} />
                       <button
-                        className="rounded-lg border border-vault-error/40 px-3 py-2 text-xs font-bold uppercase text-vault-error/70 transition hover:border-vault-error hover:bg-vault-error/10 hover:text-vault-error focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-error sm:min-w-20"
+                        aria-label={`Delete ${item.productName}`}
+                        className="grid size-10 place-items-center rounded-lg border border-vault-error/40 text-vault-error/70 transition hover:border-vault-error hover:bg-vault-error/10 hover:text-vault-error focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-error"
                         type="submit"
                       >
-                        Delete
+                        <span aria-hidden="true" className="material-symbols-outlined">
+                          delete
+                        </span>
                       </button>
                     </form>
                   </span>
@@ -232,11 +243,14 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
                 <p className="truncate text-sm text-vault-secondaryText">{wishlistItemMeta(previewItem)}</p>
               </div>
               <button
-                className="rounded-lg border border-vault-border bg-vault-card px-3 py-2 text-xs font-bold uppercase text-vault-secondaryText transition hover:border-vault-gold hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-gold"
+                aria-label="Close image preview"
+                className="grid size-10 shrink-0 place-items-center rounded-lg border border-vault-border bg-vault-card text-vault-secondaryText transition hover:border-vault-gold hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-gold"
                 onClick={() => setPreviewItem(null)}
                 type="button"
               >
-                Close
+                <span aria-hidden="true" className="material-symbols-outlined">
+                  close
+                </span>
               </button>
             </div>
             <img
