@@ -1,28 +1,30 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/Button";
 import { WishlistItemForm } from "@/components/wishlist/WishlistItemForm";
 import type { RareRadarWishlistItem } from "@/lib/rare-radar/wishlist";
+import type { WishlistDeleteResult, WishlistSaveResult } from "@/app/wishlist/actions";
 
 type WishlistWorkspaceProps = {
-  createAction: (formData: FormData) => Promise<void>;
-  deleteAction: (formData: FormData) => Promise<void>;
+  createAction: (formData: FormData) => Promise<WishlistSaveResult>;
+  deleteAction: (formData: FormData) => Promise<WishlistDeleteResult>;
   items: RareRadarWishlistItem[];
-  updateAction: (formData: FormData) => Promise<void>;
+  updateAction: (formData: FormData) => Promise<WishlistSaveResult>;
 };
 
-const wishlistScrollKey = "rare-radar-wishlist-scroll-y";
-
 export function WishlistWorkspace({ createAction, deleteAction, items, updateAction }: WishlistWorkspaceProps) {
+  const [wishlistItems, setWishlistItems] = useState(items);
   const [editingItemId, setEditingItemId] = useState("");
   const [editingInitialUpdatedAt, setEditingInitialUpdatedAt] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
   const [highlightedItemId, setHighlightedItemId] = useState("");
   const [previewItem, setPreviewItem] = useState<RareRadarWishlistItem | null>(null);
-  const previousItemCountRef = useRef(items.length);
+  const [, startTransition] = useTransition();
+  const [isSaving, setIsSaving] = useState(false);
+  const previousItemCountRef = useRef(wishlistItems.length);
   const statusTimeoutRef = useRef<number | null>(null);
-  const editingItem = useMemo(() => items.find((item) => item.id === editingItemId), [editingItemId, items]);
+  const editingItem = useMemo(() => wishlistItems.find((item) => item.id === editingItemId), [editingItemId, wishlistItems]);
   const isEditing = Boolean(editingItem);
 
   function showStatus(message: string, highlightedId = "") {
@@ -40,32 +42,26 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
   }
 
   useEffect(() => {
-    const savedScrollY = window.sessionStorage.getItem(wishlistScrollKey);
-    if (!savedScrollY) return;
-
-    window.sessionStorage.removeItem(wishlistScrollKey);
-    window.requestAnimationFrame(() => {
-      window.scrollTo({ top: Number(savedScrollY), behavior: "auto" });
-    });
+    setWishlistItems(items);
   }, [items]);
 
   useEffect(() => {
-    if (items.length > previousItemCountRef.current) {
-      const addedItemId = items[0]?.id ?? "";
+    if (wishlistItems.length > previousItemCountRef.current) {
+      const addedItemId = wishlistItems[0]?.id ?? "";
       showStatus("Added to your Rare Radar.", addedItemId);
-    } else if (items.length < previousItemCountRef.current) {
+    } else if (wishlistItems.length < previousItemCountRef.current) {
       showStatus("Removed from your Rare Radar.");
     }
 
-    previousItemCountRef.current = items.length;
-  }, [items]);
+    previousItemCountRef.current = wishlistItems.length;
+  }, [wishlistItems]);
 
   useEffect(() => {
-    if (editingItemId && !items.some((item) => item.id === editingItemId)) {
+    if (editingItemId && !wishlistItems.some((item) => item.id === editingItemId)) {
       setEditingItemId("");
       setEditingInitialUpdatedAt("");
     }
-  }, [editingItemId, items]);
+  }, [editingItemId, wishlistItems]);
 
   useEffect(() => {
     if (editingItem && editingInitialUpdatedAt && editingItem.updatedAt !== editingInitialUpdatedAt) {
@@ -100,8 +96,57 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
     setEditingInitialUpdatedAt(item.updatedAt);
   }
 
-  function preserveScrollPosition() {
-    window.sessionStorage.setItem(wishlistScrollKey, String(window.scrollY));
+  function handleSave(formData: FormData) {
+    setIsSaving(true);
+    startTransition(async () => {
+      try {
+        const result = isEditing ? await updateAction(formData) : await createAction(formData);
+
+        if (!result.ok) {
+          showStatus(result.error);
+          return;
+        }
+
+        if (isEditing) {
+          setWishlistItems((current) => current.map((item) => (item.id === result.item.id ? result.item : item)));
+          setEditingItemId("");
+          setEditingInitialUpdatedAt("");
+          showStatus("Changes saved.", result.item.id);
+        } else {
+          setWishlistItems((current) => [result.item, ...current]);
+        }
+      } catch {
+        showStatus("Unable to save this wishlist item.");
+      } finally {
+        setIsSaving(false);
+      }
+    });
+  }
+
+  function handleDelete(item: RareRadarWishlistItem) {
+    setIsSaving(true);
+    startTransition(async () => {
+      try {
+        const formData = new FormData();
+        formData.set("itemId", item.id);
+        const result = await deleteAction(formData);
+
+        if (!result.ok) {
+          showStatus(result.error);
+          return;
+        }
+
+        setWishlistItems((current) => current.filter((wishlistItem) => wishlistItem.id !== result.itemId));
+        if (editingItemId === result.itemId) {
+          setEditingItemId("");
+          setEditingInitialUpdatedAt("");
+        }
+      } catch {
+        showStatus("Unable to delete this wishlist item.");
+      } finally {
+        setIsSaving(false);
+      }
+    });
   }
 
   return (
@@ -112,7 +157,7 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
             <p className="text-sm font-semibold uppercase text-vault-gold">Your saved radar</p>
             <h2 className="mt-2 text-2xl font-black text-vault-text">Current List</h2>
           </div>
-          <p className="shrink-0 text-sm text-vault-secondaryText">{items.length} saved</p>
+          <p className="shrink-0 text-sm text-vault-secondaryText">{wishlistItems.length} saved</p>
         </div>
 
         {statusMessage ? (
@@ -121,9 +166,9 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
           </p>
         ) : null}
 
-        {items.length > 0 ? (
+        {wishlistItems.length > 0 ? (
           <ul className="grid gap-3">
-            {items.map((item) => {
+            {wishlistItems.map((item) => {
               const selected = item.id === editingItem?.id;
               const highlighted = item.id === highlightedItemId;
               const metadata = wishlistItemMeta(item);
@@ -188,19 +233,18 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
                         edit
                       </span>
                     </button>
-                    <form action={deleteAction} onSubmit={preserveScrollPosition}>
-                      <input name="itemId" type="hidden" value={item.id} />
-                      <button
-                        aria-label={`Delete ${item.productName}`}
-                        title={`Delete ${item.productName}`}
-                        className="grid size-10 place-items-center rounded-lg border border-vault-error/40 text-vault-error/70 transition hover:border-vault-error hover:bg-vault-error/10 hover:text-vault-error focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-error"
-                        type="submit"
-                      >
-                        <span aria-hidden="true" className="material-symbols-outlined">
-                          delete
-                        </span>
-                      </button>
-                    </form>
+                    <button
+                      aria-label={`Delete ${item.productName}`}
+                      disabled={isSaving}
+                      title={`Delete ${item.productName}`}
+                      className="grid size-10 place-items-center rounded-lg border border-vault-error/40 text-vault-error/70 transition hover:border-vault-error hover:bg-vault-error/10 hover:text-vault-error focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-error"
+                      onClick={() => handleDelete(item)}
+                      type="button"
+                    >
+                      <span aria-hidden="true" className="material-symbols-outlined">
+                        delete
+                      </span>
+                    </button>
                   </span>
                 </li>
               );
@@ -240,11 +284,11 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
         </div>
 
         <WishlistItemForm
-          action={isEditing ? updateAction : createAction}
           buttonLabel={isEditing ? "Save Changes" : "Add to Rare Radar"}
+          isPending={isSaving}
           item={editingItem}
-          key={editingItem?.id ?? `add-${items.length}`}
-          onSubmit={preserveScrollPosition}
+          key={editingItem?.id ?? `add-${wishlistItems.length}`}
+          onSubmit={handleSave}
           pendingLabel={isEditing ? "Saving..." : "Adding..."}
         />
       </div>

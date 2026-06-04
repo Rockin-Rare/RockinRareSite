@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useFormStatus } from "react-dom";
-import type { InputHTMLAttributes } from "react";
+import type { FormEvent, InputHTMLAttributes } from "react";
 import {
   wishlistAlertThresholdOptions,
   wishlistCategoryOptions,
@@ -15,14 +14,14 @@ import type { SellTradeQuoteCatalogCandidate } from "@/lib/types";
 import { Button } from "@/components/ui/Button";
 
 type WishlistItemFormProps = {
-  action: (formData: FormData) => Promise<void>;
   buttonLabel: string;
+  isPending?: boolean;
   item?: RareRadarWishlistItem;
-  onSubmit?: () => void;
+  onSubmit: (formData: FormData) => void;
   pendingLabel?: string;
 };
 
-export function WishlistItemForm({ action, buttonLabel, item, onSubmit, pendingLabel }: WishlistItemFormProps) {
+export function WishlistItemForm({ buttonLabel, isPending = false, item, onSubmit, pendingLabel }: WishlistItemFormProps) {
   const [productName, setProductName] = useState(item?.productName ?? "");
   const [game, setGame] = useState(item?.game ?? wishlistGameOptions[0]);
   const [category, setCategory] = useState(item?.category ?? wishlistCategoryOptions[0]);
@@ -116,8 +115,13 @@ export function WishlistItemForm({ action, buttonLabel, item, onSubmit, pendingL
     setCatalogOpen(false);
   }
 
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    onSubmit(new FormData(event.currentTarget));
+  }
+
   return (
-    <form action={action} className="grid gap-3" onSubmit={onSubmit}>
+    <form className="grid gap-3" onSubmit={handleSubmit}>
       {item ? <input name="itemId" type="hidden" value={item.id} /> : null}
       <input name="imageUrl" type="hidden" value={imageUrl} />
       <CatalogNameField
@@ -194,17 +198,15 @@ export function WishlistItemForm({ action, buttonLabel, item, onSubmit, pendingL
         </div>
         <SelectField label="Alert threshold" name="alertThreshold" onChange={setAlertThreshold} options={wishlistAlertThresholdOptions} value={alertThreshold} />
       </div>
-      <SubmitButton label={buttonLabel} pendingLabel={pendingLabel ?? `${buttonLabel}...`} />
+      <SubmitButton isPending={isPending} label={buttonLabel} pendingLabel={pendingLabel ?? `${buttonLabel}...`} />
     </form>
   );
 }
 
-function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
-  const { pending } = useFormStatus();
-
+function SubmitButton({ isPending, label, pendingLabel }: { isPending: boolean; label: string; pendingLabel: string }) {
   return (
-    <Button disabled={pending} type="submit">
-      {pending ? pendingLabel : label}
+    <Button disabled={isPending} type="submit">
+      {isPending ? pendingLabel : label}
     </Button>
   );
 }

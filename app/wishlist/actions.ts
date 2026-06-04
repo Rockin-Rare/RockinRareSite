@@ -1,15 +1,18 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCurrentAuthUser } from "@/lib/auth/current";
 import {
   createWishlistItem,
   deleteWishlistItem,
+  type RareRadarWishlistItem,
   rareRadarWishlistTableReady,
   updateWishlistItem,
   type WishlistItemInput
 } from "@/lib/rare-radar/wishlist";
+
+export type WishlistSaveResult = { ok: true; item: RareRadarWishlistItem } | { ok: false; error: string };
+export type WishlistDeleteResult = { ok: true; itemId: string } | { ok: false; error: string };
 
 function cleanString(value: FormDataEntryValue | null, maxLength: number) {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
@@ -55,56 +58,55 @@ function getWishlistInput(formData: FormData): WishlistItemInput {
 
 function assertValidInput(input: WishlistItemInput) {
   if (!input.productName) {
-    throw new Error("Card or product name is required.");
+    return "Card or product name is required.";
   }
+
+  return "";
 }
 
-export async function createWishlistItemAction(formData: FormData) {
+export async function createWishlistItemAction(formData: FormData): Promise<WishlistSaveResult> {
   const user = await getCurrentAuthUser();
   if (!user) redirect("/auth/sign-in?redirectTo=/wishlist");
   if (!(await rareRadarWishlistTableReady())) {
-    revalidatePath("/wishlist");
-    return;
+    return { ok: false, error: "Rare Radar storage is not ready yet." };
   }
 
   const input = getWishlistInput(formData);
-  assertValidInput(input);
+  const inputError = assertValidInput(input);
+  if (inputError) return { ok: false, error: inputError };
 
-  await createWishlistItem(user, input);
-  revalidatePath("/wishlist");
+  const result = await createWishlistItem(user, input);
+  return result.stored ? { ok: true, item: result.item } : { ok: false, error: "Unable to add this wishlist item." };
 }
 
-export async function updateWishlistItemAction(formData: FormData) {
+export async function updateWishlistItemAction(formData: FormData): Promise<WishlistSaveResult> {
   const user = await getCurrentAuthUser();
   if (!user) redirect("/auth/sign-in?redirectTo=/wishlist");
   if (!(await rareRadarWishlistTableReady())) {
-    revalidatePath("/wishlist");
-    return;
+    return { ok: false, error: "Rare Radar storage is not ready yet." };
   }
 
   const itemId = cleanString(formData.get("itemId"), 80);
   const input = getWishlistInput(formData);
-  assertValidInput(input);
+  const inputError = assertValidInput(input);
+  if (inputError) return { ok: false, error: inputError };
 
-  if (itemId) {
-    await updateWishlistItem(user.id, itemId, input);
-  }
+  if (!itemId) return { ok: false, error: "Wishlist item is missing." };
 
-  revalidatePath("/wishlist");
+  const result = await updateWishlistItem(user.id, itemId, input);
+  return result.stored ? { ok: true, item: result.item } : { ok: false, error: "Unable to save this wishlist item." };
 }
 
-export async function deleteWishlistItemAction(formData: FormData) {
+export async function deleteWishlistItemAction(formData: FormData): Promise<WishlistDeleteResult> {
   const user = await getCurrentAuthUser();
   if (!user) redirect("/auth/sign-in?redirectTo=/wishlist");
   if (!(await rareRadarWishlistTableReady())) {
-    revalidatePath("/wishlist");
-    return;
+    return { ok: false, error: "Rare Radar storage is not ready yet." };
   }
 
   const itemId = cleanString(formData.get("itemId"), 80);
-  if (itemId) {
-    await deleteWishlistItem(user.id, itemId);
-  }
+  if (!itemId) return { ok: false, error: "Wishlist item is missing." };
 
-  revalidatePath("/wishlist");
+  const result = await deleteWishlistItem(user.id, itemId);
+  return result.deleted ? { ok: true, itemId } : { ok: false, error: "Unable to delete this wishlist item." };
 }
