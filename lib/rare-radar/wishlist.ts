@@ -18,6 +18,7 @@ export type RareRadarWishlistItem = {
   maxPriceCents?: number;
   alertThreshold: string;
   notes?: string;
+  imageUrl?: string;
   status: WishlistItemStatus;
   createdAt: string;
   updatedAt: string;
@@ -34,6 +35,7 @@ export type WishlistItemInput = {
   maxPriceCents?: number;
   alertThreshold: string;
   notes?: string;
+  imageUrl?: string;
 };
 
 type WishlistItemRow = {
@@ -51,6 +53,7 @@ type WishlistItemRow = {
   max_price_cents: number | null;
   alert_threshold: string;
   notes: string | null;
+  image_url: string | null;
   status: WishlistItemStatus;
   created_at: string;
   updated_at: string;
@@ -145,6 +148,7 @@ export async function createWishlistItem(user: AuthUser, input: WishlistItemInpu
         max_price_cents,
         alert_threshold,
         notes,
+        image_url,
         updated_at
       )
       values (
@@ -161,6 +165,7 @@ export async function createWishlistItem(user: AuthUser, input: WishlistItemInpu
         ${input.maxPriceCents ?? null},
         ${input.alertThreshold},
         ${input.notes || null},
+        ${input.imageUrl || null},
         now()
       )
       returning *
@@ -192,6 +197,7 @@ export async function updateWishlistItem(authUserId: string, itemId: string, inp
         max_price_cents = ${input.maxPriceCents ?? null},
         alert_threshold = ${input.alertThreshold},
         notes = ${input.notes || null},
+        image_url = ${input.imageUrl || null},
         updated_at = now()
       where id = ${itemId}
         and auth_user_id = ${authUserId}
@@ -261,6 +267,7 @@ function mapWishlistItemRow(row: WishlistItemRow): RareRadarWishlistItem {
     maxPriceCents: row.max_price_cents ?? undefined,
     alertThreshold: row.alert_threshold,
     notes: row.notes || undefined,
+    imageUrl: row.image_url || undefined,
     status: row.status,
     createdAt: row.created_at,
     updatedAt: row.updated_at

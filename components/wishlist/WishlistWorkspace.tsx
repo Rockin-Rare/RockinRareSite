@@ -107,9 +107,16 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
                   }`}
                   key={item.id}
                 >
-                  <span className="grid min-w-0 gap-1">
-                    <span className="min-w-0 truncate text-sm font-semibold text-vault-text">{item.productName}</span>
-                    {metadata ? <span className="min-w-0 truncate text-xs text-vault-muted">{metadata}</span> : null}
+                  <span className="grid min-w-0 grid-cols-[48px_1fr] items-center gap-3">
+                    {item.imageUrl ? (
+                      <img alt="" className="aspect-[5/7] w-12 rounded-lg border border-vault-border bg-vault-card object-contain p-1" src={item.imageUrl} />
+                    ) : (
+                      <span className="aspect-[5/7] w-12 rounded-lg border border-vault-border bg-vault-secondary" />
+                    )}
+                    <span className="min-w-0">
+                      <span className="block min-w-0 truncate text-sm font-semibold text-vault-text">{item.productName}</span>
+                      {metadata ? <span className="block min-w-0 truncate text-xs text-vault-muted">{metadata}</span> : null}
+                    </span>
                   </span>
                   <span className="flex shrink-0 items-center gap-2">
                     <button

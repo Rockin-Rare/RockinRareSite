@@ -32,6 +32,7 @@ export function WishlistItemForm({ action, buttonLabel, item, pendingLabel }: Wi
   const [maxPrice, setMaxPrice] = useState(formatCentsForInput(item?.maxPriceCents));
   const [alertThreshold, setAlertThreshold] = useState(item?.alertThreshold ?? wishlistAlertThresholdOptions[0]);
   const [notes, setNotes] = useState(item?.notes ?? "");
+  const [imageUrl, setImageUrl] = useState(item?.imageUrl ?? "");
   const [catalogResults, setCatalogResults] = useState<SellTradeQuoteCatalogCandidate[]>([]);
   const [catalogError, setCatalogError] = useState("");
   const [isSearchingCatalog, setIsSearchingCatalog] = useState(false);
@@ -51,6 +52,7 @@ export function WishlistItemForm({ action, buttonLabel, item, pendingLabel }: Wi
     setMaxPrice(formatCentsForInput(item?.maxPriceCents));
     setAlertThreshold(item?.alertThreshold ?? wishlistAlertThresholdOptions[0]);
     setNotes(item?.notes ?? "");
+    setImageUrl(item?.imageUrl ?? "");
     setCatalogResults([]);
     setCatalogError("");
     setCatalogOpen(false);
@@ -106,6 +108,7 @@ export function WishlistItemForm({ action, buttonLabel, item, pendingLabel }: Wi
     setCategory("Single");
     setSetName(candidate.setName ?? "");
     setCardNumber(candidate.cardNumber ?? "");
+    setImageUrl(candidate.imageUrl ?? "");
     setCatalogMatchLabel(candidateMeta(candidate) || candidate.name);
     setCatalogResults([]);
     setCatalogError("");
@@ -115,6 +118,7 @@ export function WishlistItemForm({ action, buttonLabel, item, pendingLabel }: Wi
   return (
     <form action={action} className="grid gap-4">
       {item ? <input name="itemId" type="hidden" value={item.id} /> : null}
+      <input name="imageUrl" type="hidden" value={imageUrl} />
       <CatalogNameField
         catalogError={catalogError}
         catalogOpen={catalogOpen}
@@ -126,11 +130,22 @@ export function WishlistItemForm({ action, buttonLabel, item, pendingLabel }: Wi
         onChange={(value) => {
           setProductName(value);
           if (catalogMatchLabel) setCatalogMatchLabel("");
+          if (imageUrl) setImageUrl("");
         }}
         onFocus={() => setCatalogOpen(true)}
         results={catalogResults}
         value={productName}
       />
+
+      {imageUrl ? (
+        <div className="grid grid-cols-[64px_1fr] items-center gap-3 rounded-xl border border-vault-border bg-vault-secondary/70 p-3">
+          <img alt={productName ? `${productName} catalog image` : "Catalog card image"} className="aspect-[5/7] w-16 rounded-lg border border-vault-border bg-vault-card object-contain p-1" src={imageUrl} />
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-vault-text">Stock image attached</p>
+            <p className="mt-1 truncate text-xs text-vault-muted">From the Card Intake catalog.</p>
+          </div>
+        </div>
+      ) : null}
 
       <Field inputMode="decimal" label="Max price optional" name="maxPrice" onChange={setMaxPrice} placeholder="Example: 75" value={maxPrice} />
 
@@ -230,14 +245,21 @@ function CatalogNameField({
           {catalogError ? <p className="px-3 py-2 text-xs text-vault-error">{catalogError}</p> : null}
           {results.map((candidate) => (
             <button
-              className="grid w-full gap-1 rounded-lg px-3 py-2 text-left transition hover:bg-vault-secondary focus:bg-vault-secondary focus:outline-none"
+              className="grid w-full grid-cols-[44px_1fr] items-center gap-3 rounded-lg px-3 py-2 text-left transition hover:bg-vault-secondary focus:bg-vault-secondary focus:outline-none"
               key={candidate.id}
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => onCandidateSelect(candidate)}
               type="button"
             >
-              <span className="text-sm font-semibold text-vault-text">{candidate.name}</span>
-              {candidateMeta(candidate) ? <span className="text-xs leading-5 text-vault-muted">{candidateMeta(candidate)}</span> : null}
+              {candidate.imageUrl ? (
+                <img alt="" className="aspect-[5/7] w-11 rounded border border-vault-border bg-vault-card object-contain p-0.5" src={candidate.imageUrl} />
+              ) : (
+                <span className="aspect-[5/7] w-11 rounded border border-vault-border bg-vault-secondary" />
+              )}
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-semibold text-vault-text">{candidate.name}</span>
+                {candidateMeta(candidate) ? <span className="block truncate text-xs leading-5 text-vault-muted">{candidateMeta(candidate)}</span> : null}
+              </span>
             </button>
           ))}
         </div>

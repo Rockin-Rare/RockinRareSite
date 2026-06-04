@@ -92,6 +92,7 @@ create table if not exists collector_club.rare_radar_wishlist_items (
   max_price_cents integer,
   alert_threshold text not null default 'Strong price',
   notes text,
+  image_url text,
   status collector_club.rare_radar_wishlist_status not null default 'waiting',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()

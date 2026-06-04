@@ -25,6 +25,18 @@ function parseMaxPriceCents(value: FormDataEntryValue | null) {
   return Math.round(amount * 100);
 }
 
+function cleanUrl(value: FormDataEntryValue | null, maxLength: number) {
+  const raw = cleanString(value, maxLength);
+  if (!raw) return "";
+
+  try {
+    const url = new URL(raw);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
 function getWishlistInput(formData: FormData): WishlistItemInput {
   return {
     productName: cleanString(formData.get("productName"), 160),
@@ -36,7 +48,8 @@ function getWishlistInput(formData: FormData): WishlistItemInput {
     desiredCondition: cleanString(formData.get("desiredCondition"), 80) || "Any",
     maxPriceCents: parseMaxPriceCents(formData.get("maxPrice")),
     alertThreshold: cleanString(formData.get("alertThreshold"), 80) || "Strong price",
-    notes: cleanString(formData.get("notes"), 800)
+    notes: cleanString(formData.get("notes"), 800),
+    imageUrl: cleanUrl(formData.get("imageUrl"), 500)
   };
 }
 
