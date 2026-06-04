@@ -38,7 +38,7 @@ export function WishlistItemForm({ action, buttonLabel, item, pendingLabel }: Wi
   const [isSearchingCatalog, setIsSearchingCatalog] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [catalogMatchLabel, setCatalogMatchLabel] = useState(item ? wishlistItemMeta(item) : "");
-  const [advancedOpen, setAdvancedOpen] = useState(Boolean(item));
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const skipNextSearchRef = useRef(false);
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export function WishlistItemForm({ action, buttonLabel, item, pendingLabel }: Wi
     setCatalogError("");
     setCatalogOpen(false);
     setCatalogMatchLabel(item ? wishlistItemMeta(item) : "");
-    setAdvancedOpen(Boolean(item));
+    setAdvancedOpen(false);
   }, [item]);
 
   useEffect(() => {
