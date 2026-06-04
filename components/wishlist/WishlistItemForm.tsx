@@ -139,7 +139,16 @@ export function WishlistItemForm({ action, buttonLabel, item, pendingLabel }: Wi
 
       {imageUrl ? (
         <div className="grid grid-cols-[64px_1fr] items-center gap-3 rounded-xl border border-vault-border bg-vault-secondary/70 p-3">
-          <img alt={productName ? `${productName} catalog image` : "Catalog card image"} className="aspect-[5/7] w-16 rounded-lg border border-vault-border bg-vault-card object-contain p-1" src={imageUrl} />
+          <img
+            alt={productName ? `${productName} catalog image` : "Catalog card image"}
+            className="aspect-[5/7] w-16 rounded-lg border border-vault-border bg-vault-card object-contain p-1"
+            decoding="async"
+            height={90}
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            src={imageUrl}
+            width={64}
+          />
           <div className="min-w-0">
             <p className="text-sm font-semibold text-vault-text">Stock image attached</p>
             <p className="mt-1 truncate text-xs text-vault-muted">From the Card Intake catalog.</p>
@@ -252,7 +261,16 @@ function CatalogNameField({
               type="button"
             >
               {candidate.imageUrl ? (
-                <img alt="" className="aspect-[5/7] w-11 rounded border border-vault-border bg-vault-card object-contain p-0.5" src={candidate.imageUrl} />
+                <img
+                  alt=""
+                  className="aspect-[5/7] w-11 rounded border border-vault-border bg-vault-card object-contain p-0.5"
+                  decoding="async"
+                  height={62}
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                  src={candidate.imageUrl}
+                  width={44}
+                />
               ) : (
                 <span className="aspect-[5/7] w-11 rounded border border-vault-border bg-vault-secondary" />
               )}
