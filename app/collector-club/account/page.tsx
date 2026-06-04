@@ -21,7 +21,7 @@ export const dynamic = "force-dynamic";
 
 const proFeatures = [
   { label: "Early drop access", feature: "early_drop_access" as const },
-  { label: "Priority Rare Radar matching", feature: "priority_wishlist" as const },
+  { label: "Priority Rare Radar matches", feature: "priority_wishlist" as const },
   { label: "Custom bundle requests", feature: "custom_bundle_request" as const },
   { label: "Priority collection estimates", feature: "priority_collection_estimate" as const },
   { label: "Store credit", feature: "store_credit" as const }

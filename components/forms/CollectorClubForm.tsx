@@ -114,8 +114,7 @@ export function CollectorClubForm({ initialEmail, initialName }: CollectorClubFo
       <input aria-hidden="true" autoComplete="off" className="hidden" name="company" tabIndex={-1} type="text" />
       <section className="grid gap-4">
         <div>
-          <p className="text-sm font-semibold uppercase text-vault-gold">Profile</p>
-          <h2 className="mt-1 text-xl font-black text-vault-text">Member Details</h2>
+          <h2 className="text-xl font-black text-vault-text">Member Profile</h2>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <FormInput error={errors.name} label="Name" maxLength={maxLengths.name} onChange={(event) => update("name", event.target.value)} value={form.name} />
@@ -135,8 +134,7 @@ export function CollectorClubForm({ initialEmail, initialName }: CollectorClubFo
 
       <section className="grid gap-4 border-t border-vault-border pt-5">
         <div>
-          <p className="text-sm font-semibold uppercase text-vault-gold">Collecting Preferences</p>
-          <h2 className="mt-1 text-xl font-black text-vault-text">What You Collect</h2>
+          <h2 className="text-xl font-black text-vault-text">Collecting Preferences</h2>
         </div>
         <FormSelect
           label="Main collecting focus"
@@ -162,10 +160,9 @@ export function CollectorClubForm({ initialEmail, initialName }: CollectorClubFo
 
       <section className="grid gap-3 border-t border-vault-border pt-5">
         <div>
-          <p className="text-sm font-semibold uppercase text-vault-gold">Founding Pro</p>
-          <h2 className="mt-1 text-xl font-black text-vault-text">Optional Interest</h2>
+          <h2 className="text-xl font-black text-vault-text">Founding Pro Interest</h2>
         </div>
-        <label className="flex items-start gap-3 rounded-xl border border-vault-border bg-vault-secondary p-4">
+        <label className="flex items-start gap-3 rounded-xl border border-vault-border bg-vault-secondary px-4 py-3">
           <input
             checked={form.interestedInPro}
             className="mt-1 h-4 w-4 accent-vault-gold"
@@ -175,7 +172,7 @@ export function CollectorClubForm({ initialEmail, initialName }: CollectorClubFo
           <span>
             <span className="block text-sm font-semibold text-vault-text">I may be interested in a Founding Pro spot.</span>
             <span className="mt-1 block text-xs leading-5 text-vault-secondaryText">
-              We&apos;ll contact interested members first when early access, priority Rare Radar matching, deal previews,
+              We&apos;ll contact interested members first when early access, priority Rare Radar matches, deal previews,
               and custom bundle requests become available.
             </span>
           </span>
