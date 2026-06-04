@@ -100,10 +100,10 @@ export function CollectorClubForm({ initialEmail, initialName }: CollectorClubFo
   if (submitted) {
     return (
       <div className="rounded-2xl border border-vault-success/30 bg-vault-success/10 p-6 shadow-vault" role="status">
-        <h3 className="text-xl font-black text-vault-text">You&apos;re on the Collector Club list.</h3>
+        <h3 className="text-xl font-black text-vault-text">Collector Club profile saved.</h3>
         <p className="mt-2 text-sm leading-6 text-vault-secondaryText">
-          Thanks. We&apos;ll email you with drop alerts, wishlist updates, Discord invites, and Founding Pro updates if
-          you marked interest.
+          Thanks. We&apos;ll use your profile for drop alerts, collecting preferences, Discord invites, and Founding Pro
+          updates if you marked interest.
         </p>
       </div>
     );
@@ -142,10 +142,10 @@ export function CollectorClubForm({ initialEmail, initialName }: CollectorClubFo
         value={form.favoriteSets}
       />
       <FormTextarea
-        label="Wishlist or collecting notes optional"
+        label="Collecting notes optional"
         maxLength={maxLengths.wishlist}
         onChange={(event) => update("wishlist", event.target.value)}
-        placeholder="Tell us what you want alerts for, what you collect, or what you are trying to finish."
+        placeholder="Tell us what you collect, favorite eras, condition preferences, or sealed/slab interests. Use Rare Radar for specific chase cards."
         value={form.wishlist}
       />
       <label className="flex items-start gap-3 rounded-xl border border-vault-border bg-vault-secondary p-4">
@@ -158,13 +158,13 @@ export function CollectorClubForm({ initialEmail, initialName }: CollectorClubFo
         <span>
           <span className="block text-sm font-semibold text-vault-text">I may be interested in a Founding Pro spot.</span>
           <span className="mt-1 block text-xs leading-5 text-vault-secondaryText">
-            We&apos;ll contact interested collectors first when early access, priority wishlist matching, deal previews,
+            We&apos;ll contact interested members first when early access, priority Rare Radar matching, deal previews,
             and custom bundle requests become available.
           </span>
         </span>
       </label>
       <p className="text-xs leading-5 text-vault-muted">
-        By joining, you agree that Rockin Rare may email you about Collector Club updates, drop alerts, and Discord invites.
+        By saving your profile, you agree that Rockin Rare may email you about Collector Club updates, drop alerts, and Discord invites.
       </p>
       {submitError ? (
         <p className="rounded-xl border border-vault-error/30 bg-vault-error/10 px-4 py-3 text-sm text-vault-error" role="alert">
@@ -172,7 +172,7 @@ export function CollectorClubForm({ initialEmail, initialName }: CollectorClubFo
         </p>
       ) : null}
       <Button disabled={isSubmitting} type="submit">
-        {isSubmitting ? "Joining..." : "Join the Waitlist"}
+        {isSubmitting ? "Saving..." : "Save Collector Profile"}
       </Button>
     </form>
   );

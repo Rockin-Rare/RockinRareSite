@@ -21,7 +21,7 @@ export const dynamic = "force-dynamic";
 
 const proFeatures = [
   { label: "Early drop access", feature: "early_drop_access" as const },
-  { label: "Priority wishlist matching", feature: "priority_wishlist" as const },
+  { label: "Priority Rare Radar matching", feature: "priority_wishlist" as const },
   { label: "Custom bundle requests", feature: "custom_bundle_request" as const },
   { label: "Priority collection estimates", feature: "priority_collection_estimate" as const },
   { label: "Store credit", feature: "store_credit" as const }
@@ -47,11 +47,14 @@ export default async function CollectorClubAccountPage() {
         <h1 className="text-4xl font-black text-vault-text sm:text-5xl">{headline}</h1>
         <p className="mt-4 text-base leading-7 text-vault-secondaryText">
           {isMember
-            ? "Your account status is resolved from your signed-in Collector Club account and current Neon member record."
-            : "Join the free Collector Club to save your member profile and unlock future club inventory gates."}
+            ? "Your member profile, Rare Radar wishlist, and future Collector Club perks all live under this signed-in account."
+            : "Join the free Collector Club to save your member profile, manage Rare Radar, and unlock future club inventory gates."}
         </p>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <Button href="/collector-club">{isMember ? "Update Collector Profile" : "Join Collector Club"}</Button>
+          <Button href="/wishlist" variant="secondary">
+            Manage Rare Radar
+          </Button>
           <Button href="/inventory" variant="secondary">
             Browse Inventory
           </Button>
