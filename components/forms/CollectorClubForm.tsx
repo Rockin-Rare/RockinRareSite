@@ -118,11 +118,9 @@ export function CollectorClubForm({ initialEmail, initialName }: CollectorClubFo
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <FormInput error={errors.name} label="Name" maxLength={maxLengths.name} onChange={(event) => update("name", event.target.value)} value={form.name} />
-          <div className="grid gap-2">
-            <FormInput error={errors.email} inputMode="email" label="Email" maxLength={maxLengths.email} readOnly type="text" value={form.email} />
-            <p className="text-xs leading-5 text-vault-muted">Uses your signed-in Collector Club account email.</p>
-          </div>
+          <FormInput error={errors.email} inputMode="email" label="Email" maxLength={maxLengths.email} readOnly type="text" value={form.email} />
         </div>
+        <p className="text-xs leading-5 text-vault-muted">Email is tied to your signed-in Collector Club account.</p>
         <FormInput
           label="Discord username optional"
           maxLength={maxLengths.discordUsername}
