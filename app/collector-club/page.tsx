@@ -63,10 +63,10 @@ export default async function CollectorClubPage() {
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button href="/collector-club/account" variant="secondary">
-                View Account
+                Account
               </Button>
               <Button href="/wishlist" variant="secondary">
-                Manage Rare Radar
+                Rare Radar
               </Button>
               <SignOutButton />
             </div>
@@ -161,7 +161,7 @@ export default async function CollectorClubPage() {
         <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
           <div>
             <p className="text-sm font-semibold uppercase text-vault-gold">Have cards to sell?</p>
-            <h2 className="mt-2 text-xl font-black text-vault-text">Collector interest helps shape upcoming drops.</h2>
+            <h2 className="mt-2 text-xl font-black text-vault-text">Sell or trade cards with Rockin Rare.</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-vault-secondaryText">
               If you have Pokemon, One Piece, Riftbound, Magic, singles, slabs, sealed product, or a collection, send
               the details for review.

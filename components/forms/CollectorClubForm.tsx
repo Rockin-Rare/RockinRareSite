@@ -112,7 +112,7 @@ export function CollectorClubForm({ initialEmail, initialName }: CollectorClubFo
   return (
     <form className="grid gap-5 rounded-2xl border border-vault-border bg-vault-card p-5 shadow-vault md:p-6" onSubmit={handleSubmit} noValidate>
       <input aria-hidden="true" autoComplete="off" className="hidden" name="company" tabIndex={-1} type="text" />
-      <section className="grid gap-4">
+      <section className="grid gap-3">
         <div>
           <h2 className="text-xl font-black text-vault-text">Member Profile</h2>
         </div>
@@ -120,7 +120,7 @@ export function CollectorClubForm({ initialEmail, initialName }: CollectorClubFo
           <FormInput error={errors.name} label="Name" maxLength={maxLengths.name} onChange={(event) => update("name", event.target.value)} value={form.name} />
           <FormInput error={errors.email} inputMode="email" label="Email" maxLength={maxLengths.email} readOnly type="text" value={form.email} />
         </div>
-        <p className="text-xs leading-5 text-vault-muted">Email is tied to your signed-in Collector Club account.</p>
+        <p className="-mt-1 text-xs leading-5 text-vault-muted">Email is tied to your signed-in Collector Club account.</p>
         <FormInput
           label="Discord username optional"
           maxLength={maxLengths.discordUsername}
