@@ -197,7 +197,7 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
         )}
       </div>
 
-      <div className="rounded-2xl border border-vault-border bg-vault-card p-4 shadow-vault lg:sticky lg:top-24">
+      <div className="rounded-2xl border border-vault-border bg-vault-card p-4 shadow-vault lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:overscroll-contain">
         <div className="mb-4 grid gap-3">
           <div>
             <p className="text-sm font-semibold uppercase text-vault-gold">{isEditing ? "Edit wishlist item" : "Add wishlist item"}</p>

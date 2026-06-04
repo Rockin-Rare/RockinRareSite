@@ -158,10 +158,10 @@ export function WishlistItemForm({ action, buttonLabel, item, pendingLabel }: Wi
 
       <Field inputMode="decimal" label="Max price optional" name="maxPrice" onChange={setMaxPrice} placeholder="Example: 75" value={maxPrice} />
 
-      <label className="grid gap-2">
+      <label className="grid min-w-0 gap-2">
         <span className="text-sm font-semibold text-vault-text">Notes optional</span>
         <textarea
-          className="min-h-24 rounded-xl border border-vault-border bg-vault-secondary px-4 py-3 text-sm text-vault-text outline-none transition placeholder:text-vault-muted focus:border-vault-gold focus:ring-2 focus:ring-vault-gold/20"
+          className="min-h-24 min-w-0 rounded-xl border border-vault-border bg-vault-secondary px-4 py-3 text-sm text-vault-text outline-none transition placeholder:text-vault-muted focus:border-vault-gold focus:ring-2 focus:ring-vault-gold/20"
           maxLength={800}
           name="notes"
           onChange={(event) => setNotes(event.target.value)}
@@ -179,15 +179,15 @@ export function WishlistItemForm({ action, buttonLabel, item, pendingLabel }: Wi
       </button>
 
       <div className={advancedOpen ? "grid gap-3 border-t border-vault-border pt-3" : "hidden"}>
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid gap-3">
           <SelectField label="Game" name="game" onChange={setGame} options={wishlistGameOptions} value={game} />
           <SelectField label="Type" name="category" onChange={setCategory} options={wishlistCategoryOptions} value={category} />
         </div>
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid gap-3">
           <Field label="Set or version" name="setName" onChange={setSetName} value={setName} />
           <Field label="Card number" name="cardNumber" onChange={setCardNumber} value={cardNumber} />
         </div>
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid gap-3">
           <SelectField label="Language" name="language" onChange={setLanguage} options={wishlistLanguageOptions} value={language} />
           <SelectField label="Condition" name="desiredCondition" onChange={setDesiredCondition} options={wishlistConditionOptions} value={desiredCondition} />
         </div>
@@ -234,11 +234,11 @@ function CatalogNameField({
   value: string;
 }) {
   return (
-    <label className="relative grid gap-2">
+    <label className="relative grid min-w-0 gap-2">
       <span className="text-sm font-semibold text-vault-text">Card or product name</span>
       <input
         autoComplete="off"
-        className="min-h-12 rounded-xl border border-vault-border bg-vault-secondary px-4 py-3 text-sm text-vault-text outline-none transition placeholder:text-vault-muted focus:border-vault-gold focus:ring-2 focus:ring-vault-gold/20"
+        className="min-h-12 min-w-0 rounded-xl border border-vault-border bg-vault-secondary px-4 py-3 text-sm text-vault-text outline-none transition placeholder:text-vault-muted focus:border-vault-gold focus:ring-2 focus:ring-vault-gold/20"
         maxLength={160}
         name={name}
         onBlur={onBlur}
@@ -304,10 +304,10 @@ function Field({
   value: string;
 }) {
   return (
-    <label className="grid gap-2">
+    <label className="grid min-w-0 gap-2">
       <span className="text-sm font-semibold text-vault-text">{label}</span>
       <input
-        className="min-h-12 rounded-xl border border-vault-border bg-vault-secondary px-4 py-3 text-sm text-vault-text outline-none transition placeholder:text-vault-muted focus:border-vault-gold focus:ring-2 focus:ring-vault-gold/20"
+        className="min-h-12 min-w-0 rounded-xl border border-vault-border bg-vault-secondary px-4 py-3 text-sm text-vault-text outline-none transition placeholder:text-vault-muted focus:border-vault-gold focus:ring-2 focus:ring-vault-gold/20"
         maxLength={160}
         name={name}
         onChange={(event) => onChange(event.target.value)}
@@ -333,10 +333,10 @@ function SelectField({
   value: string;
 }) {
   return (
-    <label className="grid gap-2">
+    <label className="grid min-w-0 gap-2">
       <span className="text-sm font-semibold text-vault-text">{label}</span>
       <select
-        className="min-h-12 rounded-xl border border-vault-border bg-vault-secondary px-4 py-3 text-sm text-vault-text outline-none transition focus:border-vault-gold focus:ring-2 focus:ring-vault-gold/20"
+        className="min-h-12 min-w-0 rounded-xl border border-vault-border bg-vault-secondary px-4 py-3 text-sm text-vault-text outline-none transition focus:border-vault-gold focus:ring-2 focus:ring-vault-gold/20"
         name={name}
         onChange={(event) => onChange(event.target.value)}
         value={value}
