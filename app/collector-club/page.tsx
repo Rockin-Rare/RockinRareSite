@@ -51,9 +51,35 @@ export default async function CollectorClubPage() {
   const headline = user ? "Your Rockin Rare Collector Club" : "Create your Rockin Rare Collector Club account";
 
   return (
-    <Container>
-      <section className="grid gap-8 py-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start lg:py-10">
-        <div>
+    <Container className="py-10">
+      {user ? (
+        <section className="grid gap-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(520px,1.2fr)] lg:items-start">
+          <div className="lg:sticky lg:top-24">
+            <p className="mb-3 text-sm font-semibold uppercase text-vault-gold">Free Collector Club</p>
+            <h1 className="text-4xl font-black text-vault-text sm:text-5xl">{headline}</h1>
+            <p className="mt-5 text-base leading-7 text-vault-secondaryText">
+              Keep your member profile current so Rockin Rare can tailor drop alerts, Rare Radar matching, and future
+              community invites around what you actually collect.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button href="/collector-club/account" variant="secondary">
+                View Account
+              </Button>
+              <Button href="/wishlist" variant="secondary">
+                Manage Rare Radar
+              </Button>
+              <SignOutButton />
+            </div>
+            <div className="mt-6 rounded-2xl border border-vault-border bg-vault-card p-5">
+              <p className="text-sm font-semibold uppercase text-vault-gold">Signed In</p>
+              <p className="mt-2 break-words text-sm text-vault-secondaryText">{user.email}</p>
+            </div>
+          </div>
+          <CollectorClubForm initialEmail={user.email} initialName={user.name} />
+        </section>
+      ) : (
+        <section className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
+          <div>
           <p className="mb-3 text-sm font-semibold uppercase text-vault-gold">Free Collector Club</p>
           <h1 className="text-4xl font-black text-vault-text sm:text-5xl">{headline}</h1>
           <p className="mt-5 text-lg leading-8 text-vault-secondaryText">
@@ -72,76 +98,62 @@ export default async function CollectorClubPage() {
             </p>
           </div>
         </div>
-        {!authConfigured ? (
-          <CollectorClubNotice
-            title="Collector Club accounts are not configured"
-            text="Set Neon Auth environment variables before Collector Club accounts can be created."
-          />
-        ) : user ? (
-          <div className="grid gap-4">
-            <div className="rounded-2xl border border-vault-border bg-vault-card p-5 shadow-vault">
-              <p className="text-sm font-semibold uppercase text-vault-gold">Signed In</p>
-              <p className="mt-2 text-sm text-vault-secondaryText">Managing Collector Club profile for {user.email}</p>
-              <div className="mt-4 flex flex-wrap gap-3">
-                <Button href="/collector-club/account" variant="secondary">
-                  View Account
-                </Button>
-                <Button href="/wishlist" variant="secondary">
-                  Manage Rare Radar
-                </Button>
-                <SignOutButton />
-              </div>
-            </div>
-            <CollectorClubForm initialEmail={user.email} initialName={user.name} />
-          </div>
-        ) : (
-          <CollectorClubNotice
-            title="Create your Collector Club account"
-            text="Collector Club membership uses the same sign-in as Rare Radar, so your profile and wishlist stay under one account."
-          >
-            <Button href="/auth/sign-up?redirectTo=/collector-club">Create Account</Button>
-            <Button href="/auth/sign-in?redirectTo=/collector-club" variant="secondary">
-              Sign In
-            </Button>
-          </CollectorClubNotice>
-        )}
-      </section>
+          {!authConfigured ? (
+            <CollectorClubNotice
+              title="Collector Club accounts are not configured"
+              text="Set Neon Auth environment variables before Collector Club accounts can be created."
+            />
+          ) : (
+            <CollectorClubNotice
+              title="Create your Collector Club account"
+              text="Collector Club membership uses the same sign-in as Rare Radar, so your profile and wishlist stay under one account."
+            >
+              <Button href="/auth/sign-up?redirectTo=/collector-club">Create Account</Button>
+              <Button href="/auth/sign-in?redirectTo=/collector-club" variant="secondary">
+                Sign In
+              </Button>
+            </CollectorClubNotice>
+          )}
+        </section>
+      )}
 
-      <section className="py-6">
+      <section className="py-8">
         <div className="grid gap-4 md:grid-cols-4">
           {benefits.map((benefit) => (
-            <article className="rounded-2xl border border-vault-border bg-vault-card p-5" key={benefit.title}>
+            <article className="rounded-xl border border-vault-border bg-vault-card p-4" key={benefit.title}>
               <h2 className="font-black text-vault-text">{benefit.title}</h2>
-              <p className="mt-3 text-sm leading-6 text-vault-secondaryText">{benefit.text}</p>
+              <p className="mt-2 text-sm leading-6 text-vault-secondaryText">{benefit.text}</p>
             </article>
           ))}
         </div>
       </section>
 
-      <section className="grid gap-5 py-6 lg:grid-cols-[0.8fr_1.2fr]">
-        <div>
-          <p className="text-sm font-semibold uppercase text-vault-gold">Founding Pro Interest</p>
-          <h2 className="mt-3 text-3xl font-black text-vault-text">Get first notice when early-access spots open.</h2>
-          <p className="mt-4 text-base leading-7 text-vault-secondaryText">
-            Tell us you&apos;re interested and we&apos;ll reach out when Founding Pro spots are available for collectors who
-            want priority access and more personalized collecting help.
-          </p>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {proBenefits.map((benefit) => (
-            <div className="rounded-2xl border border-vault-border bg-vault-card p-4" key={benefit}>
-              <p className="text-sm font-bold leading-6 text-vault-text">{benefit}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {!user ? (
+        <section className="grid gap-5 py-6 lg:grid-cols-[0.8fr_1.2fr]">
+          <div>
+            <p className="text-sm font-semibold uppercase text-vault-gold">Founding Pro Interest</p>
+            <h2 className="mt-3 text-3xl font-black text-vault-text">Get first notice when early-access spots open.</h2>
+            <p className="mt-4 text-base leading-7 text-vault-secondaryText">
+              Tell us you&apos;re interested and we&apos;ll reach out when Founding Pro spots are available for collectors
+              who want priority access and more personalized collecting help.
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {proBenefits.map((benefit) => (
+              <div className="rounded-xl border border-vault-border bg-vault-card p-4" key={benefit}>
+                <p className="text-sm font-bold leading-6 text-vault-text">{benefit}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
-      <section className="rounded-2xl border border-vault-gold/30 bg-vault-elevated p-8 shadow-gold md:p-10">
-        <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-center">
+      <section className="rounded-xl border border-vault-gold/25 bg-vault-elevated p-5 shadow-vault md:p-6">
+        <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
           <div>
             <p className="text-sm font-semibold uppercase text-vault-gold">Have cards to sell?</p>
-            <h2 className="mt-3 text-3xl font-black text-vault-text">Collector interest helps shape upcoming drops.</h2>
-            <p className="mt-4 max-w-2xl text-base leading-7 text-vault-secondaryText">
+            <h2 className="mt-2 text-2xl font-black text-vault-text">Collector interest helps shape upcoming drops.</h2>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-vault-secondaryText">
               If you have Pokemon, One Piece, Riftbound, Magic, singles, slabs, sealed product, or a collection, send
               the details for review.
             </p>
