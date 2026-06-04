@@ -17,6 +17,7 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
   const [editingInitialUpdatedAt, setEditingInitialUpdatedAt] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
   const [highlightedItemId, setHighlightedItemId] = useState("");
+  const [previewItem, setPreviewItem] = useState<RareRadarWishlistItem | null>(null);
   const previousItemCountRef = useRef(items.length);
   const statusTimeoutRef = useRef<number | null>(null);
   const editingItem = useMemo(() => items.find((item) => item.id === editingItemId), [editingItemId, items]);
@@ -71,6 +72,17 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
     };
   }, []);
 
+  useEffect(() => {
+    if (!previewItem) return;
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setPreviewItem(null);
+    }
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [previewItem]);
+
   function startEditing(item: RareRadarWishlistItem) {
     setEditingItemId(item.id);
     setEditingInitialUpdatedAt(item.updatedAt);
@@ -109,22 +121,31 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
                 >
                   <span className="grid min-w-0 grid-cols-[88px_1fr] items-center gap-3 sm:contents">
                     {item.imageUrl ? (
-                      <img
-                        alt=""
-                        className="aspect-[5/7] w-[88px] rounded-lg border border-vault-border bg-vault-card object-contain p-1.5 sm:w-[104px]"
-                        decoding="async"
-                        height={146}
-                        loading="lazy"
-                        referrerPolicy="no-referrer"
-                        src={item.imageUrl}
-                        width={104}
-                      />
+                      <button
+                        aria-label={`View larger image for ${item.productName}`}
+                        className="aspect-[5/7] w-[88px] overflow-hidden rounded-lg border border-vault-border bg-vault-card p-1.5 transition hover:border-vault-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-gold sm:w-[104px]"
+                        onClick={() => setPreviewItem(item)}
+                        type="button"
+                      >
+                        <img
+                          alt=""
+                          className="h-full w-full object-contain"
+                          decoding="async"
+                          height={146}
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                          src={item.imageUrl}
+                          width={104}
+                        />
+                      </button>
                     ) : (
-                      <span className="aspect-[5/7] w-[88px] rounded-lg border border-vault-border bg-vault-secondary sm:w-[104px]" />
+                      <span className="flex aspect-[5/7] w-[88px] items-center justify-center rounded-lg border border-dashed border-vault-border bg-vault-card/60 px-2 text-center sm:w-[104px]">
+                        <span className="text-[10px] font-bold uppercase leading-4 text-vault-muted">Image pending</span>
+                      </span>
                     )}
                     <span className="min-w-0">
                       <span className="block min-w-0 text-base font-bold leading-snug text-vault-text sm:text-lg">{item.productName}</span>
-                      {metadata ? <span className="mt-1 block min-w-0 text-sm leading-5 text-vault-muted">{metadata}</span> : null}
+                      {metadata ? <span className="mt-1 block min-w-0 text-sm font-medium leading-5 text-vault-secondaryText">{metadata}</span> : null}
                       {item.maxPriceCents ? (
                         <span className="mt-2 block text-sm font-semibold text-vault-secondaryText">Up to ${(item.maxPriceCents / 100).toFixed(2)}</span>
                       ) : null}
@@ -143,7 +164,7 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
                     <form action={deleteAction}>
                       <input name="itemId" type="hidden" value={item.id} />
                       <button
-                        className="rounded-lg border border-vault-error/70 px-3 py-2 text-xs font-bold uppercase text-vault-error/85 transition hover:border-vault-error hover:bg-vault-error/10 hover:text-vault-error focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-error sm:min-w-20"
+                        className="rounded-lg border border-vault-error/40 px-3 py-2 text-xs font-bold uppercase text-vault-error/70 transition hover:border-vault-error hover:bg-vault-error/10 hover:text-vault-error focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-error sm:min-w-20"
                         type="submit"
                       >
                         Delete
@@ -161,7 +182,7 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
         )}
       </div>
 
-      <div className="rounded-2xl border border-vault-border bg-vault-card p-4 shadow-vault">
+      <div className="rounded-2xl border border-vault-border bg-vault-card p-4 shadow-vault lg:sticky lg:top-24">
         <div className="mb-4 grid gap-3">
           <div>
             <p className="text-sm font-semibold uppercase text-vault-gold">{isEditing ? "Edit wishlist item" : "Add wishlist item"}</p>
@@ -195,6 +216,39 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
           pendingLabel={isEditing ? "Saving..." : "Adding..."}
         />
       </div>
+
+      {previewItem?.imageUrl ? (
+        <div
+          aria-label={`${previewItem.productName} larger card image`}
+          aria-modal="true"
+          className="fixed inset-0 z-50 grid place-items-center bg-black/80 px-4 py-6"
+          onClick={() => setPreviewItem(null)}
+          role="dialog"
+        >
+          <div className="grid max-h-full w-full max-w-md gap-3" onClick={(event) => event.stopPropagation()}>
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="truncate text-base font-bold text-vault-text">{previewItem.productName}</p>
+                <p className="truncate text-sm text-vault-secondaryText">{wishlistItemMeta(previewItem)}</p>
+              </div>
+              <button
+                className="rounded-lg border border-vault-border bg-vault-card px-3 py-2 text-xs font-bold uppercase text-vault-secondaryText transition hover:border-vault-gold hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-gold"
+                onClick={() => setPreviewItem(null)}
+                type="button"
+              >
+                Close
+              </button>
+            </div>
+            <img
+              alt={`${previewItem.productName} card art`}
+              className="max-h-[82vh] w-full rounded-xl border border-vault-border bg-vault-card object-contain p-3 shadow-vault"
+              decoding="async"
+              referrerPolicy="no-referrer"
+              src={previewItem.imageUrl}
+            />
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
