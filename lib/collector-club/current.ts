@@ -1,14 +1,13 @@
-import { cookies } from "next/headers";
 import { getAnonymousCollectorClubEntitlement } from "./entitlements";
-import { collectorClubSessionCookieName, getCollectorClubEntitlementFromCookieValue } from "./session";
+import { getCurrentAuthUser } from "@/lib/auth/current";
+import { getCollectorClubEntitlementByEmail } from "./members";
 
 export async function getCurrentCollectorClubEntitlement() {
-  const cookieStore = await cookies();
-  const sessionValue = cookieStore.get(collectorClubSessionCookieName)?.value;
-
-  if (!sessionValue) {
+  const user = await getCurrentAuthUser();
+  if (!user) {
     return getAnonymousCollectorClubEntitlement();
   }
 
-  return getCollectorClubEntitlementFromCookieValue(sessionValue);
+  const entitlement = await getCollectorClubEntitlementByEmail(user.email);
+  return entitlement ?? { tier: "none", email: user.email };
 }

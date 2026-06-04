@@ -36,9 +36,14 @@ const maxLengths = {
   discordUsername: 80
 };
 
-export function CollectorClubForm() {
+type CollectorClubFormProps = {
+  initialEmail: string;
+  initialName: string;
+};
+
+export function CollectorClubForm({ initialEmail, initialName }: CollectorClubFormProps) {
   const router = useRouter();
-  const [form, setForm] = useState(initialState);
+  const [form, setForm] = useState({ ...initialState, email: initialEmail, name: initialName });
   const [errors, setErrors] = useState<Partial<FormState>>({});
   const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -74,15 +79,15 @@ export function CollectorClubForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-      const result = (await response.json().catch(() => ({}))) as { error?: string; hasSession?: boolean };
+      const result = (await response.json().catch(() => ({}))) as { accountReady?: boolean; error?: string };
 
       if (!response.ok) {
         throw new Error(result.error || "Signup failed. Please try again.");
       }
 
       setSubmitted(true);
-      setForm(initialState);
-      if (result.hasSession) {
+      setForm({ ...initialState, email: initialEmail, name: initialName });
+      if (result.accountReady) {
         router.push("/collector-club/account");
       }
     } catch (error) {
@@ -109,15 +114,10 @@ export function CollectorClubForm() {
       <input aria-hidden="true" autoComplete="off" className="hidden" name="company" tabIndex={-1} type="text" />
       <div className="grid gap-4 md:grid-cols-2">
         <FormInput error={errors.name} label="Name" maxLength={maxLengths.name} onChange={(event) => update("name", event.target.value)} value={form.name} />
-        <FormInput
-          error={errors.email}
-          inputMode="email"
-          label="Email"
-          maxLength={maxLengths.email}
-          onChange={(event) => update("email", event.target.value)}
-          type="text"
-          value={form.email}
-        />
+        <div className="grid gap-2">
+          <FormInput error={errors.email} inputMode="email" label="Email" maxLength={maxLengths.email} readOnly type="text" value={form.email} />
+          <p className="text-xs leading-5 text-vault-muted">Uses your signed-in Collector Club account email.</p>
+        </div>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <FormSelect

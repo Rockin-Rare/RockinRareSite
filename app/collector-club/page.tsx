@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { CollectorClubForm } from "@/components/forms/CollectorClubForm";
 import { Container } from "@/components/layout/Container";
 import { Button } from "@/components/ui/Button";
+import { SignOutButton } from "@/components/auth/SignOutButton";
+import { getCurrentAuthUser } from "@/lib/auth/current";
+import { hasNeonAuth } from "@/lib/auth/server";
 
 export const metadata: Metadata = {
   title: "Join the Collector Club",
@@ -11,6 +15,8 @@ export const metadata: Metadata = {
     canonical: "/collector-club"
   }
 };
+
+export const dynamic = "force-dynamic";
 
 const benefits = [
   {
@@ -39,7 +45,10 @@ const proBenefits = [
   "Priority collection estimate review"
 ];
 
-export default function CollectorClubPage() {
+export default async function CollectorClubPage() {
+  const authConfigured = hasNeonAuth();
+  const user = await getCurrentAuthUser();
+
   return (
     <Container>
       <section className="grid gap-8 py-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start lg:py-10">
@@ -62,7 +71,36 @@ export default function CollectorClubPage() {
             </p>
           </div>
         </div>
-        <CollectorClubForm />
+        {!authConfigured ? (
+          <CollectorClubNotice
+            title="Collector Club accounts are not configured"
+            text="Set Neon Auth environment variables before Collector Club accounts can be created."
+          />
+        ) : user ? (
+          <div className="grid gap-4">
+            <div className="rounded-2xl border border-vault-border bg-vault-card p-5 shadow-vault">
+              <p className="text-sm font-semibold uppercase text-vault-gold">Signed In</p>
+              <p className="mt-2 text-sm text-vault-secondaryText">Collector Club profile for {user.email}</p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Button href="/collector-club/account" variant="secondary">
+                  View Account
+                </Button>
+                <SignOutButton />
+              </div>
+            </div>
+            <CollectorClubForm initialEmail={user.email} initialName={user.name} />
+          </div>
+        ) : (
+          <CollectorClubNotice
+            title="Create your Collector Club account"
+            text="Collector Club membership now uses the same sign-in as Rare Radar, so your profile and wishlist stay under one account."
+          >
+            <Button href="/auth/sign-up?redirectTo=/collector-club">Create Account</Button>
+            <Button href="/auth/sign-in?redirectTo=/collector-club" variant="secondary">
+              Sign In
+            </Button>
+          </CollectorClubNotice>
+        )}
       </section>
 
       <section className="py-6">
@@ -110,5 +148,15 @@ export default function CollectorClubPage() {
         </div>
       </section>
     </Container>
+  );
+}
+
+function CollectorClubNotice({ children, text, title }: { children?: ReactNode; text: string; title: string }) {
+  return (
+    <div className="rounded-2xl border border-vault-border bg-vault-card p-6 shadow-vault">
+      <h2 className="text-2xl font-black text-vault-text">{title}</h2>
+      <p className="mt-3 text-sm leading-6 text-vault-secondaryText">{text}</p>
+      {children ? <div className="mt-5 flex flex-wrap gap-3">{children}</div> : null}
+    </div>
   );
 }

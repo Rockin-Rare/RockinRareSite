@@ -85,3 +85,18 @@ export async function getCollectorClubEntitlementByMemberId(memberId: string, em
 
   return member ? { email: member.email, tier: member.tier } : null;
 }
+
+export async function getCollectorClubEntitlementByEmail(email: string): Promise<CollectorClubEntitlement | null> {
+  const sql = getNeonSql();
+  if (!sql) return null;
+
+  const rows = (await sql`
+    select email, tier
+    from collector_club.members
+    where email = ${normalizeCollectorClubEmail(email)}
+    limit 1
+  `) as unknown as Array<Pick<CollectorClubMemberRow, "email" | "tier">>;
+  const member = rows[0] as Pick<CollectorClubMemberRow, "email" | "tier"> | undefined;
+
+  return member ? { email: member.email, tier: member.tier } : null;
+}

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
+import { getCurrentCollectorClubEntitlement } from "@/lib/collector-club/current";
 import { canCheckoutProductForEntitlement } from "@/lib/collector-club/gates";
-import { getCollectorClubEntitlementFromRequest } from "@/lib/collector-club/session";
 import { canCheckoutOnSite } from "@/lib/commerce";
 import { releaseCheckoutReservation, reserveCheckoutProduct } from "@/lib/checkout-reservations";
 import { getLocalCheckoutTestProduct, getProducts } from "@/lib/products";
@@ -69,7 +69,7 @@ export async function POST(request: Request) {
       ? localProductsById
       : new Map([...localProductsById, ...(await getProducts()).map((product) => [product.id, product] as const)]);
   const checkoutProducts = productIds.map((productId) => productsById.get(productId)).filter((product): product is Product => Boolean(product));
-  const entitlement = await getCollectorClubEntitlementFromRequest(request);
+  const entitlement = await getCurrentCollectorClubEntitlement();
 
   if (
     checkoutProducts.length !== productIds.length ||

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getCurrentCollectorClubEntitlement } from "@/lib/collector-club/current";
 import { hasCollectorClubFeature, isCollectorClubPro } from "@/lib/collector-club/entitlements";
-import { CollectorClubSignOutButton } from "@/components/forms/CollectorClubSignOutButton";
+import { SignOutButton } from "@/components/auth/SignOutButton";
 import { Container } from "@/components/layout/Container";
 import { Button } from "@/components/ui/Button";
 
@@ -16,6 +16,8 @@ export const metadata: Metadata = {
     follow: false
   }
 };
+
+export const dynamic = "force-dynamic";
 
 const proFeatures = [
   { label: "Early drop access", feature: "early_drop_access" as const },
@@ -35,7 +37,8 @@ function tierLabel(tier: string) {
 export default async function CollectorClubAccountPage() {
   const entitlement = await getCurrentCollectorClubEntitlement();
   const isMember = entitlement.tier !== "none";
-  const headline = isMember ? tierLabel(entitlement.tier) : "No active Collector Club session";
+  const isSignedIn = Boolean(entitlement.email);
+  const headline = isMember ? tierLabel(entitlement.tier) : "No active Collector Club profile";
 
   return (
     <Container className="py-14">
@@ -44,7 +47,7 @@ export default async function CollectorClubAccountPage() {
         <h1 className="text-4xl font-black text-vault-text sm:text-5xl">{headline}</h1>
         <p className="mt-4 text-base leading-7 text-vault-secondaryText">
           {isMember
-            ? "Your account status is resolved from the signed Collector Club session and current Neon member record."
+            ? "Your account status is resolved from your signed-in Collector Club account and current Neon member record."
             : "Join the free Collector Club to save your member profile and unlock future club inventory gates."}
         </p>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -52,7 +55,7 @@ export default async function CollectorClubAccountPage() {
           <Button href="/inventory" variant="secondary">
             Browse Inventory
           </Button>
-          {isMember ? <CollectorClubSignOutButton /> : null}
+          {isSignedIn ? <SignOutButton /> : null}
         </div>
       </div>
 

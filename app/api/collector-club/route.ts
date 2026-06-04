@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
+import { getCurrentAuthUser } from "@/lib/auth/current";
 import { saveCollectorClubSignup } from "@/lib/collector-club/members";
-import {
-  collectorClubSessionCookieName,
-  collectorClubSessionCookieOptions,
-  createCollectorClubSessionValue
-} from "@/lib/collector-club/session";
 
 type CollectorClubRequest = {
   name: string;
@@ -91,6 +87,11 @@ function formatField(label: string, value: string) {
 }
 
 export async function POST(request: Request) {
+  const user = await getCurrentAuthUser();
+  if (!user) {
+    return NextResponse.json({ error: "Sign in to join the Collector Club." }, { status: 401 });
+  }
+
   if (!isAllowedOrigin(request)) {
     return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
   }
@@ -116,8 +117,8 @@ export async function POST(request: Request) {
   }
 
   const submission: CollectorClubRequest = {
-    name: cleanString(body.name, maxLengths.name),
-    email: cleanString(body.email, maxLengths.email),
+    name: cleanString(body.name, maxLengths.name) || user.name,
+    email: user.email,
     collectingFocus: cleanString(body.collectingFocus, maxLengths.collectingFocus) || "Mixed collection",
     favoriteSets: cleanString(body.favoriteSets, maxLengths.favoriteSets),
     wishlist: cleanString(body.wishlist, maxLengths.wishlist),
@@ -133,13 +134,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "A valid email is required." }, { status: 400 });
   }
 
-  let sessionValue: string | null = null;
   let storedInDatabase = false;
 
   try {
     const result = await saveCollectorClubSignup({ ...submission, source: "collector-club-page" });
     storedInDatabase = result.stored;
-    sessionValue = result.stored ? createCollectorClubSessionValue(result.member) : null;
   } catch (error) {
     console.error("Collector Club signup storage failed", error);
     return NextResponse.json({ error: "Unable to save signup." }, { status: 502 });
@@ -148,21 +147,15 @@ export async function POST(request: Request) {
   const webhookUrl = process.env.DISCORD_COLLECTOR_CLUB_WAITLIST_WEBHOOK_URL;
 
   if (!webhookUrl) {
-    const response = NextResponse.json(
+    return NextResponse.json(
       {
         ok: true,
         storage: storedInDatabase ? "neon" : "unconfigured",
-        hasSession: Boolean(sessionValue),
+        accountReady: storedInDatabase,
         message: "Signup accepted. Configure DISCORD_COLLECTOR_CLUB_WAITLIST_WEBHOOK_URL to send signups to Discord."
       },
       { status: 202 }
     );
-
-    if (sessionValue) {
-      response.cookies.set(collectorClubSessionCookieName, sessionValue, collectorClubSessionCookieOptions());
-    }
-
-    return response;
   }
 
   const content = [
@@ -193,12 +186,9 @@ export async function POST(request: Request) {
   }
 
   const response = NextResponse.json(
-    { ok: true, storage: storedInDatabase ? "neon" : "unconfigured", hasSession: Boolean(sessionValue) },
+    { ok: true, storage: storedInDatabase ? "neon" : "unconfigured", accountReady: storedInDatabase },
     { status: 201 }
   );
-  if (sessionValue) {
-    response.cookies.set(collectorClubSessionCookieName, sessionValue, collectorClubSessionCookieOptions());
-  }
 
   return response;
 }
