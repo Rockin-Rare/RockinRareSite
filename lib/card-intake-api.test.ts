@@ -36,4 +36,24 @@ describe("Card Intake public product normalization", () => {
     expect(normalizePublicProduct(product({ isFoil: true })).isFoil).toBe(true);
     expect(normalizePublicProduct(product({ isFoil: false })).isFoil).toBe(false);
   });
+
+  it("preserves Card Intake dual-listing checkout metadata", () => {
+    const normalized = normalizePublicProduct(
+      product({
+        primaryChannel: "multi",
+        checkoutEnabled: true,
+        externalListingPlatform: "TCGplayer",
+        tcgplayerPrice: 30,
+        sitePrice: 28
+      })
+    );
+
+    expect(normalized).toMatchObject({
+      primaryChannel: "multi",
+      checkoutEnabled: true,
+      externalListingPlatform: "TCGplayer",
+      tcgplayerPrice: 30,
+      sitePrice: 28
+    });
+  });
 });

@@ -48,6 +48,20 @@ describe("Card Intake inventory compatibility", () => {
     expect(canCheckoutOnSite(item)).toBe(true);
   });
 
+  it("allows direct checkout for Card Intake dual-listed TCGplayer inventory", () => {
+    const item = product({
+      primaryChannel: "multi",
+      externalListingPlatform: "TCGplayer",
+      tcgplayerPrice: 30,
+      checkoutEnabled: true,
+      publicStatus: "listed"
+    });
+
+    expect(inferPrimaryChannel(item)).toBe("multi");
+    expect(isDirectSiteInventory(item)).toBe(true);
+    expect(canCheckoutOnSite(item)).toBe(true);
+  });
+
   it("keeps TCGplayer-only inventory visible but not checkoutable", () => {
     const item = product({ primaryChannel: "tcgplayer", tcgplayerPrice: 8, checkoutEnabled: false });
 
