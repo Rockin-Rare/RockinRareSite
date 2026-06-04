@@ -18,10 +18,11 @@ type WishlistItemFormProps = {
   action: (formData: FormData) => Promise<void>;
   buttonLabel: string;
   item?: RareRadarWishlistItem;
+  onSubmit?: () => void;
   pendingLabel?: string;
 };
 
-export function WishlistItemForm({ action, buttonLabel, item, pendingLabel }: WishlistItemFormProps) {
+export function WishlistItemForm({ action, buttonLabel, item, onSubmit, pendingLabel }: WishlistItemFormProps) {
   const [productName, setProductName] = useState(item?.productName ?? "");
   const [game, setGame] = useState(item?.game ?? wishlistGameOptions[0]);
   const [category, setCategory] = useState(item?.category ?? wishlistCategoryOptions[0]);
@@ -116,7 +117,7 @@ export function WishlistItemForm({ action, buttonLabel, item, pendingLabel }: Wi
   }
 
   return (
-    <form action={action} className="grid gap-3">
+    <form action={action} className="grid gap-3" onSubmit={onSubmit}>
       {item ? <input name="itemId" type="hidden" value={item.id} /> : null}
       <input name="imageUrl" type="hidden" value={imageUrl} />
       <CatalogNameField

@@ -12,6 +12,8 @@ type WishlistWorkspaceProps = {
   updateAction: (formData: FormData) => Promise<void>;
 };
 
+const wishlistScrollKey = "rare-radar-wishlist-scroll-y";
+
 export function WishlistWorkspace({ createAction, deleteAction, items, updateAction }: WishlistWorkspaceProps) {
   const [editingItemId, setEditingItemId] = useState("");
   const [editingInitialUpdatedAt, setEditingInitialUpdatedAt] = useState("");
@@ -36,6 +38,16 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
       statusTimeoutRef.current = null;
     }, 3200);
   }
+
+  useEffect(() => {
+    const savedScrollY = window.sessionStorage.getItem(wishlistScrollKey);
+    if (!savedScrollY) return;
+
+    window.sessionStorage.removeItem(wishlistScrollKey);
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: Number(savedScrollY), behavior: "auto" });
+    });
+  }, [items]);
 
   useEffect(() => {
     if (items.length > previousItemCountRef.current) {
@@ -86,6 +98,10 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
   function startEditing(item: RareRadarWishlistItem) {
     setEditingItemId(item.id);
     setEditingInitialUpdatedAt(item.updatedAt);
+  }
+
+  function preserveScrollPosition() {
+    window.sessionStorage.setItem(wishlistScrollKey, String(window.scrollY));
   }
 
   return (
@@ -172,7 +188,7 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
                         edit
                       </span>
                     </button>
-                    <form action={deleteAction}>
+                    <form action={deleteAction} onSubmit={preserveScrollPosition}>
                       <input name="itemId" type="hidden" value={item.id} />
                       <button
                         aria-label={`Delete ${item.productName}`}
@@ -228,6 +244,7 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
           buttonLabel={isEditing ? "Save Changes" : "Add to Rare Radar"}
           item={editingItem}
           key={editingItem?.id ?? `add-${items.length}`}
+          onSubmit={preserveScrollPosition}
           pendingLabel={isEditing ? "Saving..." : "Adding..."}
         />
       </div>
