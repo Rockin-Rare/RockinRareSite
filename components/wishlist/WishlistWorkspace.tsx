@@ -14,6 +14,7 @@ type WishlistWorkspaceProps = {
 
 export function WishlistWorkspace({ createAction, deleteAction, items, updateAction }: WishlistWorkspaceProps) {
   const [editingItemId, setEditingItemId] = useState("");
+  const [editingInitialUpdatedAt, setEditingInitialUpdatedAt] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
   const [highlightedItemId, setHighlightedItemId] = useState("");
   const previousItemCountRef = useRef(items.length);
@@ -39,7 +40,8 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
     if (items.length > previousItemCountRef.current) {
       const addedItemId = items[0]?.id ?? "";
       showStatus("Added to your Rare Radar.", addedItemId);
-      previousItemCountRef.current = items.length;
+    } else if (items.length < previousItemCountRef.current) {
+      showStatus("Removed from your Rare Radar.");
     }
 
     previousItemCountRef.current = items.length;
@@ -48,8 +50,18 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
   useEffect(() => {
     if (editingItemId && !items.some((item) => item.id === editingItemId)) {
       setEditingItemId("");
+      setEditingInitialUpdatedAt("");
     }
   }, [editingItemId, items]);
+
+  useEffect(() => {
+    if (editingItem && editingInitialUpdatedAt && editingItem.updatedAt !== editingInitialUpdatedAt) {
+      const savedItemId = editingItem.id;
+      setEditingItemId("");
+      setEditingInitialUpdatedAt("");
+      showStatus("Changes saved.", savedItemId);
+    }
+  }, [editingInitialUpdatedAt, editingItem]);
 
   useEffect(() => {
     return () => {
@@ -59,20 +71,9 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
     };
   }, []);
 
-  async function saveEditAndReturnToAdd(formData: FormData) {
-    const itemId = String(formData.get("itemId") ?? "");
-    await updateAction(formData);
-    setEditingItemId("");
-    showStatus("Changes saved.", itemId);
-  }
-
-  async function deleteItemAndReturnToAdd(formData: FormData) {
-    await deleteAction(formData);
-    const itemId = String(formData.get("itemId") ?? "");
-    if (itemId === editingItemId) {
-      setEditingItemId("");
-    }
-    showStatus("Removed from your Rare Radar.");
+  function startEditing(item: RareRadarWishlistItem) {
+    setEditingItemId(item.id);
+    setEditingInitialUpdatedAt(item.updatedAt);
   }
 
   return (
@@ -115,12 +116,12 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
                       className={`rounded-lg border px-3 py-2 text-xs font-bold uppercase transition ${
                         selected ? "border-vault-gold text-vault-highlight" : "border-vault-border text-vault-secondaryText hover:border-vault-gold hover:text-vault-highlight"
                       }`}
-                      onClick={() => setEditingItemId(item.id)}
+                      onClick={() => startEditing(item)}
                       type="button"
                     >
                       Edit
                     </button>
-                    <form action={deleteItemAndReturnToAdd}>
+                    <form action={deleteAction}>
                       <input name="itemId" type="hidden" value={item.id} />
                       <button
                         className="rounded-lg border border-vault-error/70 px-3 py-2 text-xs font-bold uppercase text-vault-error/85 transition hover:border-vault-error hover:bg-vault-error/10 hover:text-vault-error focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-error"
@@ -153,14 +154,22 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
             </p>
           </div>
           {isEditing ? (
-            <Button className="shrink-0" onClick={() => setEditingItemId("")} type="button" variant="secondary">
+            <Button
+              className="shrink-0"
+              onClick={() => {
+                setEditingItemId("");
+                setEditingInitialUpdatedAt("");
+              }}
+              type="button"
+              variant="secondary"
+            >
               Back to Add New Item
             </Button>
           ) : null}
         </div>
 
         <WishlistItemForm
-          action={isEditing ? saveEditAndReturnToAdd : createAction}
+          action={isEditing ? updateAction : createAction}
           buttonLabel={isEditing ? "Save Changes" : "Add to Rare Radar"}
           item={editingItem}
           key={editingItem?.id ?? `add-${items.length}`}
