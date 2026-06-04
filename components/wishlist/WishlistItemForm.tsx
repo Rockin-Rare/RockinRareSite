@@ -116,7 +116,7 @@ export function WishlistItemForm({ action, buttonLabel, item, pendingLabel }: Wi
   }
 
   return (
-    <form action={action} className="grid gap-4">
+    <form action={action} className="grid gap-3">
       {item ? <input name="itemId" type="hidden" value={item.id} /> : null}
       <input name="imageUrl" type="hidden" value={imageUrl} />
       <CatalogNameField
@@ -138,16 +138,16 @@ export function WishlistItemForm({ action, buttonLabel, item, pendingLabel }: Wi
       />
 
       {imageUrl ? (
-        <div className="grid grid-cols-[64px_1fr] items-center gap-3 rounded-xl border border-vault-border bg-vault-secondary/70 p-3">
+        <div className="grid grid-cols-[56px_1fr] items-center gap-3 rounded-xl border border-vault-border bg-vault-secondary/70 p-3">
           <img
             alt={productName ? `${productName} catalog image` : "Catalog card image"}
-            className="aspect-[5/7] w-16 rounded-lg border border-vault-border bg-vault-card object-contain p-1"
+            className="aspect-[5/7] w-14 rounded-lg border border-vault-border bg-vault-card object-contain p-1"
             decoding="async"
-            height={90}
+            height={78}
             loading="lazy"
             referrerPolicy="no-referrer"
             src={imageUrl}
-            width={64}
+            width={56}
           />
           <div className="min-w-0">
             <p className="text-sm font-semibold text-vault-text">Stock image attached</p>
@@ -178,16 +178,16 @@ export function WishlistItemForm({ action, buttonLabel, item, pendingLabel }: Wi
         {advancedOpen ? "Hide Details" : "More Details"}
       </button>
 
-      <div className={advancedOpen ? "grid gap-4 border-t border-vault-border pt-4" : "hidden"}>
-        <div className="grid gap-4 md:grid-cols-2">
+      <div className={advancedOpen ? "grid gap-3 border-t border-vault-border pt-3" : "hidden"}>
+        <div className="grid gap-3 md:grid-cols-2">
           <SelectField label="Game" name="game" onChange={setGame} options={wishlistGameOptions} value={game} />
           <SelectField label="Type" name="category" onChange={setCategory} options={wishlistCategoryOptions} value={category} />
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-3 md:grid-cols-2">
           <Field label="Set or version" name="setName" onChange={setSetName} value={setName} />
           <Field label="Card number" name="cardNumber" onChange={setCardNumber} value={cardNumber} />
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-3 md:grid-cols-2">
           <SelectField label="Language" name="language" onChange={setLanguage} options={wishlistLanguageOptions} value={language} />
           <SelectField label="Condition" name="desiredCondition" onChange={setDesiredCondition} options={wishlistConditionOptions} value={desiredCondition} />
         </div>

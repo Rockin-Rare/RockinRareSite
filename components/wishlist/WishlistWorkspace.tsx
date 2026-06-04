@@ -77,7 +77,7 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
   }
 
   return (
-    <section className="grid gap-5 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+    <section className="grid gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.75fr)] lg:items-start">
       <div className="rounded-2xl border border-vault-border bg-vault-card p-5 shadow-vault">
         <div className="mb-5 flex items-end justify-between gap-3">
           <div>
@@ -94,7 +94,7 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
         ) : null}
 
         {items.length > 0 ? (
-          <ul className="grid gap-2">
+          <ul className="grid gap-3">
             {items.map((item) => {
               const selected = item.id === editingItem?.id;
               const highlighted = item.id === highlightedItemId;
@@ -102,34 +102,37 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
 
               return (
                 <li
-                  className={`flex min-w-0 items-center justify-between gap-3 rounded-xl border p-3 transition ${
+                  className={`grid min-w-0 gap-3 rounded-xl border p-3 transition sm:grid-cols-[104px_minmax(0,1fr)_auto] sm:items-center ${
                     selected || highlighted ? "border-vault-gold bg-vault-gold/10" : "border-vault-border bg-vault-secondary/70"
                   }`}
                   key={item.id}
                 >
-                  <span className="grid min-w-0 grid-cols-[48px_1fr] items-center gap-3">
+                  <span className="grid min-w-0 grid-cols-[88px_1fr] items-center gap-3 sm:contents">
                     {item.imageUrl ? (
                       <img
                         alt=""
-                        className="aspect-[5/7] w-12 rounded-lg border border-vault-border bg-vault-card object-contain p-1"
+                        className="aspect-[5/7] w-[88px] rounded-lg border border-vault-border bg-vault-card object-contain p-1.5 sm:w-[104px]"
                         decoding="async"
-                        height={67}
+                        height={146}
                         loading="lazy"
                         referrerPolicy="no-referrer"
                         src={item.imageUrl}
-                        width={48}
+                        width={104}
                       />
                     ) : (
-                      <span className="aspect-[5/7] w-12 rounded-lg border border-vault-border bg-vault-secondary" />
+                      <span className="aspect-[5/7] w-[88px] rounded-lg border border-vault-border bg-vault-secondary sm:w-[104px]" />
                     )}
                     <span className="min-w-0">
-                      <span className="block min-w-0 truncate text-sm font-semibold text-vault-text">{item.productName}</span>
-                      {metadata ? <span className="block min-w-0 truncate text-xs text-vault-muted">{metadata}</span> : null}
+                      <span className="block min-w-0 text-base font-bold leading-snug text-vault-text sm:text-lg">{item.productName}</span>
+                      {metadata ? <span className="mt-1 block min-w-0 text-sm leading-5 text-vault-muted">{metadata}</span> : null}
+                      {item.maxPriceCents ? (
+                        <span className="mt-2 block text-sm font-semibold text-vault-secondaryText">Up to ${(item.maxPriceCents / 100).toFixed(2)}</span>
+                      ) : null}
                     </span>
                   </span>
-                  <span className="flex shrink-0 items-center gap-2">
+                  <span className="flex shrink-0 items-center gap-2 sm:flex-col sm:items-stretch">
                     <button
-                      className={`rounded-lg border px-3 py-2 text-xs font-bold uppercase transition ${
+                      className={`rounded-lg border px-3 py-2 text-xs font-bold uppercase transition sm:min-w-20 ${
                         selected ? "border-vault-gold text-vault-highlight" : "border-vault-border text-vault-secondaryText hover:border-vault-gold hover:text-vault-highlight"
                       }`}
                       onClick={() => startEditing(item)}
@@ -140,7 +143,7 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
                     <form action={deleteAction}>
                       <input name="itemId" type="hidden" value={item.id} />
                       <button
-                        className="rounded-lg border border-vault-error/70 px-3 py-2 text-xs font-bold uppercase text-vault-error/85 transition hover:border-vault-error hover:bg-vault-error/10 hover:text-vault-error focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-error"
+                        className="rounded-lg border border-vault-error/70 px-3 py-2 text-xs font-bold uppercase text-vault-error/85 transition hover:border-vault-error hover:bg-vault-error/10 hover:text-vault-error focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-error sm:min-w-20"
                         type="submit"
                       >
                         Delete
@@ -158,15 +161,15 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
         )}
       </div>
 
-      <div className="rounded-2xl border border-vault-border bg-vault-card p-5 shadow-vault">
-        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div className="rounded-2xl border border-vault-border bg-vault-card p-4 shadow-vault">
+        <div className="mb-4 grid gap-3">
           <div>
             <p className="text-sm font-semibold uppercase text-vault-gold">{isEditing ? "Edit wishlist item" : "Add wishlist item"}</p>
-            <h2 className="mt-2 text-2xl font-black text-vault-text">{isEditing ? `Editing: ${editingItem?.productName}` : "Add to Rare Radar"}</h2>
-            <p className="mt-2 text-sm leading-6 text-vault-secondaryText">
+            <h2 className="mt-2 text-xl font-black text-vault-text">{isEditing ? `Editing: ${editingItem?.productName}` : "Add to Rare Radar"}</h2>
+            <p className="mt-2 text-sm leading-5 text-vault-secondaryText">
               {isEditing
-                ? "Save changes to return to the add item form, or use the button to add a different card now."
-                : "Search the catalog first, then add price or notes. Detailed fields are available when you need them."}
+                ? "Save changes to return to adding cards."
+                : "Search the catalog, then add price or notes."}
             </p>
           </div>
           {isEditing ? (
