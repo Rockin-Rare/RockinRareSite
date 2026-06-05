@@ -47,7 +47,7 @@ const collectorActions = [
   },
   {
     title: "Sell or trade",
-    description: "Scan raw singles for a preliminary cash or trade-credit estimate before final review.",
+    description: "Scan raw singles for a preliminary cash or trade credit estimate before final review.",
     href: "/sell-trade",
     cta: "Start Instant Quote",
     primary: false
@@ -107,9 +107,9 @@ export default async function HomePage() {
       <section className="py-4">
         <div className="grid gap-4 lg:grid-cols-3">
           {collectorActions.map((action) => (
-            <article className="rounded-xl border border-vault-border bg-vault-card p-5 shadow-vault" key={action.title}>
+            <article className="flex h-full flex-col rounded-xl border border-vault-border bg-vault-card p-5 shadow-vault" key={action.title}>
               <h2 className="text-xl font-black text-vault-text">{action.title}</h2>
-              <p className="mt-3 min-h-16 text-sm leading-6 text-vault-secondaryText">{action.description}</p>
+              <p className="mt-3 text-sm leading-6 text-vault-secondaryText">{action.description}</p>
               <Button href={action.href} className="mt-5 w-full" variant={action.primary ? "primary" : "secondary"}>
                 {action.cta}
               </Button>
@@ -121,7 +121,7 @@ export default async function HomePage() {
       <section className="my-8 rounded-2xl border border-vault-gold/30 bg-vault-elevated p-6 shadow-gold md:p-8">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(320px,1fr)] lg:items-center">
           <div>
-            <p className="text-sm font-semibold uppercase text-vault-gold">Rare Radar Wishlist</p>
+            <p className="text-sm font-semibold uppercase text-vault-gold">Rare Radar</p>
             <h2 className="mt-3 text-3xl font-black text-vault-text">Tell us what belongs in your collection next.</h2>
             <p className="mt-4 max-w-2xl text-base leading-7 text-vault-secondaryText">
               Add chase cards, sealed product, slabs, sets, and condition notes to your private wishlist. When Rockin Rare
@@ -158,7 +158,8 @@ export default async function HomePage() {
             <h2 className="mt-3 text-3xl font-black text-vault-text">Get a preliminary cash or trade offer before you ship.</h2>
             <p className="mt-4 max-w-2xl text-base leading-7 text-vault-secondaryText">
               Scan raw singles with your camera, upload front photos, or use the phone QR option. We&apos;ll match the cards,
-              estimate cash and trade credit, and confirm the final offer after review.
+              estimate cash and trade credit, and confirm the final offer after review. Slabs, sealed product, bulk,
+              and full collections can still be submitted for review in the details step.
             </p>
           </div>
           <div className="grid gap-3">
@@ -168,7 +169,7 @@ export default async function HomePage() {
             </div>
             <div className="rounded-xl border border-vault-border bg-vault-card p-4">
               <p className="text-sm font-semibold text-vault-text">2. Review the estimate</p>
-              <p className="mt-1 text-sm leading-6 text-vault-secondaryText">See preliminary cash and trade-credit values.</p>
+              <p className="mt-1 text-sm leading-6 text-vault-secondaryText">See preliminary cash and trade credit values.</p>
             </div>
             <Button href="/sell-trade" className="w-full">
               Start Instant Quote
@@ -179,7 +180,7 @@ export default async function HomePage() {
 
       <section className="py-8">
         <SectionHeader title="Collector Categories" description="Browse clean listings, clear condition details, and collector-focused card categories." />
-        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {categories.map((category) => (
             <CategoryCard key={category.title} {...category} />
           ))}

@@ -34,7 +34,7 @@ export default async function InventoryPage() {
         <p className="mt-4 text-base leading-7 text-vault-secondaryText">
           Browse current trading card games, including Pokemon, One Piece, Riftbound, Magic, singles, sealed product,
           slabs, and collector pieces with real photos and clear condition notes. Sold items stay visible to show recent
-          activity.
+          activity, and marketplace-listed items link out to the active listing platform.
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
           <Button
@@ -43,7 +43,7 @@ export default async function InventoryPage() {
             target="_blank"
             variant="secondary"
           >
-            Shop Our TCGplayer Store
+            Shop TCGplayer Store
           </Button>
         </div>
       </div>

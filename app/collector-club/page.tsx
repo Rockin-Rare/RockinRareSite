@@ -126,7 +126,7 @@ export default async function CollectorClubPage() {
         </section>
       ) : (
         <section className="py-8">
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {benefits.map((benefit) => (
               <article className="rounded-xl border border-vault-border bg-vault-card p-4" key={benefit.title}>
                 <h2 className="font-black text-vault-text">{benefit.title}</h2>

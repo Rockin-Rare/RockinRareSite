@@ -152,7 +152,7 @@ export function SellTradeForm({ quoteDescriptionFill, quoteState = emptyQuoteSta
           <ol className="grid gap-2 pl-5 [list-style:decimal]">
             <li>Send or drop off the cards after we confirm the shipping plan.</li>
             <li>We inspect identity, condition, demand, and current pricing after the cards arrive.</li>
-            <li>You approve the final offer before we issue cash payout or store credit.</li>
+            <li>You approve the final offer before we issue cash payout or trade credit.</li>
           </ol>
         </div>
       </div>
@@ -214,7 +214,7 @@ export function SellTradeForm({ quoteDescriptionFill, quoteState = emptyQuoteSta
             </label>
           ))}
         </div>
-        <p className="text-xs leading-5 text-vault-muted">Final cash payout or store credit is issued after we receive the cards, verify them, and you approve the final offer.</p>
+        <p className="text-xs leading-5 text-vault-muted">Final cash payout or trade credit is issued after we receive the cards, verify them, and you approve the final offer.</p>
       </fieldset>
       <FormTextarea
         error={errors.description}

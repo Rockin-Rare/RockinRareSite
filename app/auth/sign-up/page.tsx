@@ -21,17 +21,20 @@ export const metadata: Metadata = {
 
 export default async function SignUpPage({ searchParams }: PageProps) {
   const redirectTo = (await searchParams)?.redirectTo || "/wishlist";
+  const isCollectorClub = redirectTo.startsWith("/collector-club");
 
   return (
     <Container className="grid min-h-[70vh] place-items-center py-14">
       <div className="w-full max-w-md">
-        <p className="mb-3 text-sm font-semibold uppercase text-vault-gold">Rare Radar</p>
+        <p className="mb-3 text-sm font-semibold uppercase text-vault-gold">{isCollectorClub ? "Collector Club" : "Rare Radar"}</p>
         <h1 className="text-4xl font-black text-vault-text">Create an account</h1>
         <p className="mt-3 text-sm leading-6 text-vault-secondaryText">
-          Save the cards, slabs, sealed product, and sets you want Rockin Rare to watch for.
+          {isCollectorClub
+            ? "Create your free Collector Club account for collecting preferences, drop alerts, and Rare Radar."
+            : "Save the cards, slabs, sealed product, and sets you want Rockin Rare to watch for."}
         </p>
         <div className="mt-6">
-          <AuthForm action={signUpAction} buttonLabel="Create Account" mode="sign-up" redirectTo={redirectTo} />
+          <AuthForm action={signUpAction} buttonLabel={isCollectorClub ? "Create Collector Club Account" : "Create Account"} mode="sign-up" redirectTo={redirectTo} />
         </div>
         <p className="mt-5 text-sm text-vault-secondaryText">
           Already have an account?{" "}

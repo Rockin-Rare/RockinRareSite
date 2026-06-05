@@ -25,7 +25,7 @@ export function Navbar() {
         <Link className="flex items-center gap-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-vault-highlight" href="/">
           <BrandLogo compact mark="gem" />
         </Link>
-        <nav className="hidden items-center gap-7 md:flex" aria-label="Primary navigation">
+        <nav className="hidden items-center gap-5 lg:flex" aria-label="Primary navigation">
           {navLinks.map((link) => (
             <Link
               className="text-sm font-medium text-vault-secondaryText transition hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-vault-highlight"
@@ -43,7 +43,7 @@ export function Navbar() {
         <button
           aria-expanded={open}
           aria-label="Toggle menu"
-          className="rounded-xl border border-vault-border px-3 py-2 text-sm font-semibold text-vault-text md:hidden"
+          className="rounded-xl border border-vault-border px-3 py-2 text-sm font-semibold text-vault-text lg:hidden"
           onClick={() => setOpen((value) => !value)}
           type="button"
         >
@@ -51,7 +51,7 @@ export function Navbar() {
         </button>
       </div>
       {open ? (
-        <nav className="border-t border-vault-border bg-vault-secondary px-4 py-4 md:hidden" aria-label="Mobile navigation">
+        <nav className="border-t border-vault-border bg-vault-secondary px-4 py-4 lg:hidden" aria-label="Mobile navigation">
           <div className="mx-auto flex max-w-[1200px] flex-col gap-3">
             {navLinks.map((link) => (
               <Link

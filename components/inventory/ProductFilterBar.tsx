@@ -52,7 +52,7 @@ export function ProductFilterBar({
         label="Availability"
         value={filters.availability}
         onChange={(value) => update("availability", value)}
-        options={["Available only", "Listed", "Sold", "Coming soon"]}
+        options={["Available now", "Marketplace listed", "Sold", "Coming soon"]}
       />
       <Select
         label="Sort"

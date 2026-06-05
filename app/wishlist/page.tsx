@@ -11,8 +11,8 @@ import { createWishlistItemAction, deleteWishlistItemAction, updateWishlistItemA
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Rare Radar Wishlist",
-  description: "Create and manage your Rockin Rare Rare Radar wishlist for cards, slabs, sealed product, and sets.",
+  title: "Rare Radar",
+  description: "Create and manage your Rockin Rare chase list for cards, slabs, sealed product, and sets.",
   alternates: {
     canonical: "/wishlist"
   }
@@ -28,7 +28,7 @@ export default async function WishlistPage() {
   return (
     <Container className="py-14">
       <section className="mx-auto max-w-3xl text-center">
-        <p className="mb-3 text-sm font-semibold uppercase text-vault-gold">Rare Radar Wishlist</p>
+        <p className="mb-3 text-sm font-semibold uppercase text-vault-gold">Rare Radar</p>
         <h1 className="text-4xl font-black text-vault-text sm:text-5xl">Tell us what you&apos;re chasing.</h1>
         <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-vault-secondaryText">
           Add cards, sealed product, slabs, or sets you want. When Rockin Rare can offer a match at a strong price,

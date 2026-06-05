@@ -38,7 +38,7 @@ export function categoryLabel(category: ProductCategory) {
 export function statusLabel(status: PublicProductStatus) {
   const labels: Record<PublicProductStatus, string> = {
     available: "Available",
-    listed: "Listed",
+    listed: "Marketplace Listed",
     sold: "Sold",
     coming_soon: "Coming Soon"
   };

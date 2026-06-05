@@ -37,7 +37,7 @@ export default async function AdminWishlistPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-vault-highlight">Admin</p>
-          <h1 className="mt-2 text-3xl font-black text-vault-text">Rare Radar Wishlist</h1>
+          <h1 className="mt-2 text-3xl font-black text-vault-text">Rare Radar Requests</h1>
           <p className="mt-3 text-sm text-vault-secondaryText">
             {items.length} total requests / {openCount} open or matched / matching against {matchSource}
           </p>

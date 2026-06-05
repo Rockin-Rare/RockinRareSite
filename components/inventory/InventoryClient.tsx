@@ -41,8 +41,8 @@ export function InventoryClient({ products }: { products: Product[] }) {
         if (filters.franchise && product.franchise !== filters.franchise) return false;
         if (filters.language && product.language !== filters.language) return false;
         if (filters.condition && product.condition !== filters.condition) return false;
-        if (filters.availability === "Available only" && !["available", "listed"].includes(product.publicStatus)) return false;
-        if (filters.availability === "Listed" && product.publicStatus !== "listed") return false;
+        if (filters.availability === "Available now" && !["available", "listed"].includes(product.publicStatus)) return false;
+        if (filters.availability === "Marketplace listed" && product.publicStatus !== "listed") return false;
         if (filters.availability === "Sold" && product.publicStatus !== "sold") return false;
         if (filters.availability === "Coming soon" && product.publicStatus !== "coming_soon") return false;
         return true;
@@ -72,9 +72,15 @@ function getFiltersFromSearchParams(searchParams: URLSearchParams) {
     franchise: searchParams.get("franchise") ?? initialFilters.franchise,
     language: searchParams.get("language") ?? initialFilters.language,
     condition: searchParams.get("condition") ?? initialFilters.condition,
-    availability: searchParams.get("availability") ?? initialFilters.availability,
+    availability: normalizeAvailabilityFilter(searchParams.get("availability") ?? initialFilters.availability),
     sort: searchParams.get("sort") ?? initialFilters.sort
   };
+}
+
+function normalizeAvailabilityFilter(value: string) {
+  if (value === "Available only") return "Available now";
+  if (value === "Listed") return "Marketplace listed";
+  return value;
 }
 
 function matchesCategoryFilter(productCategory: string, categoryFilter: string) {

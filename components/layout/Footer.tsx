@@ -46,7 +46,7 @@ export function Footer() {
               rel="noreferrer"
               target="_blank"
             >
-              Shop our TCGplayer store
+              Shop TCGplayer Store
             </a>
           </div>
         </div>
