@@ -24,6 +24,7 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
   const [isSaving, setIsSaving] = useState(false);
   const previousItemCountRef = useRef(wishlistItems.length);
   const statusTimeoutRef = useRef<number | null>(null);
+  const formPanelRef = useRef<HTMLDivElement | null>(null);
   const editingItem = useMemo(() => wishlistItems.find((item) => item.id === editingItemId), [editingItemId, wishlistItems]);
   const isEditing = Boolean(editingItem);
 
@@ -100,6 +101,12 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
   function startEditing(item: RareRadarWishlistItem) {
     setEditingItemId(item.id);
     setEditingInitialUpdatedAt(item.updatedAt);
+
+    window.requestAnimationFrame(() => {
+      if (window.matchMedia("(max-width: 1023px)").matches) {
+        formPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
   }
 
   function handleSave(formData: FormData) {
@@ -157,7 +164,7 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
 
   return (
     <section className="grid gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.75fr)] lg:items-start">
-      <div className="rounded-2xl border border-vault-border bg-vault-card p-5 shadow-vault">
+      <div className="order-2 rounded-2xl border border-vault-border bg-vault-card p-5 shadow-vault lg:order-1">
         <div className="mb-5 flex items-end justify-between gap-3">
           <div>
             <p className="text-sm font-semibold uppercase text-vault-gold">Your saved radar</p>
@@ -263,7 +270,10 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
         )}
       </div>
 
-      <div className="rounded-2xl border border-vault-border bg-vault-card p-4 shadow-vault lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:overscroll-contain">
+      <div
+        className="order-1 scroll-mt-24 rounded-2xl border border-vault-border bg-vault-card p-4 shadow-vault lg:sticky lg:top-24 lg:order-2 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:overscroll-contain"
+        ref={formPanelRef}
+      >
         <div className="mb-4 grid gap-3">
           <div>
             <p className="text-sm font-semibold uppercase text-vault-gold">{isEditing ? "Edit wishlist item" : "Add wishlist item"}</p>
