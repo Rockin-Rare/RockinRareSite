@@ -55,11 +55,11 @@ const collectorActions = [
 ];
 
 export default async function HomePage() {
-  const [featured, heroProducts] = await Promise.all([getFeaturedProducts(8), getHeroShowcaseProducts(3)]);
+  const [featured, heroProducts] = await Promise.all([getFeaturedProducts(8), getHeroShowcaseProducts(6)]);
 
   return (
     <Container>
-      <section className="grid gap-10 py-10 lg:grid-cols-[1fr_0.9fr] lg:items-start lg:py-14">
+      <section className="grid gap-10 py-10 lg:grid-cols-[1fr_0.9fr] lg:items-stretch lg:py-14">
         <div>
           <p className="text-sm font-semibold uppercase text-vault-gold">Pokemon / One Piece / Riftbound / Magic / Sealed / Slabs</p>
           <h1 className="mt-5 text-5xl font-black text-vault-text sm:text-6xl lg:text-7xl">Rockin Rare Collectibles</h1>

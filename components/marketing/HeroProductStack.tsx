@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 
 import type { Product } from "@/lib/types";
 import { categoryLabel, formatPrice } from "@/lib/utils";
+
+const rotationDelay = 4800;
 
 const heroCards = [
   {
@@ -25,35 +30,43 @@ const heroCards = [
 ];
 
 export function HeroProductStack({ products }: { products: Product[] }) {
-  const [first, second, third] = products;
-  const [fallbackFirst, fallbackSecond, fallbackThird] = heroCards;
+  const showcaseProducts = useMemo(() => products.slice(0, 6), [products]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const activeProduct = showcaseProducts[activeIndex];
 
-  if (!first) {
-    return (
-      <div className="vault-panel relative mx-auto grid w-full max-w-[520px] gap-4 overflow-hidden rounded-2xl p-5 lg:mt-4" aria-label="Rockin Rare vault preview">
-        <div className="grid gap-4 sm:grid-cols-[1.12fr_0.88fr] sm:items-start">
-          <div className="grid gap-4 self-center">
-            <VaultShowpiece card={fallbackFirst} featured />
-          </div>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-1">
-            <VaultShowpiece card={fallbackSecond} compact />
-            <VaultShowpiece card={fallbackThird} compact />
-          </div>
-        </div>
-      </div>
-    );
+  useEffect(() => {
+    if (showcaseProducts.length < 2 || isPaused) return;
+
+    const timer = window.setInterval(() => {
+      setActiveIndex((current) => (current + 1) % showcaseProducts.length);
+    }, rotationDelay);
+
+    return () => window.clearInterval(timer);
+  }, [showcaseProducts.length, isPaused]);
+
+  useEffect(() => {
+    if (activeIndex > showcaseProducts.length - 1) {
+      setActiveIndex(0);
+    }
+  }, [activeIndex, showcaseProducts.length]);
+
+  if (!activeProduct) {
+    return <FallbackHeroShowcase />;
   }
 
   return (
-    <div className="vault-panel relative mx-auto grid w-full max-w-[520px] gap-4 overflow-hidden rounded-2xl p-5 lg:mt-4">
-      <div className="grid gap-4 sm:grid-cols-[1.12fr_0.88fr] sm:items-start">
-        <div className="grid gap-4 self-center">
-          <ProductShowpiece product={first} label="Vault Showcase" featured />
-        </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-1">
-          {second ? <ProductShowpiece product={second} label="Featured Listing" compact /> : <VaultShowpiece card={fallbackSecond} compact />}
-          {third ? <ProductShowpiece product={third} label="Featured Listing" compact /> : <VaultShowpiece card={fallbackThird} compact />}
-        </div>
+    <div
+      aria-label="Rotating Rockin Rare vault showcase"
+      className="vault-panel relative mx-auto flex w-full max-w-[500px] overflow-hidden rounded-2xl p-4 lg:h-[560px]"
+      onBlur={() => setIsPaused(false)}
+      onFocus={() => setIsPaused(true)}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_18%,rgba(214,168,79,0.18),transparent_34%),radial-gradient(circle_at_78%_70%,rgba(95,208,255,0.12),transparent_28rem)]" />
+      <div className="relative flex w-full">
+        <ProductShowpiece product={activeProduct} label="Vault Showcase" featured />
       </div>
     </div>
   );
@@ -79,8 +92,8 @@ function ProductShowpiece({
 
   return (
     <Link
-      className={`group relative flex overflow-hidden rounded-2xl border ${
-        featured ? "min-h-[360px] border-vault-gold/50 gold-glow" : "min-h-[252px] border-vault-border"
+      className={`group relative flex w-full overflow-hidden rounded-2xl border ${
+        featured ? "min-h-[360px] border-vault-gold/50 gold-glow lg:h-full lg:min-h-0" : "min-h-[252px] border-vault-border"
       } bg-vault-secondary transition duration-300 hover:-translate-y-0.5 hover:border-vault-gold/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-vault-highlight`}
       href={`/inventory/${product.slug}`}
     >
@@ -88,12 +101,12 @@ function ProductShowpiece({
       <div className="absolute right-4 top-4 z-20 whitespace-nowrap rounded-full border border-vault-gold/30 bg-black/55 px-3 py-1 text-[10px] font-black uppercase text-vault-highlight">
         {label}
       </div>
-      <div className={featured ? "relative flex h-full min-h-[360px] flex-1 flex-col p-4" : "relative flex min-h-[252px] flex-1 flex-col p-3"}>
-        <div className={featured ? "flex h-[296px] items-center justify-center pb-1 pt-10" : "flex h-[150px] items-center justify-center overflow-hidden pb-1 pt-9"}>
+      <div className={featured ? "relative flex min-h-[360px] flex-1 flex-col p-4 lg:h-full lg:min-h-0" : "relative flex min-h-[252px] flex-1 flex-col p-3"}>
+        <div className={featured ? "flex min-h-0 flex-1 items-center justify-center overflow-hidden pb-1 pt-9" : "flex h-[150px] items-center justify-center overflow-hidden pb-1 pt-9"}>
           {imageUrl ? (
             <img
               alt={product.name}
-              className={featured ? "relative z-10 h-full w-full object-contain drop-shadow-[0_18px_35px_rgba(0,0,0,0.55)] transition duration-500 group-hover:scale-[1.03]" : "relative z-10 h-full w-full scale-[1.08] object-contain drop-shadow-[0_18px_30px_rgba(0,0,0,0.5)] transition duration-500 group-hover:scale-[1.12]"}
+              className={featured ? "relative z-10 h-full max-h-[300px] w-full object-contain drop-shadow-[0_18px_35px_rgba(0,0,0,0.55)] transition duration-500 group-hover:scale-[1.03] lg:max-h-[380px]" : "relative z-10 h-full w-full scale-[1.08] object-contain drop-shadow-[0_18px_30px_rgba(0,0,0,0.5)] transition duration-500 group-hover:scale-[1.12]"}
               loading={featured ? "eager" : "lazy"}
               src={imageUrl}
             />
@@ -114,11 +127,21 @@ function ProductShowpiece({
   );
 }
 
+function FallbackHeroShowcase() {
+  const [fallbackFirst] = heroCards;
+
+  return (
+    <div className="vault-panel relative mx-auto flex w-full max-w-[500px] overflow-hidden rounded-2xl p-4 lg:h-[560px]" aria-label="Rockin Rare vault preview">
+      <VaultShowpiece card={fallbackFirst} featured />
+    </div>
+  );
+}
+
 function VaultShowpiece({ card, featured = false, compact = false }: { card: HeroCard; featured?: boolean; compact?: boolean }) {
   return (
     <div
       className={`relative overflow-hidden rounded-2xl border ${
-        featured ? "min-h-[300px] border-vault-gold/50 gold-glow" : "min-h-[190px] border-vault-border"
+        featured ? "min-h-[360px] w-full border-vault-gold/50 gold-glow lg:h-full lg:min-h-0" : "min-h-[190px] border-vault-border"
       } bg-vault-secondary`}
     >
       <div className={`absolute inset-0 bg-gradient-to-br ${card.tone} opacity-90`} />
@@ -139,7 +162,7 @@ function VaultShowpiece({ card, featured = false, compact = false }: { card: Her
           <span className="h-1 rounded bg-white/20" />
         </div>
       </div>
-      <div className={featured ? "relative flex min-h-[300px] flex-col justify-end p-5" : "relative flex min-h-[190px] flex-col justify-end p-4 text-center"}>
+      <div className={featured ? "relative flex min-h-[360px] flex-col justify-end p-5 lg:h-full lg:min-h-0" : "relative flex min-h-[190px] flex-col justify-end p-4 text-center"}>
         <p className="text-xs font-black uppercase text-white/85">{card.label}</p>
         <h3 className={compact ? "mt-1 text-lg font-black text-white" : "mt-2 text-3xl font-black text-white"}>{card.title}</h3>
         {!compact ? <p className="mt-2 text-sm leading-5 text-white/80">{card.meta}</p> : null}
@@ -147,4 +170,3 @@ function VaultShowpiece({ card, featured = false, compact = false }: { card: Her
     </div>
   );
 }
-
