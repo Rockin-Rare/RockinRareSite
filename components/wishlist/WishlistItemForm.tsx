@@ -130,14 +130,14 @@ export function WishlistItemForm({ buttonLabel, isPending = false, item, onSubmi
         isSearchingCatalog={isSearchingCatalog}
         matchLabel={catalogMatchLabel}
         name="productName"
-        onBlur={() => window.setTimeout(() => setCatalogOpen(false), 150)}
         onCandidateSelect={applyCatalogCandidate}
         onChange={(value) => {
           setProductName(value);
           if (catalogMatchLabel) setCatalogMatchLabel("");
           if (imageUrl) setImageUrl("");
         }}
-        onFocus={() => setCatalogOpen(true)}
+        onClose={() => setCatalogOpen(false)}
+        onOpen={() => setCatalogOpen(true)}
         results={catalogResults}
         value={productName}
       />
@@ -217,10 +217,10 @@ function CatalogNameField({
   isSearchingCatalog,
   matchLabel,
   name,
-  onBlur,
   onCandidateSelect,
   onChange,
-  onFocus,
+  onClose,
+  onOpen,
   results,
   value
 }: {
@@ -229,60 +229,107 @@ function CatalogNameField({
   isSearchingCatalog: boolean;
   matchLabel: string;
   name: string;
-  onBlur: () => void;
   onCandidateSelect: (candidate: SellTradeQuoteCatalogCandidate) => void;
   onChange: (value: string) => void;
-  onFocus: () => void;
+  onClose: () => void;
+  onOpen: () => void;
   results: SellTradeQuoteCatalogCandidate[];
   value: string;
 }) {
+  useEffect(() => {
+    if (!catalogOpen || !window.matchMedia("(max-width: 767px)").matches) return;
+
+    const previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+    };
+  }, [catalogOpen]);
+
+  function handleDesktopBlur() {
+    if (window.matchMedia("(min-width: 768px)").matches) {
+      window.setTimeout(onClose, 150);
+    }
+  }
+
   return (
-    <label className="relative grid min-w-0 gap-2">
-      <span className="text-sm font-semibold text-vault-text">Card or product name</span>
+    <div className="relative grid min-w-0 gap-2">
+      <label className="text-sm font-semibold text-vault-text" htmlFor={`${name}-catalog-search`}>
+        Card or product name
+      </label>
       <input
         autoComplete="off"
+        id={`${name}-catalog-search`}
         className="min-h-12 min-w-0 rounded-xl border border-vault-border bg-vault-secondary px-4 py-3 text-sm text-vault-text outline-none transition placeholder:text-vault-muted focus:border-vault-gold focus:ring-2 focus:ring-vault-gold/20"
         maxLength={160}
         name={name}
-        onBlur={onBlur}
+        onBlur={handleDesktopBlur}
         onChange={(event) => onChange(event.target.value)}
-        onFocus={onFocus}
+        onFocus={onOpen}
         required
+        role="combobox"
+        aria-expanded={catalogOpen}
+        aria-controls={`${name}-catalog-results`}
         type="text"
         value={value}
       />
       {catalogOpen && (isSearchingCatalog || catalogError || results.length > 0) ? (
-        <div className="absolute left-0 right-0 top-full z-20 mt-2 max-h-80 overflow-auto rounded-xl border border-vault-border bg-vault-card p-2 shadow-vault">
-          {isSearchingCatalog ? <p className="px-3 py-2 text-xs font-semibold uppercase text-vault-muted">Searching catalog...</p> : null}
-          {catalogError ? <p className="px-3 py-2 text-xs text-vault-error">{catalogError}</p> : null}
-          {results.map((candidate) => (
-            <button
-              className="grid w-full grid-cols-[44px_1fr] items-center gap-3 rounded-lg px-3 py-2 text-left transition hover:bg-vault-secondary focus:bg-vault-secondary focus:outline-none"
-              key={candidate.id}
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={() => onCandidateSelect(candidate)}
-              type="button"
-            >
-              {candidate.imageUrl ? (
-                <img
-                  alt=""
-                  className="aspect-[5/7] w-11 rounded border border-vault-border bg-vault-card object-contain p-0.5"
-                  decoding="async"
-                  height={62}
-                  loading="lazy"
-                  referrerPolicy="no-referrer"
-                  src={candidate.imageUrl}
-                  width={44}
-                />
-              ) : (
-                <span className="aspect-[5/7] w-11 rounded border border-vault-border bg-vault-secondary" />
-              )}
-              <span className="min-w-0">
-                <span className="block truncate text-sm font-semibold text-vault-text">{candidate.name}</span>
-                {candidateMeta(candidate) ? <span className="block truncate text-xs leading-5 text-vault-muted">{candidateMeta(candidate)}</span> : null}
-              </span>
-            </button>
-          ))}
+        <div id={`${name}-catalog-results`} className="absolute left-0 right-0 top-full z-20 mt-2 hidden max-h-80 overflow-auto rounded-xl border border-vault-border bg-vault-card p-2 shadow-vault md:block">
+          <CatalogResultList
+            catalogError={catalogError}
+            imageSize="sm"
+            isSearchingCatalog={isSearchingCatalog}
+            onCandidateSelect={onCandidateSelect}
+            results={results}
+          />
+        </div>
+      ) : null}
+      {catalogOpen ? (
+        <div aria-label="Search card catalog" aria-modal="true" className="fixed inset-0 z-50 flex flex-col bg-vault-bg md:hidden" role="dialog">
+          <div className="shrink-0 border-b border-vault-border bg-vault-card px-4 pb-4 pt-5 shadow-vault">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase text-vault-gold">Card Catalog</p>
+                <h3 className="mt-1 truncate text-xl font-black text-vault-text">Find a wishlist item</h3>
+              </div>
+              <button
+                aria-label="Close catalog search"
+                className="grid size-11 shrink-0 place-items-center rounded-lg border border-vault-border text-vault-secondaryText transition hover:border-vault-gold hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-gold"
+                onClick={onClose}
+                type="button"
+              >
+                <span aria-hidden="true" className="material-symbols-outlined">
+                  close
+                </span>
+              </button>
+            </div>
+            <input
+              autoComplete="off"
+              autoFocus
+              className="min-h-12 w-full rounded-xl border border-vault-border bg-vault-secondary px-4 py-3 text-base text-vault-text outline-none transition placeholder:text-vault-muted focus:border-vault-gold focus:ring-2 focus:ring-vault-gold/20"
+              maxLength={160}
+              onChange={(event) => onChange(event.target.value)}
+              placeholder="Search by card or product name"
+              type="search"
+              value={value}
+            />
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3">
+            {value.trim().length < 2 ? (
+              <p className="rounded-xl border border-vault-border bg-vault-card p-4 text-sm leading-6 text-vault-secondaryText">
+                Type at least two characters to search the catalog.
+              </p>
+            ) : (
+              <CatalogResultList
+                catalogError={catalogError}
+                imageSize="lg"
+                isSearchingCatalog={isSearchingCatalog}
+                onCandidateSelect={onCandidateSelect}
+                results={results}
+              />
+            )}
+          </div>
         </div>
       ) : null}
       {matchLabel ? (
@@ -290,7 +337,72 @@ function CatalogNameField({
           Catalog match selected: {matchLabel}
         </span>
       ) : null}
-    </label>
+    </div>
+  );
+}
+
+function CatalogResultList({
+  catalogError,
+  imageSize,
+  isSearchingCatalog,
+  onCandidateSelect,
+  results
+}: {
+  catalogError: string;
+  imageSize: "sm" | "lg";
+  isSearchingCatalog: boolean;
+  onCandidateSelect: (candidate: SellTradeQuoteCatalogCandidate) => void;
+  results: SellTradeQuoteCatalogCandidate[];
+}) {
+  const imageClass =
+    imageSize === "lg"
+      ? "aspect-[5/7] w-16 rounded border border-vault-border bg-vault-card object-contain p-0.5"
+      : "aspect-[5/7] w-11 rounded border border-vault-border bg-vault-card object-contain p-0.5";
+  const placeholderClass =
+    imageSize === "lg"
+      ? "aspect-[5/7] w-16 rounded border border-vault-border bg-vault-secondary"
+      : "aspect-[5/7] w-11 rounded border border-vault-border bg-vault-secondary";
+  const rowClass =
+    imageSize === "lg"
+      ? "grid w-full grid-cols-[64px_1fr] items-center gap-3 rounded-xl border border-vault-border bg-vault-card p-3 text-left transition active:border-vault-gold active:bg-vault-gold/10"
+      : "grid w-full grid-cols-[44px_1fr] items-center gap-3 rounded-lg px-3 py-2 text-left transition hover:bg-vault-secondary focus:bg-vault-secondary focus:outline-none";
+
+  return (
+    <div className="grid gap-2">
+      {isSearchingCatalog ? <p className="px-3 py-2 text-xs font-semibold uppercase text-vault-muted">Searching catalog...</p> : null}
+      {catalogError ? <p className="px-3 py-2 text-xs text-vault-error">{catalogError}</p> : null}
+      {!isSearchingCatalog && !catalogError && results.length === 0 ? (
+        <p className="rounded-xl border border-vault-border bg-vault-card p-4 text-sm leading-6 text-vault-secondaryText">No catalog matches found yet.</p>
+      ) : null}
+      {results.map((candidate) => (
+        <button
+          className={rowClass}
+          key={candidate.id}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => onCandidateSelect(candidate)}
+          type="button"
+        >
+          {candidate.imageUrl ? (
+            <img
+              alt=""
+              className={imageClass}
+              decoding="async"
+              height={imageSize === "lg" ? 90 : 62}
+              loading="lazy"
+              referrerPolicy="no-referrer"
+              src={candidate.imageUrl}
+              width={imageSize === "lg" ? 64 : 44}
+            />
+          ) : (
+            <span className={placeholderClass} />
+          )}
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-semibold text-vault-text">{candidate.name}</span>
+            {candidateMeta(candidate) ? <span className="block truncate text-xs leading-5 text-vault-muted">{candidateMeta(candidate)}</span> : null}
+          </span>
+        </button>
+      ))}
+    </div>
   );
 }
 
