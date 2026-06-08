@@ -83,12 +83,18 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
   useEffect(() => {
     if (!previewItem) return;
 
+    const previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     function closeOnEscape(event: KeyboardEvent) {
       if (event.key === "Escape") setPreviewItem(null);
     }
 
     window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
   }, [previewItem]);
 
   function startEditing(item: RareRadarWishlistItem) {
@@ -297,12 +303,15 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
         <div
           aria-label={`${previewItem.productName} larger card image`}
           aria-modal="true"
-          className="fixed inset-0 z-50 grid place-items-center bg-black/80 px-4 py-6"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-3 sm:p-6"
           onClick={() => setPreviewItem(null)}
           role="dialog"
         >
-          <div className="grid max-h-full w-full max-w-md gap-3" onClick={(event) => event.stopPropagation()}>
-            <div className="flex items-center justify-between gap-3">
+          <div
+            className="flex h-[calc(100dvh-1.5rem)] w-full max-w-md flex-col gap-3 sm:h-[calc(100dvh-3rem)]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex shrink-0 items-center justify-between gap-3 rounded-xl border border-vault-border bg-vault-card/95 px-3 py-2 shadow-vault">
               <div className="min-w-0">
                 <p className="truncate text-base font-bold text-vault-text">{previewItem.productName}</p>
                 <p className="truncate text-sm text-vault-secondaryText">{wishlistItemMeta(previewItem)}</p>
@@ -318,13 +327,15 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
                 </span>
               </button>
             </div>
-            <img
-              alt={`${previewItem.productName} card art`}
-              className="max-h-[82vh] w-full rounded-xl border border-vault-border bg-vault-card object-contain p-3 shadow-vault"
-              decoding="async"
-              referrerPolicy="no-referrer"
-              src={previewItem.imageUrl}
-            />
+            <div className="flex min-h-0 flex-1 items-center justify-center rounded-xl border border-vault-border bg-vault-card p-2 shadow-vault sm:p-3">
+              <img
+                alt={`${previewItem.productName} card art`}
+                className="max-h-full max-w-full object-contain"
+                decoding="async"
+                referrerPolicy="no-referrer"
+                src={previewItem.imageUrl}
+              />
+            </div>
           </div>
         </div>
       ) : null}
