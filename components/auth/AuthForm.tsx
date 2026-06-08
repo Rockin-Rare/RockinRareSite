@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import type { AuthActionState } from "@/app/auth/actions";
 import { Button } from "@/components/ui/Button";
 
@@ -15,6 +16,13 @@ const initialState: AuthActionState = { error: "" };
 
 export function AuthForm({ action, buttonLabel, mode, redirectTo = "/wishlist" }: AuthFormProps) {
   const [state, formAction, isPending] = useActionState(action, initialState);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (state.redirectTo) {
+      router.replace(state.redirectTo);
+    }
+  }, [router, state.redirectTo]);
 
   return (
     <form action={formAction} className="grid gap-4 rounded-2xl border border-vault-border bg-vault-card p-5 shadow-vault">
@@ -58,7 +66,7 @@ export function AuthForm({ action, buttonLabel, mode, redirectTo = "/wishlist" }
         </p>
       ) : null}
       <Button disabled={isPending} type="submit">
-        {isPending ? "Working..." : buttonLabel}
+        {isPending || state.redirectTo ? "Working..." : buttonLabel}
       </Button>
     </form>
   );

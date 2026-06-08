@@ -1,8 +1,11 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { Container } from "@/components/layout/Container";
 import { signInAction } from "@/app/auth/actions";
+import { authRedirectPath } from "@/lib/auth/redirect";
+import { getCurrentAuthUser } from "@/lib/auth/current";
 
 type PageProps = {
   searchParams?: Promise<{ redirectTo?: string }>;
@@ -20,8 +23,13 @@ export const metadata: Metadata = {
 };
 
 export default async function SignInPage({ searchParams }: PageProps) {
-  const redirectTo = (await searchParams)?.redirectTo || "/wishlist";
+  const redirectTo = authRedirectPath((await searchParams)?.redirectTo);
   const isCollectorClub = redirectTo.startsWith("/collector-club");
+  const user = await getCurrentAuthUser();
+
+  if (user) {
+    redirect(redirectTo);
+  }
 
   return (
     <Container className="grid min-h-[70vh] place-items-center py-14">

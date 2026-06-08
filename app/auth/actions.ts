@@ -2,20 +2,15 @@
 
 import { redirect } from "next/navigation";
 import { auth, hasNeonAuth } from "@/lib/auth/server";
+import { authRedirectPath } from "@/lib/auth/redirect";
 
 export type AuthActionState = {
   error: string;
+  redirectTo?: string;
 };
-
-const initialRedirectPath = "/wishlist";
 
 function cleanString(value: FormDataEntryValue | null, maxLength: number) {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
-}
-
-function redirectPath(value: FormDataEntryValue | null) {
-  const path = cleanString(value, 200);
-  return path.startsWith("/") && !path.startsWith("//") ? path : initialRedirectPath;
 }
 
 function errorMessage(error: unknown, fallback: string) {
@@ -43,7 +38,7 @@ export async function signInAction(_state: AuthActionState, formData: FormData):
     return { error: errorMessage(result.error, "Unable to sign in.") };
   }
 
-  redirect(redirectPath(formData.get("redirectTo")));
+  return { error: "", redirectTo: authRedirectPath(formData.get("redirectTo")) };
 }
 
 export async function signUpAction(_state: AuthActionState, formData: FormData): Promise<AuthActionState> {
@@ -68,7 +63,7 @@ export async function signUpAction(_state: AuthActionState, formData: FormData):
     return { error: errorMessage(result.error, "Unable to create account.") };
   }
 
-  redirect(redirectPath(formData.get("redirectTo")));
+  return { error: "", redirectTo: authRedirectPath(formData.get("redirectTo")) };
 }
 
 export async function signOutAction() {
