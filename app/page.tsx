@@ -23,35 +23,11 @@ export const metadata: Metadata = {
 };
 
 const categories = [
-  { title: "Pokemon", description: "Pokemon singles, sealed product, slabs, and collector favorites.", href: "/inventory?franchise=Pokemon" },
-  { title: "One Piece", description: "One Piece sealed product, singles, and collector-ready inventory as it comes in.", href: "/inventory?franchise=One%20Piece" },
-  { title: "Riftbound", description: "Riftbound cards, sealed product, and collector-ready inventory as the game grows.", href: "/inventory?franchise=Riftbound" },
-  { title: "Magic: The Gathering", description: "Magic sealed product, singles, Commander staples, and collector pieces.", href: "/inventory?franchise=Magic%3A%20The%20Gathering" },
-  { title: "Sealed, Slabs & Bundles", description: "Booster boxes, packs, graded cards, collector bundles, and curated lots.", href: "/inventory?category=sealed-slab-bundle" }
-];
-
-const collectorActions = [
-  {
-    title: "Shop the case",
-    description: "Browse current singles, sealed product, slabs, bundles, and collector-ready listings.",
-    href: "/inventory",
-    cta: "Shop Inventory",
-    primary: true
-  },
-  {
-    title: "Track your chases",
-    description: "Add cards, slabs, sealed product, or sets to Rare Radar so we know what to watch for.",
-    href: "/wishlist",
-    cta: "Open Rare Radar",
-    primary: false
-  },
-  {
-    title: "Sell or trade",
-    description: "Scan raw singles for a preliminary cash or trade credit estimate before final review.",
-    href: "/sell-trade",
-    cta: "Start Instant Quote",
-    primary: false
-  }
+  { title: "Pokemon", description: "Singles, slabs, sealed product, and recent trade-in finds.", href: "/inventory?franchise=Pokemon" },
+  { title: "One Piece", description: "Sealed product, playable singles, and collector pieces as they come in.", href: "/inventory?franchise=One%20Piece" },
+  { title: "Riftbound", description: "Early singles, sealed product, and collection-builders for the new game.", href: "/inventory?franchise=Riftbound" },
+  { title: "Magic: The Gathering", description: "Commander staples, sealed product, singles, and collection pickups.", href: "/inventory?franchise=Magic%3A%20The%20Gathering" },
+  { title: "Sealed, Slabs & Bundles", description: "Booster boxes, graded cards, packs, lots, and display-ready pieces.", href: "/inventory?category=sealed-slab-bundle" }
 ];
 
 export default async function HomePage() {
@@ -64,11 +40,11 @@ export default async function HomePage() {
           <p className="text-sm font-semibold uppercase text-vault-gold">Pokemon / One Piece / Riftbound / Magic / Sealed / Slabs</p>
           <h1 className="mt-5 text-5xl font-black text-vault-text sm:text-6xl lg:text-7xl">Rockin Rare Collectibles</h1>
           <p className="mt-5 text-xl font-semibold text-vault-secondaryText">
-            Collector-first trading card games, sealed product, slabs, and rare finds.
+            Southern California card shop buying, selling, and trading Pokemon, One Piece, Riftbound, Magic, slabs, and sealed product.
           </p>
           <p className="mt-6 max-w-2xl text-base leading-8 text-vault-secondaryText">
-            Buy, sell, trade, and tell us what you&apos;re chasing. Rare Radar keeps your wishlist private and helps us
-            match incoming cards, slabs, sealed product, and sets before every find goes public.
+            Browse the current inventory, start a sell or trade review, or tell us the exact chase you&apos;re hunting. Rare Radar
+            helps us match incoming trade-ins and collection buys before every piece becomes another public listing.
           </p>
           <div className="mt-7 flex items-center gap-4">
             <Image
@@ -79,14 +55,14 @@ export default async function HomePage() {
               width={128}
             />
             <p className="max-w-md text-sm font-medium leading-6 text-vault-secondaryText">
-              Southern California based, serving collectors with clear listings, careful packaging, and direct support
-              for buying, selling, and trading.
+              Small collector-run shop with actual product photos when available, plain-language condition notes, and packing
+              built for cards that need to arrive clean.
             </p>
           </div>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button href="/inventory">Shop Current Inventory</Button>
             <Button href="/wishlist" variant="secondary">
-              Start Rare Radar
+              Open Rare Radar
             </Button>
           </div>
           <p className="mt-4 text-sm leading-6 text-vault-muted">
@@ -104,28 +80,14 @@ export default async function HomePage() {
         <HeroProductStack products={heroProducts} />
       </section>
 
-      <section className="py-4">
-        <div className="grid gap-4 lg:grid-cols-3">
-          {collectorActions.map((action) => (
-            <article className="flex h-full flex-col rounded-xl border border-vault-border bg-vault-card p-5 shadow-vault" key={action.title}>
-              <h2 className="text-xl font-black text-vault-text">{action.title}</h2>
-              <p className="mt-3 text-sm leading-6 text-vault-secondaryText">{action.description}</p>
-              <Button href={action.href} className="mt-5 w-full" variant={action.primary ? "primary" : "secondary"}>
-                {action.cta}
-              </Button>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="my-8 rounded-2xl border border-vault-gold/30 bg-vault-elevated p-6 shadow-gold md:p-8">
+      <section className="my-8 rounded-xl border border-vault-border bg-vault-elevated/70 p-6 shadow-vault md:p-8">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(320px,1fr)] lg:items-center">
           <div>
             <p className="text-sm font-semibold uppercase text-vault-gold">Rare Radar</p>
-            <h2 className="mt-3 text-3xl font-black text-vault-text">Tell us what belongs in your collection next.</h2>
+            <h2 className="mt-3 text-3xl font-black text-vault-text">Tell us the chase before it goes live.</h2>
             <p className="mt-4 max-w-2xl text-base leading-7 text-vault-secondaryText">
-              Add chase cards, sealed product, slabs, sets, and condition notes to your private wishlist. When Rockin Rare
-              can offer a strong match, your radar helps us reach the right collector before the item is just another public listing.
+              Save the card, slab, sealed product, set, language, condition, and max price you care about. When a trade-in
+              or collection buy lines up, your list gives us a real collector to contact first.
             </p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <Button href="/wishlist">Build Your Wishlist</Button>
@@ -134,43 +96,36 @@ export default async function HomePage() {
               </Button>
             </div>
           </div>
-          <div className="grid gap-3">
-            <div className="rounded-xl border border-vault-border bg-vault-card p-4">
-              <p className="text-sm font-semibold text-vault-text">1. Save the exact chase</p>
-              <p className="mt-1 text-sm leading-6 text-vault-secondaryText">Game, product name, condition, language, max price, and notes.</p>
-            </div>
-            <div className="rounded-xl border border-vault-border bg-vault-card p-4">
-              <p className="text-sm font-semibold text-vault-text">2. We watch incoming supply</p>
-              <p className="mt-1 text-sm leading-6 text-vault-secondaryText">Rare Radar gives new inventory a collector-first destination.</p>
-            </div>
-            <div className="rounded-xl border border-vault-border bg-vault-card p-4">
-              <p className="text-sm font-semibold text-vault-text">3. Strong matches get surfaced</p>
-              <p className="mt-1 text-sm leading-6 text-vault-secondaryText">Your list helps us prioritize relevant offer alerts and deal previews.</p>
-            </div>
+          <div className="divide-y divide-vault-border border-y border-vault-border">
+            <RadarStep title="Exact chase details" text="Game, product name, condition, language, budget, and notes." />
+            <RadarStep title="Incoming trade-ins checked" text="Wishlist matches stay useful when collections and sealed product come through." />
+            <RadarStep title="Relevant first looks" text="Strong matches can be surfaced before the item gets buried in public inventory." />
           </div>
         </div>
       </section>
 
-      <section className="rounded-2xl border border-vault-gold/30 bg-vault-elevated p-6 shadow-gold md:p-8">
+      <section className="rounded-xl border border-vault-border bg-vault-card p-6 shadow-vault md:p-8">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.75fr)] lg:items-center">
           <div>
             <p className="text-sm font-semibold uppercase text-vault-gold">Instant Quote Scanner</p>
-            <h2 className="mt-3 text-3xl font-black text-vault-text">Get a preliminary cash or trade offer before you ship.</h2>
+            <h2 className="mt-3 text-3xl font-black text-vault-text">Start with photos, then get a real review.</h2>
             <p className="mt-4 max-w-2xl text-base leading-7 text-vault-secondaryText">
-              Scan raw singles with your camera, upload front photos, or use the phone QR option. We&apos;ll match the cards,
-              estimate cash and trade credit, and confirm the final offer after review. Slabs, sealed product, bulk,
-              and full collections can still be submitted for review in the details step.
+              Scan raw singles with your camera, upload front photos, or use the phone QR option. The estimate helps set
+              expectations; the final cash or trade offer comes after condition and authenticity are reviewed.
             </p>
           </div>
-          <div className="grid gap-3">
-            <div className="rounded-xl border border-vault-border bg-vault-card p-4">
-              <p className="text-sm font-semibold text-vault-text">1. Add front photos</p>
-              <p className="mt-1 text-sm leading-6 text-vault-secondaryText">Camera, computer upload, or phone QR.</p>
-            </div>
-            <div className="rounded-xl border border-vault-border bg-vault-card p-4">
-              <p className="text-sm font-semibold text-vault-text">2. Review the estimate</p>
-              <p className="mt-1 text-sm leading-6 text-vault-secondaryText">See preliminary cash and trade credit values.</p>
-            </div>
+          <div className="grid gap-4">
+            <ul className="space-y-3 text-sm leading-6 text-vault-secondaryText">
+              <li className="border-l-2 border-vault-gold pl-4">
+                <span className="font-black text-vault-text">Raw singles:</span> camera scan, upload, or phone QR.
+              </li>
+              <li className="border-l-2 border-vault-gold pl-4">
+                <span className="font-black text-vault-text">Slabs and sealed:</span> submit details for manual review.
+              </li>
+              <li className="border-l-2 border-vault-gold pl-4">
+                <span className="font-black text-vault-text">Collections:</span> describe the lot and attach photos.
+              </li>
+            </ul>
             <Button href="/sell-trade" className="w-full">
               Start Instant Quote
             </Button>
@@ -190,5 +145,14 @@ export default async function HomePage() {
       <FeaturedInventory products={featured} />
       <TrustPromise />
     </Container>
+  );
+}
+
+function RadarStep({ title, text }: { title: string; text: string }) {
+  return (
+    <div className="grid gap-1 py-4 sm:grid-cols-[180px_1fr] sm:gap-5">
+      <p className="text-sm font-black text-vault-text">{title}</p>
+      <p className="text-sm leading-6 text-vault-secondaryText">{text}</p>
+    </div>
   );
 }
