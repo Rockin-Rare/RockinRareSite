@@ -20,35 +20,50 @@ export const dynamic = "force-dynamic";
 
 const benefits = [
   {
-    title: "Drop Alerts",
-    text: "Get notified when new Pokemon, One Piece, Riftbound, Magic, singles, sealed product, slabs, and themed drops are ready."
+    title: "Drop alerts",
+    text: "Get notified when new Pokémon, One Piece, Riftbound, Yu-Gi-Oh!, Magic, singles, sealed product, slabs, and themed drops are ready."
   },
   {
-    title: "Rare Radar Matches",
-    text: "Manage your Rare Radar wishlist so we can match new inventory to specific chase cards."
+    title: "Rare Radar matches",
+    text: "Keep your wishlist under the same account so incoming inventory can be matched to specific chases."
   },
   {
-    title: "Fair Pack Updates",
-    text: "Follow batch details, chase-card updates, and community pull posts."
+    title: "Collector-first drops",
+    text: "Follow future fair-access release updates, batch details, chase-card updates, and community pull posts."
   },
   {
-    title: "Discord Invites",
+    title: "Discord invites",
     text: "Be first in line when the Rockin Rare Discord opens for early buyers and collectors."
+  },
+  {
+    title: "Future member perks",
+    text: "Tell us if you want first notice when paid Pro perks, member pricing, or priority access options become available."
   }
 ];
 
-const proBenefits = [
-  "24-hour early access to selected drops",
-  "Priority Rare Radar matches when new inventory is scanned",
-  "Pro-only deal previews",
-  "One custom bundle request per month",
-  "Priority collection estimate review"
+const memberBenefits = [
+  {
+    title: "Drop alerts",
+    text: "Get notified when new inventory and themed drops are ready."
+  },
+  {
+    title: "Rare Radar matches",
+    text: "Use your wishlist and preferences to help surface relevant matches."
+  },
+  {
+    title: "Discord invites",
+    text: "Be first in line when the Rockin Rare Discord opens."
+  },
+  {
+    title: "Future member perks",
+    text: "Get first notice when member pricing, priority access, or Pro options become available."
+  }
 ];
 
 export default async function CollectorClubPage() {
   const authConfigured = hasNeonAuth();
   const user = await getCurrentAuthUser();
-  const headline = user ? "Your Rockin Rare Collector Club" : "Create your Rockin Rare Collector Club account";
+  const headline = user ? "Your Rockin Rare Collector Club" : "Join the Rockin Rare Collector Club";
 
   return (
     <Container className="py-10">
@@ -76,24 +91,21 @@ export default async function CollectorClubPage() {
       ) : (
         <section className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
           <div>
-          <p className="mb-3 text-sm font-semibold uppercase text-vault-gold">Free Collector Club</p>
-          <h1 className="text-4xl font-black text-vault-text sm:text-5xl">{headline}</h1>
-          <p className="mt-5 text-lg leading-8 text-vault-secondaryText">
-            Collector Club is the free member account for Rockin Rare collectors. Keep your profile current, manage
-            Rare Radar matches, and get updates for drops, fair pack details, and community invites.
-          </p>
-          <p className="mt-4 text-base leading-7 text-vault-secondaryText">
-            Rare Radar is the wishlist inside your Collector Club account. Use it for specific chase cards;
-            use this profile for broader collecting notes, preferences, and Founding Pro interest.
-          </p>
-          <div className="mt-8 rounded-2xl border border-vault-border bg-vault-card p-5">
-            <h2 className="text-lg font-black text-vault-text">Founding Collector Club Pro</h2>
-            <p className="mt-3 text-sm leading-6 text-vault-secondaryText">
-              Founding Pro interest helps us invite collectors who want early access, priority Rare Radar matches, deal
-              previews, custom bundle requests, and faster collection estimate reviews.
+            <p className="mb-3 text-sm font-semibold uppercase text-vault-gold">FREE COLLECTOR CLUB</p>
+            <h1 className="text-4xl font-black text-vault-text sm:text-5xl">{headline}</h1>
+            <p className="mt-5 text-lg leading-8 text-vault-secondaryText">
+              Collector Club is the free Rockin Rare account for drop alerts, Rare Radar matches, collecting preferences,
+              and future member perks. Create one account for your profile, wishlist, and future collector-first releases.
             </p>
+            <div className="mt-7 divide-y divide-vault-border border-y border-vault-border">
+              {benefits.map((benefit) => (
+                <div className="grid gap-1 py-4 sm:grid-cols-[170px_1fr] sm:gap-5" key={benefit.title}>
+                  <h2 className="text-sm font-black text-vault-text">{benefit.title}</h2>
+                  <p className="text-sm leading-6 text-vault-secondaryText">{benefit.text}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
           {!authConfigured ? (
             <CollectorClubNotice
               title="Collector Club accounts are not configured"
@@ -101,10 +113,10 @@ export default async function CollectorClubPage() {
             />
           ) : (
             <CollectorClubNotice
-              title="Create your Collector Club account"
-              text="Collector Club membership uses the same sign-in as Rare Radar, so your profile and wishlist stay under one account."
+              title="Create your free Collector Club account"
+              text="Collector Club uses the same sign-in as Rare Radar, so your profile, wishlist, and collecting preferences stay under one account."
             >
-              <Button href="/auth/sign-up?redirectTo=/collector-club">Create Account</Button>
+              <Button href="/auth/sign-up?redirectTo=/collector-club">Create Free Account</Button>
               <Button href="/auth/sign-in?redirectTo=/collector-club" variant="secondary">
                 Sign In
               </Button>
@@ -115,8 +127,8 @@ export default async function CollectorClubPage() {
 
       {user ? (
         <section className="py-7">
-          <div className="grid gap-3 md:grid-cols-3">
-            {benefits.slice(0, 3).map((benefit) => (
+          <div className="grid gap-3 md:grid-cols-4">
+            {memberBenefits.map((benefit) => (
               <article className="rounded-xl border border-vault-border bg-vault-card px-4 py-3" key={benefit.title}>
                 <h2 className="text-sm font-black text-vault-text">{benefit.title}</h2>
                 <p className="mt-1 text-xs leading-5 text-vault-secondaryText">{benefit.text}</p>
@@ -124,35 +136,36 @@ export default async function CollectorClubPage() {
             ))}
           </div>
         </section>
-      ) : (
-        <section className="py-8">
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {benefits.map((benefit) => (
-              <article className="rounded-xl border border-vault-border bg-vault-card p-4" key={benefit.title}>
-                <h2 className="font-black text-vault-text">{benefit.title}</h2>
-                <p className="mt-2 text-sm leading-6 text-vault-secondaryText">{benefit.text}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
+      ) : null}
 
       {!user ? (
-        <section className="grid gap-5 py-6 lg:grid-cols-[0.8fr_1.2fr]">
-          <div>
-            <p className="text-sm font-semibold uppercase text-vault-gold">Founding Pro Interest</p>
-            <h2 className="mt-3 text-3xl font-black text-vault-text">Get first notice when early-access spots open.</h2>
-            <p className="mt-4 text-base leading-7 text-vault-secondaryText">
-              Tell us you&apos;re interested and we&apos;ll reach out when Founding Pro spots are available for collectors
-              who want priority access and more personalized collecting help.
-            </p>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {proBenefits.map((benefit) => (
-              <div className="rounded-xl border border-vault-border bg-vault-card p-4" key={benefit}>
-                <p className="text-sm font-bold leading-6 text-vault-text">{benefit}</p>
-              </div>
-            ))}
+        <section className="my-7 rounded-xl border border-vault-border bg-vault-card p-6 shadow-vault md:p-8">
+          <p className="text-sm font-semibold uppercase text-vault-gold">Collector Community</p>
+          <h2 className="mt-3 text-3xl font-black text-vault-text">Built for collectors first</h2>
+          <p className="mt-4 max-w-5xl text-base leading-7 text-vault-secondaryText">
+            Collector Club is free while Rockin Rare grows. We&apos;re using it to send better restock alerts, match
+            collectors with cards they actually want, and build future fair-access drops for real collectors and players.
+            As we grow, we&apos;ll keep member perks realistic and transparent: no guaranteed allocations or paid benefits
+            until we can reliably support them.
+          </p>
+        </section>
+      ) : null}
+
+      {!user && authConfigured ? (
+        <section className="mb-7 rounded-xl border border-vault-border bg-vault-card p-5 shadow-vault md:p-6">
+          <div className="grid gap-5 md:grid-cols-[1fr_auto] md:items-center">
+            <div>
+              <h2 className="text-2xl font-black text-vault-text">Ready to join?</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-vault-secondaryText">
+                Create a free account to get drop alerts, Rare Radar matches, and future member updates.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Button href="/auth/sign-up?redirectTo=/collector-club">Create Free Account</Button>
+              <Button href="/auth/sign-in?redirectTo=/collector-club" variant="secondary">
+                Sign In
+              </Button>
+            </div>
           </div>
         </section>
       ) : null}
@@ -163,8 +176,8 @@ export default async function CollectorClubPage() {
             <p className="text-sm font-semibold uppercase text-vault-gold">Have cards to sell?</p>
             <h2 className="mt-2 text-xl font-black text-vault-text">Sell or trade cards with Rockin Rare.</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-vault-secondaryText">
-              If you have Pokemon, One Piece, Riftbound, Magic, singles, slabs, sealed product, or a collection, send
-              the details for review.
+              Have Pokémon, One Piece, Riftbound, Yu-Gi-Oh!, Magic, sports cards, singles, slabs, sealed product, or a
+              full collection? Send us the details and we&apos;ll review it.
             </p>
           </div>
           <Button href="/sell-trade" variant="secondary">

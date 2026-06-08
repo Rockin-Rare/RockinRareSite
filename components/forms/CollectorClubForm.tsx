@@ -100,10 +100,9 @@ export function CollectorClubForm({ initialEmail, initialName }: CollectorClubFo
   if (submitted) {
     return (
       <div className="rounded-2xl border border-vault-success/30 bg-vault-success/10 p-6 shadow-vault" role="status">
-        <h3 className="text-xl font-black text-vault-text">Collector Club profile saved.</h3>
+        <h3 className="text-xl font-black text-vault-text">Profile saved.</h3>
         <p className="mt-2 text-sm leading-6 text-vault-secondaryText">
-          Thanks. We&apos;ll use your profile for drop alerts, collecting preferences, Discord invites, and Founding Pro
-          updates if you marked interest.
+          We&apos;ll use these preferences for future drop alerts and Rare Radar matches.
         </p>
       </div>
     );
@@ -133,11 +132,14 @@ export function CollectorClubForm({ initialEmail, initialName }: CollectorClubFo
       <section className="grid gap-4 border-t border-vault-border pt-5">
         <div>
           <h2 className="text-xl font-black text-vault-text">Collecting Preferences</h2>
+          <p className="mt-2 text-sm leading-6 text-vault-secondaryText">
+            These preferences help us match future inventory, restocks, and collector-first drops to what you actually collect.
+          </p>
         </div>
         <FormSelect
           label="Main collecting focus"
           onChange={(event) => update("collectingFocus", event.target.value)}
-          options={["Mixed collection", "Pokemon", "One Piece", "Riftbound", "Magic: The Gathering", "Japanese cards", "English singles", "Sealed product", "Slabs", "Other"]}
+          options={["Mixed collection", "Pokémon", "Yu-Gi-Oh!", "One Piece", "Riftbound", "Magic", "Sports cards", "Sealed collector", "Singles collector"]}
           value={form.collectingFocus}
         />
         <FormInput

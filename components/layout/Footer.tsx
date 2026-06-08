@@ -12,8 +12,8 @@ export function Footer() {
         <div>
           <BrandLogo compact mark="gem" />
           <p className="mt-4 max-w-md text-sm leading-6 text-vault-secondaryText">
-            Collector-first trading card games, sealed product, slabs, and rare finds with real photos, clear condition
-            notes, and secure packaging. Southern California based.
+            Southern California card shop buying, selling, and trading Pokemon, One Piece, Riftbound, Magic, slabs,
+            sealed product, and collection finds.
           </p>
         </div>
         <div>
