@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/Button";
 export function SignOutButton() {
   return (
     <form action={signOutAction}>
-      <Button type="submit" variant="secondary">
+      <Button type="submit" variant="danger">
         Sign Out
       </Button>
     </form>

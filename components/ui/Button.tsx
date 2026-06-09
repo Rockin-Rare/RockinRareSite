@@ -2,14 +2,16 @@ import Link from "next/link";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-type ButtonVariant = "primary" | "secondary" | "ghost";
+type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 
 const variants: Record<ButtonVariant, string> = {
   primary:
     "bg-vault-gold text-[#111318] hover:bg-vault-highlight border border-vault-highlight/20 shadow-gold",
   secondary:
     "bg-vault-secondary/80 text-vault-text border border-vault-border hover:border-vault-gold hover:bg-vault-elevated hover:text-vault-highlight",
-  ghost: "text-vault-secondaryText hover:bg-vault-elevated hover:text-vault-highlight"
+  ghost: "text-vault-secondaryText hover:bg-vault-elevated hover:text-vault-highlight",
+  danger:
+    "bg-vault-secondary/80 text-vault-error border border-vault-error/35 hover:border-vault-error hover:bg-vault-error/10 hover:text-vault-error"
 };
 
 const base =

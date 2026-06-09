@@ -51,9 +51,9 @@ export default async function CollectorClubAccountPage() {
             : "Join the free Collector Club to save your member profile, manage Rare Radar, and unlock future club inventory gates."}
         </p>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <Button href={isMember ? "/collector-club?edit=1" : "/collector-club"}>{isMember ? "Update Collector Profile" : "Join Collector Club"}</Button>
-          <Button href="/wishlist" variant="secondary">
-            Manage Rare Radar
+          <Button href="/wishlist">Manage Rare Radar</Button>
+          <Button href={isMember ? "/collector-club?edit=1" : "/collector-club"} variant="secondary">
+            {isMember ? "Update Collector Profile" : "Join Collector Club"}
           </Button>
           <Button href="/inventory" variant="secondary">
             Browse Inventory
