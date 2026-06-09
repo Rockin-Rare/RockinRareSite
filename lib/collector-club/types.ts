@@ -24,3 +24,10 @@ export type CollectorClubSignup = {
   interestedInPro: boolean;
   source?: string;
 };
+
+export type CollectorClubProfile = CollectorClubSignup & {
+  id: string;
+  tier: CollectorClubTier;
+  createdAt: string;
+  updatedAt: string;
+};

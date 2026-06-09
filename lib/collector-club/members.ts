@@ -1,10 +1,21 @@
 import { getNeonSql, hasNeonDatabase } from "../db/neon";
-import type { CollectorClubEntitlement, CollectorClubSignup, CollectorClubTier } from "./types";
+import type { CollectorClubEntitlement, CollectorClubProfile, CollectorClubSignup, CollectorClubTier } from "./types";
 
 type CollectorClubMemberRow = {
   id: string;
   email: string;
   tier: CollectorClubTier;
+};
+
+type CollectorClubProfileRow = CollectorClubMemberRow & {
+  name: string;
+  collecting_focus: string;
+  favorite_sets: string | null;
+  wishlist: string | null;
+  discord_username: string | null;
+  interested_in_pro: boolean;
+  created_at: Date | string;
+  updated_at: Date | string;
 };
 
 export function normalizeCollectorClubEmail(email: string) {
@@ -99,4 +110,48 @@ export async function getCollectorClubEntitlementByEmail(email: string): Promise
   const member = rows[0] as Pick<CollectorClubMemberRow, "email" | "tier"> | undefined;
 
   return member ? { email: member.email, tier: member.tier } : null;
+}
+
+export async function getCollectorClubProfileByEmail(email: string): Promise<CollectorClubProfile | null> {
+  const sql = getNeonSql();
+  if (!sql) return null;
+
+  const rows = (await sql`
+    select
+      id,
+      email,
+      name,
+      tier,
+      collecting_focus,
+      favorite_sets,
+      wishlist,
+      discord_username,
+      interested_in_pro,
+      created_at,
+      updated_at
+    from collector_club.members
+    where email = ${normalizeCollectorClubEmail(email)}
+    limit 1
+  `) as unknown as CollectorClubProfileRow[];
+  const member = rows[0] as CollectorClubProfileRow | undefined;
+
+  if (!member) return null;
+
+  return {
+    id: member.id,
+    email: member.email,
+    name: member.name,
+    tier: member.tier,
+    collectingFocus: member.collecting_focus,
+    favoriteSets: member.favorite_sets ?? "",
+    wishlist: member.wishlist ?? "",
+    discordUsername: member.discord_username ?? "",
+    interestedInPro: member.interested_in_pro,
+    createdAt: toIsoString(member.created_at),
+    updatedAt: toIsoString(member.updated_at)
+  };
+}
+
+function toIsoString(value: Date | string) {
+  return value instanceof Date ? value.toISOString() : value;
 }

@@ -6,6 +6,7 @@ import { FormInput } from "@/components/forms/FormInput";
 import { FormSelect } from "@/components/forms/FormSelect";
 import { FormTextarea } from "@/components/forms/FormTextarea";
 import { Button } from "@/components/ui/Button";
+import type { CollectorClubProfile } from "@/lib/collector-club/types";
 
 type FormState = {
   name: string;
@@ -39,11 +40,23 @@ const maxLengths = {
 type CollectorClubFormProps = {
   initialEmail: string;
   initialName: string;
+  initialProfile?: CollectorClubProfile | null;
 };
 
-export function CollectorClubForm({ initialEmail, initialName }: CollectorClubFormProps) {
+export function CollectorClubForm({ initialEmail, initialName, initialProfile }: CollectorClubFormProps) {
   const router = useRouter();
-  const [form, setForm] = useState({ ...initialState, email: initialEmail, name: initialName });
+  const hasExistingProfile = Boolean(initialProfile);
+  const initialForm = {
+    ...initialState,
+    email: initialEmail,
+    name: initialProfile?.name ?? initialName,
+    collectingFocus: initialProfile?.collectingFocus ?? initialState.collectingFocus,
+    favoriteSets: initialProfile?.favoriteSets ?? "",
+    wishlist: initialProfile?.wishlist ?? "",
+    discordUsername: initialProfile?.discordUsername ?? "",
+    interestedInPro: initialProfile?.interestedInPro ?? false
+  };
+  const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState<Partial<FormState>>({});
   const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -86,7 +99,7 @@ export function CollectorClubForm({ initialEmail, initialName }: CollectorClubFo
       }
 
       setSubmitted(true);
-      setForm({ ...initialState, email: initialEmail, name: initialName });
+      setForm(initialForm);
       if (result.accountReady) {
         router.push("/collector-club/account");
       }
@@ -113,7 +126,7 @@ export function CollectorClubForm({ initialEmail, initialName }: CollectorClubFo
       <input aria-hidden="true" autoComplete="off" className="hidden" name="company" tabIndex={-1} type="text" />
       <section className="grid gap-3">
         <div>
-          <h2 className="text-xl font-black text-vault-text">Member Profile</h2>
+          <h2 className="text-xl font-black text-vault-text">{hasExistingProfile ? "Update Member Profile" : "Create Member Profile"}</h2>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           <FormInput error={errors.name} label="Name" maxLength={maxLengths.name} onChange={(event) => update("name", event.target.value)} value={form.name} />
@@ -188,7 +201,7 @@ export function CollectorClubForm({ initialEmail, initialName }: CollectorClubFo
         </p>
       ) : null}
       <Button disabled={isSubmitting} type="submit">
-        {isSubmitting ? "Saving..." : "Save Collector Profile"}
+        {isSubmitting ? "Saving..." : hasExistingProfile ? "Update Collector Profile" : "Save Collector Profile"}
       </Button>
     </form>
   );

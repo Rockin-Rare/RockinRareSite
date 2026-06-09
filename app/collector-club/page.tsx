@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { getCurrentAuthUser } from "@/lib/auth/current";
 import { hasNeonAuth } from "@/lib/auth/server";
+import { getCollectorClubProfileByEmail } from "@/lib/collector-club/members";
 
 export const metadata: Metadata = {
   title: "Collector Club",
@@ -63,6 +64,7 @@ const memberBenefits = [
 export default async function CollectorClubPage() {
   const authConfigured = hasNeonAuth();
   const user = await getCurrentAuthUser();
+  const profile = user ? await getCollectorClubProfileByEmail(user.email) : null;
   const headline = user ? "Your Rockin Rare Collector Club" : "Join the Rockin Rare Collector Club";
 
   return (
@@ -86,7 +88,7 @@ export default async function CollectorClubPage() {
               <SignOutButton />
             </div>
           </div>
-          <CollectorClubForm initialEmail={user.email} initialName={user.name} />
+          <CollectorClubForm initialEmail={user.email} initialName={profile?.name ?? user.name} initialProfile={profile} />
         </section>
       ) : (
         <section className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
