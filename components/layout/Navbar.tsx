@@ -12,7 +12,6 @@ const navLinks = [
   { href: "/collector-club", label: "Collector Club" },
   { href: "/sell-trade", label: "Sell / Trade" },
   { href: "/about", label: "About" },
-  { href: "/faq", label: "FAQ" },
   { href: "/contact", label: "Contact" }
 ];
 

@@ -33,8 +33,8 @@ export default async function ContactPage({ searchParams }: PageProps) {
         <p className="mb-3 text-sm font-semibold uppercase text-vault-gold">Contact</p>
         <h1 className="text-4xl font-black text-vault-text sm:text-5xl">Contact Rockin Rare Collectibles</h1>
         <p className="mt-5 text-lg leading-8 text-vault-secondaryText">
-          Send inventory questions, collection details, or listing inquiries. We typically respond within 1-2 business
-          days.
+          Send inventory questions, collection details, listing inquiries, or feedback. We typically respond within 1-2
+          business days.
         </p>
         <div className="mt-8 grid gap-3 rounded-2xl border border-vault-border bg-vault-card p-5 text-sm text-vault-secondaryText">
           <span>Email: {contactEmail}</span>
