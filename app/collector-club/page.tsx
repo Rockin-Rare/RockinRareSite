@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { redirect } from "next/navigation";
 import { CollectorClubForm } from "@/components/forms/CollectorClubForm";
 import { Container } from "@/components/layout/Container";
 import { Button } from "@/components/ui/Button";
@@ -18,6 +19,10 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
+
+type PageProps = {
+  searchParams?: Promise<{ edit?: string }>;
+};
 
 const benefits = [
   {
@@ -61,11 +66,16 @@ const memberBenefits = [
   }
 ];
 
-export default async function CollectorClubPage() {
+export default async function CollectorClubPage({ searchParams }: PageProps) {
   const authConfigured = hasNeonAuth();
   const user = await getCurrentAuthUser();
   const profile = user ? await getCollectorClubProfileByEmail(user.email) : null;
+  const editMode = (await searchParams)?.edit === "1";
   const headline = user ? "Your Rockin Rare Collector Club" : "Join the Rockin Rare Collector Club";
+
+  if (user && profile && !editMode) {
+    redirect("/collector-club/account");
+  }
 
   return (
     <Container className="py-10">
