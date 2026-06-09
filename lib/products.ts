@@ -1,9 +1,10 @@
 import { mockProducts } from "@/lib/mock-products";
-import { getCardIntakeProductBySlug, getCardIntakeProducts, hasCardIntakeApi } from "@/lib/card-intake-api";
+import { getCardIntakeInventoryPage, getCardIntakeProductBySlug, getCardIntakeProducts, hasCardIntakeApi } from "@/lib/card-intake-api";
 import { compareByRecentInventory } from "@/lib/catalog-sort";
 import { getAnonymousCollectorClubEntitlement } from "@/lib/collector-club/entitlements";
 import { canViewProductForEntitlement } from "@/lib/collector-club/gates";
 import { isPublicInventoryProduct } from "@/lib/product-visibility";
+import { filterSortPaginateProducts, type InventoryPageResult, type InventoryQuery } from "@/lib/inventory-query";
 import type { CollectorClubEntitlement } from "@/lib/collector-club/types";
 import type { Product } from "@/lib/types";
 
@@ -77,6 +78,23 @@ export async function getPublishedProductsForEntitlement(entitlement: CollectorC
   return products
     .filter(isPublicInventoryProduct)
     .filter((product) => canViewProductForEntitlement(entitlement, product));
+}
+
+export async function getPublishedProductPageForEntitlement(entitlement: CollectorClubEntitlement, query: InventoryQuery): Promise<InventoryPageResult> {
+  if (hasCardIntakeApi()) {
+    try {
+      const page = await getCardIntakeInventoryPage(query);
+      return {
+        ...page,
+        products: page.products.filter(isPublicInventoryProduct).filter((product) => canViewProductForEntitlement(entitlement, product))
+      };
+    } catch (error) {
+      logCardIntakeInventoryError("Failed to load paginated Card Intake Router inventory", error);
+      return filterSortPaginateProducts(withLocalCheckoutTestProduct([]), query, entitlement);
+    }
+  }
+
+  return filterSortPaginateProducts(withLocalCheckoutTestProduct(mockProducts).filter(isPublicInventoryProduct), query, entitlement);
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | undefined> {

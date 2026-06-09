@@ -4,7 +4,8 @@ import { Container } from "@/components/layout/Container";
 import { Button } from "@/components/ui/Button";
 import { getCurrentCollectorClubEntitlement } from "@/lib/collector-club/current";
 import { isCollectorClubPro } from "@/lib/collector-club/entitlements";
-import { getPublishedProductsForEntitlement } from "@/lib/products";
+import { parseInventoryQuery } from "@/lib/inventory-query";
+import { getPublishedProductPageForEntitlement } from "@/lib/products";
 
 export const metadata: Metadata = {
   title: "Current Inventory",
@@ -16,9 +17,10 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function InventoryPage() {
+export default async function InventoryPage({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
   const entitlement = await getCurrentCollectorClubEntitlement();
-  const products = await getPublishedProductsForEntitlement(entitlement);
+  const query = parseInventoryQuery((await searchParams) ?? {});
+  const initialPage = await getPublishedProductPageForEntitlement(entitlement, query);
   const memberLabel = entitlement.tier === "none" ? null : isCollectorClubPro(entitlement) ? "Collector Club Pro access active" : "Collector Club access active";
 
   return (
@@ -47,7 +49,7 @@ export default async function InventoryPage() {
           </Button>
         </div>
       </div>
-      <InventoryClient products={products} />
+      <InventoryClient initialPage={initialPage} />
     </Container>
   );
 }

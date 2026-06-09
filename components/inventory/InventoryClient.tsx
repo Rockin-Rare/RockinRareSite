@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/Button";
 import { ProductFilterBar, type InventoryFilters } from "@/components/inventory/ProductFilterBar";
 import { ProductGrid } from "@/components/inventory/ProductGrid";
-import { compareByRecentInventory } from "@/lib/catalog-sort";
+import { inventoryQueryToSearchParams, parseInventoryQuery, type InventoryPageResult } from "@/lib/inventory-query";
 import type { Product } from "@/lib/types";
 
 const initialFilters: InventoryFilters = {
@@ -17,49 +18,77 @@ const initialFilters: InventoryFilters = {
   sort: "Featured"
 };
 
-const categoryGroups: Record<string, string[]> = {
-  "sealed-slab-bundle": ["sealed", "slab", "bundle"]
-};
-
-export function InventoryClient({ products }: { products: Product[] }) {
+export function InventoryClient({ initialPage }: { initialPage: InventoryPageResult }) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [filters, setFilters] = useState<InventoryFilters>(() => getFiltersFromSearchParams(searchParams));
+  const [products, setProducts] = useState<Product[]>(initialPage.products);
+  const [total, setTotal] = useState(initialPage.total);
+  const [pageInfo, setPageInfo] = useState(initialPage.pageInfo);
+  const [filterOptions, setFilterOptions] = useState(initialPage.filters);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const requestIdRef = useRef(0);
 
-  const filteredProducts = useMemo(() => {
-    const search = filters.search.trim().toLowerCase();
+  async function updateFilters(nextFilters: InventoryFilters) {
+    setFilters(nextFilters);
+    await loadInventory(nextFilters, 0, "replace");
+    const params = inventoryQueryToSearchParams({ ...parseInventoryQueryFromFilters(nextFilters), offset: 0 });
+    router.replace(params.size ? `/inventory?${params}` : "/inventory", { scroll: false });
+  }
 
-    return products
-      .filter((product) => {
-        const searchable = [product.name, product.franchise, product.setName, product.cardNumber, product.description]
-          .concat(product.isFoil === undefined ? [] : [product.isFoil ? "foil" : "non-foil non foil"])
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
+  async function loadMore() {
+    if (!pageInfo.hasMore || pageInfo.nextOffset === undefined) return;
+    await loadInventory(filters, pageInfo.nextOffset, "append");
+  }
 
-        if (search && !searchable.includes(search)) return false;
-        if (filters.category && !matchesCategoryFilter(product.category, filters.category)) return false;
-        if (filters.franchise && product.franchise !== filters.franchise) return false;
-        if (filters.language && product.language !== filters.language) return false;
-        if (filters.condition && product.condition !== filters.condition) return false;
-        if (filters.availability === "Available now" && !["available", "listed"].includes(product.publicStatus)) return false;
-        if (filters.availability === "Marketplace listed" && product.publicStatus !== "listed") return false;
-        if (filters.availability === "Sold" && product.publicStatus !== "sold") return false;
-        if (filters.availability === "Coming soon" && product.publicStatus !== "coming_soon") return false;
-        return true;
-      })
-      .sort((a, b) => {
-        if (filters.sort === "Featured") return compareByRecentInventory(a, b);
-        if (filters.sort === "Price low to high") return (a.price ?? Number.MAX_VALUE) - (b.price ?? Number.MAX_VALUE);
-        if (filters.sort === "Price high to low") return (b.price ?? 0) - (a.price ?? 0);
-        if (filters.sort === "Name A-Z") return a.name.localeCompare(b.name);
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      });
-  }, [filters, products]);
+  async function loadInventory(nextFilters: InventoryFilters, offset: number, mode: "replace" | "append") {
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const params = inventoryQueryToSearchParams({ ...parseInventoryQueryFromFilters(nextFilters), offset, limit: pageInfo.limit });
+      const response = await fetch(`/api/inventory?${params}`, { headers: { accept: "application/json" } });
+      if (!response.ok) throw new Error(`Inventory request failed with ${response.status}`);
+
+      const page = (await response.json()) as InventoryPageResult;
+      if (requestId !== requestIdRef.current) return;
+
+      setProducts((currentProducts) => (mode === "append" ? [...currentProducts, ...page.products] : page.products));
+      setTotal(page.total);
+      setPageInfo(page.pageInfo);
+      setFilterOptions(page.filters);
+    } catch {
+      if (requestId !== requestIdRef.current) return;
+      setError("Inventory could not be loaded. Try again in a moment.");
+    } finally {
+      if (requestId === requestIdRef.current) setIsLoading(false);
+    }
+  }
 
   return (
     <div className="grid gap-8">
-      <ProductFilterBar filters={filters} onChange={setFilters} products={products} />
-      <ProductGrid products={filteredProducts} />
+      <ProductFilterBar filterOptions={filterOptions} filters={filters} onChange={updateFilters} />
+      <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-vault-secondaryText">
+        <p>
+          Showing <span className="font-semibold text-vault-text">{products.length}</span> of{" "}
+          <span className="font-semibold text-vault-text">{total}</span> items
+        </p>
+        {isLoading ? <p className="font-semibold text-vault-highlight">Loading inventory...</p> : null}
+      </div>
+      {error ? (
+        <p className="rounded-xl border border-vault-error/35 bg-vault-error/10 px-4 py-3 text-sm font-semibold text-vault-error">{error}</p>
+      ) : null}
+      <ProductGrid products={products} />
+      {pageInfo.hasMore ? (
+        <div className="flex justify-center">
+          <Button disabled={isLoading} onClick={loadMore} type="button" variant="secondary">
+            {isLoading ? "Loading..." : "Load More"}
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -83,6 +112,14 @@ function normalizeAvailabilityFilter(value: string) {
   return value;
 }
 
-function matchesCategoryFilter(productCategory: string, categoryFilter: string) {
-  return categoryGroups[categoryFilter]?.includes(productCategory) ?? productCategory === categoryFilter;
+function parseInventoryQueryFromFilters(filters: InventoryFilters) {
+  return parseInventoryQuery({
+    search: filters.search,
+    category: filters.category,
+    franchise: filters.franchise,
+    language: filters.language,
+    condition: filters.condition,
+    availability: filters.availability,
+    sort: filters.sort
+  });
 }

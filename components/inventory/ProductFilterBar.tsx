@@ -1,7 +1,6 @@
 "use client";
 
-import { sortFranchisesAlphabetically } from "@/lib/catalog-sort";
-import type { Product } from "@/lib/types";
+import type { InventoryFilterOptions } from "@/lib/inventory-query";
 
 export type InventoryFilters = {
   search: string;
@@ -16,18 +15,18 @@ export type InventoryFilters = {
 const categoryGroupOption = "sealed-slab-bundle";
 
 export function ProductFilterBar({
-  products,
+  filterOptions,
   filters,
   onChange
 }: {
-  products: Product[];
+  filterOptions: InventoryFilterOptions;
   filters: InventoryFilters;
   onChange: (filters: InventoryFilters) => void;
 }) {
-  const categories = [categoryGroupOption, ...unique(products.map((product) => product.category))];
-  const franchises = sortFranchisesAlphabetically(unique(products.map((product) => product.franchise)));
-  const languages = unique(products.map((product) => product.language).filter(Boolean) as string[]);
-  const conditions = unique(products.map((product) => product.condition).filter(Boolean) as string[]);
+  const categories = unique([categoryGroupOption, ...filterOptions.categories]);
+  const franchises = filterOptions.franchises;
+  const languages = filterOptions.languages;
+  const conditions = filterOptions.conditions;
 
   function update(key: keyof InventoryFilters, value: string) {
     onChange({ ...filters, [key]: value });

@@ -95,6 +95,8 @@ Inventory fields such as language, grade company, grade, condition, pricing, sta
 
 Public inventory is loaded through `lib/products.ts`. If `CARD_INTAKE_API_BASE_URL` is set, the site reads public-safe inventory from the Card Intake Router public API. If no API URL is present, it falls back to `lib/mock-products.ts`.
 
+The inventory page renders the first page server-side, then uses `/api/inventory` for client-side load-more requests. Supported query parameters are `limit`, `offset`, `search`, `category`, `franchise`, `language`, `condition`, `availability`, and `sort`. The Card Intake Router response should include `products`, `total`, `pageInfo`, and `filters` so the storefront can paginate without receiving the full inventory list up front.
+
 Set `INVENTORY_SOURCE=mock` to force the local mock catalog for QA, screenshots, or development even when API env vars are present.
 
 - `getProducts()`
