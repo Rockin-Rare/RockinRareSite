@@ -27,14 +27,14 @@ export default async function WishlistPage() {
 
   return (
     <Container className="py-14">
-      <section className="mx-auto max-w-3xl text-center">
+      <section className="max-w-3xl">
         <p className="mb-3 text-sm font-semibold uppercase text-vault-gold">Rare Radar</p>
         <h1 className="text-4xl font-black text-vault-text sm:text-5xl">Tell us what you&apos;re chasing.</h1>
-        <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-vault-secondaryText">
+        <p className="mt-5 max-w-2xl text-base leading-7 text-vault-secondaryText">
           Add cards, sealed product, slabs, or sets you want. When Rockin Rare can offer a match at a strong price,
           we&apos;ll use this list to reach the right collectors before public listing.
         </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
+        <div className="mt-6 flex flex-wrap gap-3">
           {user ? (
             <>
               <Button href="/inventory" variant="secondary">
