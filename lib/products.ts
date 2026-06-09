@@ -76,7 +76,7 @@ export async function getPublishedProductsForEntitlement(entitlement: CollectorC
   const products = await getProducts();
 
   return products
-    .filter(isPublicInventoryProduct)
+    .filter((product) => hasCardIntakeApi() || isPublicInventoryProduct(product))
     .filter((product) => canViewProductForEntitlement(entitlement, product));
 }
 
@@ -86,7 +86,7 @@ export async function getPublishedProductPageForEntitlement(entitlement: Collect
       const page = await getCardIntakeInventoryPage(query);
       return {
         ...page,
-        products: page.products.filter(isPublicInventoryProduct).filter((product) => canViewProductForEntitlement(entitlement, product))
+        products: page.products.filter((product) => canViewProductForEntitlement(entitlement, product))
       };
     } catch (error) {
       logCardIntakeInventoryError("Failed to load paginated Card Intake Router inventory", error);
