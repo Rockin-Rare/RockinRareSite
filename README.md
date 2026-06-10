@@ -176,6 +176,9 @@ NEXT_PUBLIC_SITE_URL=https://your-domain.example
 STRIPE_SECRET_KEY=sk_live_or_test...
 STRIPE_WEBHOOK_SECRET=whsec_...
 STRIPE_SHIPPING_RATE_ID=shr_...
+STRIPE_STANDARD_SHIPPING_RATE_ID=shr_standard...
+STRIPE_FREE_SHIPPING_RATE_ID=shr_free...
+STRIPE_FREE_SHIPPING_MINIMUM_CENTS=7500
 STRIPE_SHIPPING_RATE_IDS=shr_standard,shr_priority
 STRIPE_SHIPPING_ALLOWED_COUNTRIES=US
 STRIPE_TAX_ENABLED=true
@@ -192,7 +195,9 @@ Checkout sessions are created through `POST /api/checkout`. Stripe should send w
 /api/stripe/webhook
 ```
 
-`STRIPE_SHIPPING_RATE_IDS` accepts a comma-separated list when you want customers to choose between shipping speeds. If it is empty, the single `STRIPE_SHIPPING_RATE_ID` value is used. `STRIPE_SHIPPING_ALLOWED_COUNTRIES` also accepts comma-separated ISO country codes and defaults to `US`.
+For threshold-based shipping, create two Stripe Shipping Rates: one standard rate and one free rate. Set `STRIPE_STANDARD_SHIPPING_RATE_ID`, `STRIPE_FREE_SHIPPING_RATE_ID`, and `STRIPE_FREE_SHIPPING_MINIMUM_CENTS` so the checkout API sends only the eligible rate to Stripe. `STRIPE_SHIPPING_RATE_ID` is still supported as the standard-rate fallback.
+
+`STRIPE_SHIPPING_RATE_IDS` accepts a comma-separated list when you want customers to choose between shipping speeds, but do not use it for free-shipping thresholds because every listed rate is selectable. `STRIPE_SHIPPING_ALLOWED_COUNTRIES` also accepts comma-separated ISO country codes and defaults to `US`.
 
 The webhook handles `checkout.session.completed` and `checkout.session.expired`. When `CARD_INTAKE_SALES_WEBHOOK_URL` is configured, completed and expired checkout events are posted to that URL so Card Intake Router can mark the item sold or release future reservations.
 

@@ -107,4 +107,76 @@ describe("Stripe Checkout session creation", () => {
     expect(params.get("allow_promotion_codes")).toBe("true");
     expect(params.get("consent_collection[terms_of_service]")).toBe("required");
   });
+
+  it("uses the standard shipping rate below the free shipping minimum", async () => {
+    vi.stubEnv("STRIPE_SECRET_KEY", "sk_test_mock");
+    vi.stubEnv("STRIPE_SHIPPING_RATE_ID", "shr_legacy_free");
+    vi.stubEnv("STRIPE_STANDARD_SHIPPING_RATE_ID", "shr_standard");
+    vi.stubEnv("STRIPE_FREE_SHIPPING_RATE_ID", "shr_free");
+    vi.stubEnv("STRIPE_FREE_SHIPPING_MINIMUM_CENTS", "7500");
+
+    const fetchMock = vi.fn(async () =>
+      Response.json({
+        id: "cs_test_123",
+        url: "https://checkout.stripe.com/c/pay/cs_test_123"
+      })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await createCheckoutSession({
+      products: [{ ...product, price: 49.99 }],
+      origin: "https://rockinrarecollectibles.com",
+      reservations: [{ id: "reservation-123", reservedUntil: new Date(Date.now() + 45 * 60 * 1000).toISOString() }]
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    const params = new URLSearchParams(init.body as string);
+
+    expect(params.get("shipping_options[0][shipping_rate]")).toBe("shr_standard");
+    expect(params.get("shipping_options[1][shipping_rate]")).toBeNull();
+    expect(params.get("metadata[subtotalCents]")).toBe("4999");
+  });
+
+  it("does not fall back to the legacy shipping rate in threshold mode", async () => {
+    vi.stubEnv("STRIPE_SECRET_KEY", "sk_test_mock");
+    vi.stubEnv("STRIPE_SHIPPING_RATE_ID", "shr_legacy_free");
+    vi.stubEnv("STRIPE_FREE_SHIPPING_RATE_ID", "shr_free");
+    vi.stubEnv("STRIPE_FREE_SHIPPING_MINIMUM_CENTS", "7500");
+
+    await expect(
+      createCheckoutSession({
+        products: [{ ...product, price: 54.99 }],
+        origin: "https://rockinrarecollectibles.com",
+        reservations: [{ id: "reservation-123", reservedUntil: new Date(Date.now() + 45 * 60 * 1000).toISOString() }]
+      })
+    ).rejects.toThrow("Stripe standard shipping rate is not configured.");
+  });
+
+  it("uses only the free shipping rate at or above the free shipping minimum", async () => {
+    vi.stubEnv("STRIPE_SECRET_KEY", "sk_test_mock");
+    vi.stubEnv("STRIPE_STANDARD_SHIPPING_RATE_ID", "shr_standard");
+    vi.stubEnv("STRIPE_FREE_SHIPPING_RATE_ID", "shr_free");
+    vi.stubEnv("STRIPE_FREE_SHIPPING_MINIMUM_CENTS", "7500");
+
+    const fetchMock = vi.fn(async () =>
+      Response.json({
+        id: "cs_test_123",
+        url: "https://checkout.stripe.com/c/pay/cs_test_123"
+      })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await createCheckoutSession({
+      products: [{ ...product, price: 75 }],
+      origin: "https://rockinrarecollectibles.com",
+      reservations: [{ id: "reservation-123", reservedUntil: new Date(Date.now() + 45 * 60 * 1000).toISOString() }]
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    const params = new URLSearchParams(init.body as string);
+
+    expect(params.get("shipping_options[0][shipping_rate]")).toBe("shr_free");
+    expect(params.get("shipping_options[1][shipping_rate]")).toBeNull();
+    expect(params.get("metadata[subtotalCents]")).toBe("7500");
+  });
 });

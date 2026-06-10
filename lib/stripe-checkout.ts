@@ -32,7 +32,33 @@ function commaSeparated(value: string | undefined) {
 }
 
 function configuredShippingRateIds() {
-  return commaSeparated(process.env.STRIPE_SHIPPING_RATE_IDS || process.env.STRIPE_SHIPPING_RATE_ID);
+  return commaSeparated(
+    process.env.STRIPE_SHIPPING_RATE_IDS ||
+      process.env.STRIPE_STANDARD_SHIPPING_RATE_ID ||
+      process.env.STRIPE_PAID_SHIPPING_RATE_ID ||
+      process.env.STRIPE_SHIPPING_RATE_ID
+  );
+}
+
+function configuredCheckoutShippingRateIds(subtotalCents: number) {
+  const standardShippingRateId = process.env.STRIPE_STANDARD_SHIPPING_RATE_ID;
+  const freeShippingRateId = process.env.STRIPE_FREE_SHIPPING_RATE_ID;
+  const freeShippingMinimumCents = Number(process.env.STRIPE_FREE_SHIPPING_MINIMUM_CENTS);
+  const thresholdShippingEnabled = Boolean(freeShippingRateId && Number.isFinite(freeShippingMinimumCents) && freeShippingMinimumCents > 0);
+
+  if (!thresholdShippingEnabled) {
+    return configuredShippingRateIds();
+  }
+
+  if (subtotalCents >= freeShippingMinimumCents && freeShippingRateId) {
+    return [freeShippingRateId];
+  }
+
+  if (!standardShippingRateId) {
+    throw new Error("Stripe standard shipping rate is not configured.");
+  }
+
+  return [standardShippingRateId];
 }
 
 function configuredShippingCountries() {
@@ -79,6 +105,7 @@ export async function createCheckoutSession({ products, origin, reservations }: 
   params.set("payment_intent_data[metadata][itemCount]", String(products.length));
   params.set("payment_intent_data[metadata][soldChannel]", "site");
   params.set("payment_intent_data[metadata][orderSkus]", products.map(getProductSku).join(",").slice(0, 500));
+  let subtotalCents = 0;
 
   if (isEnabled(process.env.STRIPE_PHONE_NUMBER_COLLECTION)) {
     params.set("phone_number_collection[enabled]", "true");
@@ -101,9 +128,12 @@ export async function createCheckoutSession({ products, origin, reservations }: 
       throw new Error(`${product.name} is not configured for checkout.`);
     }
 
+    const unitAmount = Math.round(price * 100);
+    subtotalCents += unitAmount;
+
     params.set(`line_items[${index}][quantity]`, "1");
     params.set(`line_items[${index}][price_data][currency]`, "usd");
-    params.set(`line_items[${index}][price_data][unit_amount]`, String(Math.round(price * 100)));
+    params.set(`line_items[${index}][price_data][unit_amount]`, String(unitAmount));
     params.set(`line_items[${index}][price_data][product_data][name]`, product.name);
     params.set(`line_items[${index}][price_data][product_data][metadata][productId]`, product.id);
     params.set(`line_items[${index}][price_data][product_data][metadata][sku]`, sku);
@@ -121,8 +151,11 @@ export async function createCheckoutSession({ products, origin, reservations }: 
     params.set(`metadata[item_${index}_sku]`, sku);
     params.set(`metadata[item_${index}_slug]`, product.slug);
     params.set(`metadata[item_${index}_reservationId]`, reservation.id);
-    params.set(`metadata[item_${index}_amountTotal]`, String(Math.round(price * 100)));
+    params.set(`metadata[item_${index}_amountTotal]`, String(unitAmount));
   });
+
+  params.set("metadata[subtotalCents]", String(subtotalCents));
+  params.set("payment_intent_data[metadata][subtotalCents]", String(subtotalCents));
 
   const firstProduct = products[0];
   const firstReservation = reservations[0];
@@ -134,7 +167,7 @@ export async function createCheckoutSession({ products, origin, reservations }: 
   params.set("payment_intent_data[metadata][productId]", firstProduct.id);
   params.set("payment_intent_data[metadata][sku]", getProductSku(firstProduct));
 
-  configuredShippingRateIds().forEach((shippingRateId, index) => {
+  configuredCheckoutShippingRateIds(subtotalCents).forEach((shippingRateId, index) => {
     params.set(`shipping_options[${index}][shipping_rate]`, shippingRateId);
   });
 
