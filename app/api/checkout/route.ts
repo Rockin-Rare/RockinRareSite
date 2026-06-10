@@ -3,13 +3,15 @@ import { getCurrentCollectorClubEntitlement } from "@/lib/collector-club/current
 import { canCheckoutProductForEntitlement } from "@/lib/collector-club/gates";
 import { canCheckoutOnSite } from "@/lib/commerce";
 import { releaseCheckoutReservation, reserveCheckoutProduct } from "@/lib/checkout-reservations";
-import { getLocalCheckoutTestProduct, getProducts } from "@/lib/products";
+import { getLocalCheckoutTestProduct, getProductBySlugForEntitlement, getProducts } from "@/lib/products";
 import { createCheckoutSession } from "@/lib/stripe-checkout";
 import type { Product } from "@/lib/types";
 
 type CheckoutRequest = {
   productId?: unknown;
   productIds?: unknown;
+  productSlug?: unknown;
+  productSlugs?: unknown;
 };
 
 const maxCheckoutItems = 8;
@@ -24,6 +26,48 @@ function isAllowedOrigin(request: Request) {
 function cleanProductIds(body: CheckoutRequest) {
   const rawIds = Array.isArray(body.productIds) ? body.productIds : body.productId ? [body.productId] : [];
   return [...new Set(rawIds.map((value) => (typeof value === "string" ? value.trim().slice(0, 120) : "")).filter(Boolean))];
+}
+
+function cleanProductSlugs(body: CheckoutRequest) {
+  const rawSlugs = Array.isArray(body.productSlugs) ? body.productSlugs : body.productSlug ? [body.productSlug] : [];
+  return rawSlugs.map((value) => (typeof value === "string" ? value.trim().slice(0, 180) : ""));
+}
+
+async function resolveCheckoutProducts(productIds: string[], productSlugs: string[], entitlement: Awaited<ReturnType<typeof getCurrentCollectorClubEntitlement>>) {
+  const productsById = new Map<string, Product>();
+
+  for (let index = 0; index < productIds.length; index += 1) {
+    const slug = productSlugs[index];
+    if (!slug) continue;
+
+    const product = await getProductBySlugForEntitlement(slug, entitlement);
+    if (product?.id === productIds[index]) {
+      productsById.set(product.id, product);
+    }
+  }
+
+  const missingProductIds = productIds.filter((productId) => !productsById.has(productId));
+  if (missingProductIds.length === 0) {
+    return productIds.map((productId) => productsById.get(productId)).filter((product): product is Product => Boolean(product));
+  }
+
+  const localProductsById = new Map(
+    missingProductIds
+      .map((productId) => getLocalCheckoutTestProduct(productId))
+      .filter((product): product is Product => Boolean(product))
+      .map((product) => [product.id, product])
+  );
+  const fallbackProductsById =
+    localProductsById.size === missingProductIds.length
+      ? localProductsById
+      : new Map([...localProductsById, ...(await getProducts()).map((product) => [product.id, product] as const)]);
+
+  missingProductIds.forEach((productId) => {
+    const product = fallbackProductsById.get(productId);
+    if (product) productsById.set(productId, product);
+  });
+
+  return productIds.map((productId) => productsById.get(productId)).filter((product): product is Product => Boolean(product));
 }
 
 async function releaseReservations(products: Product[], reservations: Array<{ id: string; reservedUntil: string }>) {
@@ -49,6 +93,7 @@ export async function POST(request: Request) {
   }
 
   const productIds = cleanProductIds(body);
+  const productSlugs = cleanProductSlugs(body);
 
   if (productIds.length === 0) {
     return NextResponse.json({ error: "At least one product is required." }, { status: 400 });
@@ -58,18 +103,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: `Checkout supports up to ${maxCheckoutItems} items at a time.` }, { status: 400 });
   }
 
-  const localProductsById = new Map(
-    productIds
-      .map((productId) => getLocalCheckoutTestProduct(productId))
-      .filter((product): product is Product => Boolean(product))
-      .map((product) => [product.id, product])
-  );
-  const productsById =
-    localProductsById.size === productIds.length
-      ? localProductsById
-      : new Map([...localProductsById, ...(await getProducts()).map((product) => [product.id, product] as const)]);
-  const checkoutProducts = productIds.map((productId) => productsById.get(productId)).filter((product): product is Product => Boolean(product));
   const entitlement = await getCurrentCollectorClubEntitlement();
+  const checkoutProducts = await resolveCheckoutProducts(productIds, productSlugs, entitlement);
 
   if (
     checkoutProducts.length !== productIds.length ||

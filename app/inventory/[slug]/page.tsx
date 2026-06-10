@@ -197,7 +197,7 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
           {description ? <p className="mt-6 leading-7 text-vault-secondaryText">{description}</p> : null}
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             {cartItem ? <AddToCartButton item={cartItem} /> : null}
-            {canBuyDirect ? <CheckoutButton productIds={[product.id]} /> : null}
+            {canBuyDirect ? <CheckoutButton productIds={[product.id]} productSlugs={[product.slug]} /> : null}
             {!canBuyDirect && !sold && product.externalListingUrl ? (
               <Button href={product.externalListingUrl} target="_blank" rel="noreferrer">
                 View on {product.externalListingPlatform ?? "Listing"}

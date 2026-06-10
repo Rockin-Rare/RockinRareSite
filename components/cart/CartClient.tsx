@@ -137,6 +137,7 @@ export function CartClient({ checkoutStatus, checkoutSessionId }: CartClientProp
           label={`Checkout ${formatPrice(cart.subtotal)}`}
           loadingLabel="Opening Checkout..."
           productIds={cart.items.map((item) => item.id)}
+          productSlugs={cart.items.map((item) => item.slug)}
         />
         <Button className="mt-3 w-full" href="/inventory" variant="secondary">
           Continue Shopping

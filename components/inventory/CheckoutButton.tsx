@@ -5,12 +5,19 @@ import { Button } from "@/components/ui/Button";
 
 type CheckoutButtonProps = {
   productIds: string[];
+  productSlugs?: string[];
   label?: string;
   loadingLabel?: string;
   onCheckoutStarted?: () => void;
 };
 
-export function CheckoutButton({ productIds, label = "Buy Now", loadingLabel = "Opening Checkout...", onCheckoutStarted }: CheckoutButtonProps) {
+export function CheckoutButton({
+  productIds,
+  productSlugs,
+  label = "Buy Now",
+  loadingLabel = "Opening Checkout...",
+  onCheckoutStarted
+}: CheckoutButtonProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -22,7 +29,7 @@ export function CheckoutButton({ productIds, label = "Buy Now", loadingLabel = "
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productIds })
+        body: JSON.stringify({ productIds, productSlugs })
       });
       const payload = (await response.json()) as { url?: string; error?: string };
 
