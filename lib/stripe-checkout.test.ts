@@ -61,9 +61,50 @@ describe("Stripe Checkout session creation", () => {
     expect(params.get("success_url")).toBe("https://rockinrarecollectibles.com/cart?checkout=success");
     expect(params.get("cancel_url")).toBe("https://rockinrarecollectibles.com/cart?checkout=cancelled&session_id={CHECKOUT_SESSION_ID}");
     expect(params.get("shipping_options[0][shipping_rate]")).toBe("shr_test_mock");
+    expect(params.get("shipping_address_collection[allowed_countries][0]")).toBe("US");
     expect(params.get("automatic_tax[enabled]")).toBe("true");
     expect(params.get("metadata[item_0_productId]")).toBe(product.id);
     expect(params.get("metadata[item_0_reservationId]")).toBe("reservation-123");
+    expect(params.get("metadata[soldChannel]")).toBe("site");
+    expect(params.get("metadata[orderSkus]")).toBe(product.id);
+    expect(params.get("payment_intent_data[metadata][soldChannel]")).toBe("site");
     expect(params.get("line_items[0][price_data][unit_amount]")).toBe("18999");
+    expect(params.get("line_items[0][price_data][product_data][images][0]")).toBe("https://rockinrarecollectibles.com/products/test.svg");
+  });
+
+  it("supports optional Stripe checkout controls from environment", async () => {
+    vi.stubEnv("STRIPE_SECRET_KEY", "sk_test_mock");
+    vi.stubEnv("STRIPE_SHIPPING_RATE_IDS", "shr_standard, shr_priority");
+    vi.stubEnv("STRIPE_SHIPPING_ALLOWED_COUNTRIES", "US,CA");
+    vi.stubEnv("STRIPE_BILLING_ADDRESS_REQUIRED", "true");
+    vi.stubEnv("STRIPE_PHONE_NUMBER_COLLECTION", "true");
+    vi.stubEnv("STRIPE_ALLOW_PROMOTION_CODES", "true");
+    vi.stubEnv("STRIPE_REQUIRE_TERMS_OF_SERVICE", "true");
+
+    const fetchMock = vi.fn(async () =>
+      Response.json({
+        id: "cs_test_123",
+        url: "https://checkout.stripe.com/c/pay/cs_test_123"
+      })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await createCheckoutSession({
+      products: [product],
+      origin: "https://rockinrarecollectibles.com",
+      reservations: [{ id: "reservation-123", reservedUntil: new Date(Date.now() + 45 * 60 * 1000).toISOString() }]
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    const params = new URLSearchParams(init.body as string);
+
+    expect(params.get("shipping_options[0][shipping_rate]")).toBe("shr_standard");
+    expect(params.get("shipping_options[1][shipping_rate]")).toBe("shr_priority");
+    expect(params.get("shipping_address_collection[allowed_countries][0]")).toBe("US");
+    expect(params.get("shipping_address_collection[allowed_countries][1]")).toBe("CA");
+    expect(params.get("billing_address_collection")).toBe("required");
+    expect(params.get("phone_number_collection[enabled]")).toBe("true");
+    expect(params.get("allow_promotion_codes")).toBe("true");
+    expect(params.get("consent_collection[terms_of_service]")).toBe("required");
   });
 });

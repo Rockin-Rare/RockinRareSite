@@ -176,7 +176,13 @@ NEXT_PUBLIC_SITE_URL=https://your-domain.example
 STRIPE_SECRET_KEY=sk_live_or_test...
 STRIPE_WEBHOOK_SECRET=whsec_...
 STRIPE_SHIPPING_RATE_ID=shr_...
+STRIPE_SHIPPING_RATE_IDS=shr_standard,shr_priority
+STRIPE_SHIPPING_ALLOWED_COUNTRIES=US
 STRIPE_TAX_ENABLED=true
+STRIPE_BILLING_ADDRESS_REQUIRED=false
+STRIPE_PHONE_NUMBER_COLLECTION=false
+STRIPE_ALLOW_PROMOTION_CODES=false
+STRIPE_REQUIRE_TERMS_OF_SERVICE=false
 DISCORD_SALES_WEBHOOK_URL=
 ```
 
@@ -185,6 +191,8 @@ Checkout sessions are created through `POST /api/checkout`. Stripe should send w
 ```text
 /api/stripe/webhook
 ```
+
+`STRIPE_SHIPPING_RATE_IDS` accepts a comma-separated list when you want customers to choose between shipping speeds. If it is empty, the single `STRIPE_SHIPPING_RATE_ID` value is used. `STRIPE_SHIPPING_ALLOWED_COUNTRIES` also accepts comma-separated ISO country codes and defaults to `US`.
 
 The webhook handles `checkout.session.completed` and `checkout.session.expired`. When `CARD_INTAKE_SALES_WEBHOOK_URL` is configured, completed and expired checkout events are posted to that URL so Card Intake Router can mark the item sold or release future reservations.
 

@@ -20,6 +20,37 @@ type CheckoutSessionInput = {
 
 const stripeApiVersion = "2026-02-25.clover";
 
+function isEnabled(value: string | undefined) {
+  return value === "true" || value === "1" || value === "yes";
+}
+
+function commaSeparated(value: string | undefined) {
+  return (value ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function configuredShippingRateIds() {
+  return commaSeparated(process.env.STRIPE_SHIPPING_RATE_IDS || process.env.STRIPE_SHIPPING_RATE_ID);
+}
+
+function configuredShippingCountries() {
+  const countries = commaSeparated(process.env.STRIPE_SHIPPING_ALLOWED_COUNTRIES);
+  return countries.length > 0 ? countries : ["US"];
+}
+
+function absoluteHttpsUrl(value: string | undefined, origin: string) {
+  if (!value) return undefined;
+
+  try {
+    const url = new URL(value, origin);
+    return url.protocol === "https:" ? url.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function createCheckoutSession({ products, origin, reservations }: CheckoutSessionInput) {
   const secretKey = process.env.STRIPE_SECRET_KEY;
 
@@ -38,10 +69,28 @@ export async function createCheckoutSession({ products, origin, reservations }: 
   params.set("client_reference_id", reservations.map((reservation) => reservation.id).join(",").slice(0, 200));
   params.set("metadata[itemCount]", String(products.length));
   params.set("metadata[soldChannel]", "site");
+  params.set("metadata[siteOrigin]", origin.slice(0, 500));
+  params.set("metadata[orderSkus]", products.map(getProductSku).join(",").slice(0, 500));
   params.set("expires_at", String(Math.min(...reservations.map(getReservationExpiresAt))));
-  params.set("shipping_address_collection[allowed_countries][0]", "US");
-  params.set("billing_address_collection", "auto");
+  configuredShippingCountries().forEach((country, index) => {
+    params.set(`shipping_address_collection[allowed_countries][${index}]`, country.toUpperCase());
+  });
+  params.set("billing_address_collection", isEnabled(process.env.STRIPE_BILLING_ADDRESS_REQUIRED) ? "required" : "auto");
   params.set("payment_intent_data[metadata][itemCount]", String(products.length));
+  params.set("payment_intent_data[metadata][soldChannel]", "site");
+  params.set("payment_intent_data[metadata][orderSkus]", products.map(getProductSku).join(",").slice(0, 500));
+
+  if (isEnabled(process.env.STRIPE_PHONE_NUMBER_COLLECTION)) {
+    params.set("phone_number_collection[enabled]", "true");
+  }
+
+  if (isEnabled(process.env.STRIPE_ALLOW_PROMOTION_CODES)) {
+    params.set("allow_promotion_codes", "true");
+  }
+
+  if (isEnabled(process.env.STRIPE_REQUIRE_TERMS_OF_SERVICE)) {
+    params.set("consent_collection[terms_of_service]", "required");
+  }
 
   products.forEach((product, index) => {
     const price = getSitePrice(product);
@@ -63,6 +112,11 @@ export async function createCheckoutSession({ products, origin, reservations }: 
       params.set(`line_items[${index}][price_data][product_data][description]`, product.description.slice(0, 1000));
     }
 
+    const imageUrl = absoluteHttpsUrl(product.primaryImageUrl || product.imageUrls[0], origin);
+    if (imageUrl) {
+      params.set(`line_items[${index}][price_data][product_data][images][0]`, imageUrl);
+    }
+
     params.set(`metadata[item_${index}_productId]`, product.id);
     params.set(`metadata[item_${index}_sku]`, sku);
     params.set(`metadata[item_${index}_slug]`, product.slug);
@@ -80,9 +134,9 @@ export async function createCheckoutSession({ products, origin, reservations }: 
   params.set("payment_intent_data[metadata][productId]", firstProduct.id);
   params.set("payment_intent_data[metadata][sku]", getProductSku(firstProduct));
 
-  if (process.env.STRIPE_SHIPPING_RATE_ID) {
-    params.set("shipping_options[0][shipping_rate]", process.env.STRIPE_SHIPPING_RATE_ID);
-  }
+  configuredShippingRateIds().forEach((shippingRateId, index) => {
+    params.set(`shipping_options[${index}][shipping_rate]`, shippingRateId);
+  });
 
   if (process.env.STRIPE_TAX_ENABLED === "true") {
     params.set("automatic_tax[enabled]", "true");
