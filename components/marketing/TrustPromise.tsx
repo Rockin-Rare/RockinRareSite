@@ -3,19 +3,19 @@ import { cn } from "@/lib/utils";
 const promises = [
   {
     title: "Actual product photos",
-    text: "We use real listing photos whenever available, especially for singles, slabs, and condition-sensitive items."
+    text: "We use real listing photos whenever we can, especially for singles, slabs, and anything where condition matters."
   },
   {
-    title: "Condition called out plainly",
-    text: "Wear, language, sealed status, grading company, and obvious issues belong in the listing before checkout."
+    title: "Plain condition notes",
+    text: "Wear, language, sealed status, grading company, and obvious issues should be clear before checkout."
   },
   {
-    title: "Packed for card people",
+    title: "Packed like cards matter",
     text: "Singles are protected with sleeves, top loaders or semi-rigids, team bags, and rigid mailers when the order calls for it."
   },
   {
     title: "No bait-and-switch listings",
-    text: "No fake scarcity, no mystery condition, and no swapping the pictured item for something worse."
+    text: "No fake scarcity, no mystery condition, and no swapping a pictured card for a worse copy."
   }
 ];
 
@@ -25,7 +25,7 @@ export function TrustPromise({ compact = false }: { compact?: boolean }) {
       {!compact ? (
         <div className="mb-8 max-w-3xl">
           <p className="mb-3 text-sm font-semibold uppercase text-vault-gold">The Rockin Rare Promise</p>
-          <h2 className="text-3xl font-black text-vault-text sm:text-4xl">Details Collectors Check First</h2>
+          <h2 className="text-3xl font-black text-vault-text sm:text-4xl">What We Check Before We List</h2>
         </div>
       ) : null}
       <div className={cn("divide-y divide-vault-border border-y border-vault-border", compact ? "" : "md:grid md:grid-cols-2 md:divide-y-0")}>

@@ -146,7 +146,7 @@ export function CollectorClubForm({ initialEmail, initialName, initialProfile }:
         <div>
           <h2 className="text-xl font-black text-vault-text">Collecting Preferences</h2>
           <p className="mt-2 text-sm leading-6 text-vault-secondaryText">
-            These preferences help us match future inventory, restocks, and collector-first drops to what you actually collect.
+            These preferences help us match future inventory, restocks, and drop alerts to what you actually collect.
           </p>
         </div>
         <FormSelect

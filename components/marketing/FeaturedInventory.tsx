@@ -12,7 +12,7 @@ export function FeaturedInventory({ products }: { products: Product[] }) {
           title="Fresh From The Vault"
           description="Browse current trading card games, including Pokemon, One Piece, Riftbound, Magic, singles, sealed product, slabs, bundles, and recent sold examples."
         />
-        <Button href="/inventory" variant="secondary">
+        <Button href="/inventory" variant="secondary" className="w-full sm:w-auto">
           View All Inventory
         </Button>
       </div>

@@ -6,6 +6,7 @@ import { getCurrentCollectorClubEntitlement } from "@/lib/collector-club/current
 import { isCollectorClubPro } from "@/lib/collector-club/entitlements";
 import { parseInventoryQuery } from "@/lib/inventory-query";
 import { getPublishedProductPageForEntitlement } from "@/lib/products";
+import { tcgplayerStoreUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Current Inventory",
@@ -40,7 +41,8 @@ export default async function InventoryPage({ searchParams }: { searchParams?: P
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
           <Button
-            href="https://www.tcgplayer.com/search/all/product?seller=472d0061&view=grid"
+            className="w-full sm:w-auto"
+            href={tcgplayerStoreUrl}
             rel="noreferrer"
             target="_blank"
             variant="secondary"

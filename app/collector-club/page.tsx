@@ -34,8 +34,8 @@ const benefits = [
     text: "Keep your wishlist under the same account so incoming inventory can be matched to specific chases."
   },
   {
-    title: "Collector-first drops",
-    text: "Follow future fair-access release updates, batch details, chase-card updates, and community pull posts."
+    title: "Fair-access drops",
+    text: "Follow future release updates, batch details, chase-card updates, and community pull posts."
   },
   {
     title: "Discord invites",
@@ -107,7 +107,7 @@ export default async function CollectorClubPage({ searchParams }: PageProps) {
             <h1 className="text-4xl font-black text-vault-text sm:text-5xl">{headline}</h1>
             <p className="mt-5 text-lg leading-8 text-vault-secondaryText">
               Collector Club is the free Rockin Rare account for drop alerts, Rare Radar matches, collecting preferences,
-              and future member perks. Create one account for your profile, wishlist, and future collector-first releases.
+              and future member perks. Create one account for your profile, wishlist, and future release updates.
             </p>
             <div className="mt-7 divide-y divide-vault-border border-y border-vault-border">
               {benefits.map((benefit) => (
@@ -153,11 +153,11 @@ export default async function CollectorClubPage({ searchParams }: PageProps) {
       {!user ? (
         <section className="my-7 rounded-xl border border-vault-border bg-vault-card p-6 shadow-vault md:p-8">
           <p className="text-sm font-semibold uppercase text-vault-gold">Collector Community</p>
-          <h2 className="mt-3 text-3xl font-black text-vault-text">Built for collectors first</h2>
+          <h2 className="mt-3 text-3xl font-black text-vault-text">Useful alerts, not random blasts</h2>
           <p className="mt-4 max-w-5xl text-base leading-7 text-vault-secondaryText">
             Collector Club is free while Rockin Rare grows. We&apos;re using it to send better restock alerts, match
-            collectors with cards they actually want, and build future fair-access drops for real collectors and players.
-            As we grow, we&apos;ll keep member perks realistic and transparent: no guaranteed allocations or paid benefits
+            collectors with cards they actually want, and build future fair-access drops for collectors and players.
+            As we grow, we&apos;ll keep member perks realistic: no guaranteed allocations or paid benefits
             until we can reliably support them.
           </p>
         </section>

@@ -5,11 +5,19 @@ export const shortSiteName = "Rockin Rare";
 export const siteUrl = normalizeSiteUrl(process.env.NEXT_PUBLIC_SITE_URL || "https://rockinrarecollectibles.com");
 
 export const defaultDescription =
-  "Collector-first trading card games, including Pokemon, One Piece, Riftbound, Magic: The Gathering, sealed product, slabs, singles, and rare finds with real product photos and transparent condition notes.";
+  "Pokemon, One Piece, Riftbound, Magic: The Gathering, sealed product, slabs, singles, and collection finds with real photos, clear condition notes, and careful packing.";
 
 export const contactEmail = "rockinrare@gmail.com";
 
 export const instagramHandle = "rockinrarecollectibles";
+
+export const tcgplayerStoreUrl = "https://www.tcgplayer.com/search/all/product?seller=472d0061&view=grid";
+
+export const tcgplayerRating = "100% positive";
+
+export const tcgplayerSales = "83 sales";
+
+export const tcgplayerRatingDate = "June 2026";
 
 export const staticRoutes = [
   {

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/layout/BrandLogo";
 import { Container } from "@/components/layout/Container";
-import { contactEmail, instagramHandle } from "@/lib/site";
+import { contactEmail, instagramHandle, tcgplayerRating, tcgplayerSales, tcgplayerStoreUrl } from "@/lib/site";
 
 export function Footer() {
   const year = new Date().getFullYear();
@@ -14,6 +14,9 @@ export function Footer() {
           <p className="mt-4 max-w-md text-sm leading-6 text-vault-secondaryText">
             Southern California card shop buying, selling, and trading Pokemon, One Piece, Riftbound, Magic, slabs,
             sealed product, and collection finds.
+          </p>
+          <p className="mt-3 max-w-md text-sm leading-6 text-vault-muted">
+            TCGplayer: {tcgplayerRating} across {tcgplayerSales}.
           </p>
         </div>
         <div>
@@ -42,7 +45,7 @@ export function Footer() {
             </a>
             <a
               className="transition hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-vault-highlight"
-              href="https://www.tcgplayer.com/search/all/product?seller=472d0061&view=grid"
+              href={tcgplayerStoreUrl}
               rel="noreferrer"
               target="_blank"
             >

@@ -27,7 +27,7 @@ export function Navbar() {
         <nav className="hidden items-center gap-5 lg:flex" aria-label="Primary navigation">
           {navLinks.map((link) => (
             <Link
-              className="text-sm font-medium text-vault-secondaryText transition hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-vault-highlight"
+              className="text-sm font-semibold text-vault-secondaryText transition hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-vault-highlight"
               href={link.href}
               key={link.href}
             >

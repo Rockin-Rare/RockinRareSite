@@ -31,7 +31,7 @@ export function BrandLogo({ compact = false, className, mark = "rock" }: BrandLo
         className={cn(
           "relative shrink-0 overflow-hidden border border-vault-gold/35 shadow-gold",
           selectedMark.frameClassName,
-          compact ? "h-10 w-10" : "h-12 w-12"
+          compact ? "h-11 w-11" : "h-12 w-12"
         )}
       >
         <Image
@@ -43,7 +43,7 @@ export function BrandLogo({ compact = false, className, mark = "rock" }: BrandLo
           width={96}
         />
       </span>
-      <span className={cn("font-black text-vault-text", compact ? "text-sm" : "text-base sm:text-lg")}>
+      <span className={cn("font-black leading-tight text-vault-text", compact ? "text-[15px]" : "text-base sm:text-lg")}>
         Rockin Rare Collectibles
       </span>
     </span>
