@@ -167,6 +167,22 @@ export function WishlistWorkspace({ createAction, deleteAction, items, sharePath
     if (!sharePath || wishlistItems.length === 0) return;
 
     const shareUrl = new URL(sharePath, window.location.origin).toString();
+    const shareData = {
+      title: "Rare Radar Wishlist",
+      text: "Here is my Rockin Rare wishlist.",
+      url: shareUrl
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        showStatus("Wishlist link shared.");
+        return;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+      }
+    }
+
     try {
       await navigator.clipboard.writeText(shareUrl);
       showStatus("Read-only wishlist link copied.");
