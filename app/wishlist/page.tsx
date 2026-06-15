@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { WishlistWorkspace } from "@/components/wishlist/WishlistWorkspace";
 import { getCurrentAuthUser } from "@/lib/auth/current";
 import { hasNeonAuth } from "@/lib/auth/server";
+import { createWishlistShareToken } from "@/lib/rare-radar/share";
 import { getWishlistItemsForUser, rareRadarStorageConfigured, rareRadarWishlistTableReady } from "@/lib/rare-radar/wishlist";
 import { createWishlistItemAction, deleteWishlistItemAction, updateWishlistItemAction } from "./actions";
 
@@ -24,6 +25,7 @@ export default async function WishlistPage() {
   const storageConfigured = rareRadarStorageConfigured();
   const storageReady = storageConfigured ? await rareRadarWishlistTableReady() : false;
   const items = user && storageReady ? await getWishlistItemsForUser(user.id) : [];
+  const sharePath = user && storageReady ? `/wishlist/share/${createWishlistShareToken(user.id)}` : "";
 
   return (
     <Container className="py-14">
@@ -74,7 +76,13 @@ export default async function WishlistPage() {
             )}
           </div>
         ) : (
-          <WishlistWorkspace createAction={createWishlistItemAction} deleteAction={deleteWishlistItemAction} items={items} updateAction={updateWishlistItemAction} />
+          <WishlistWorkspace
+            createAction={createWishlistItemAction}
+            deleteAction={deleteWishlistItemAction}
+            items={items}
+            sharePath={sharePath}
+            updateAction={updateWishlistItemAction}
+          />
         )}
       </div>
 

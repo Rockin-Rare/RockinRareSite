@@ -10,10 +10,11 @@ type WishlistWorkspaceProps = {
   createAction: (formData: FormData) => Promise<WishlistSaveResult>;
   deleteAction: (formData: FormData) => Promise<WishlistDeleteResult>;
   items: RareRadarWishlistItem[];
+  sharePath: string;
   updateAction: (formData: FormData) => Promise<WishlistSaveResult>;
 };
 
-export function WishlistWorkspace({ createAction, deleteAction, items, updateAction }: WishlistWorkspaceProps) {
+export function WishlistWorkspace({ createAction, deleteAction, items, sharePath, updateAction }: WishlistWorkspaceProps) {
   const [wishlistItems, setWishlistItems] = useState(items);
   const [editingItemId, setEditingItemId] = useState("");
   const [editingInitialUpdatedAt, setEditingInitialUpdatedAt] = useState("");
@@ -162,15 +163,43 @@ export function WishlistWorkspace({ createAction, deleteAction, items, updateAct
     });
   }
 
+  async function handleShareWishlist() {
+    if (!sharePath || wishlistItems.length === 0) return;
+
+    const shareUrl = new URL(sharePath, window.location.origin).toString();
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      showStatus("Read-only wishlist link copied.");
+    } catch {
+      window.prompt("Copy this read-only wishlist link:", shareUrl);
+      showStatus("Read-only wishlist link ready to copy.");
+    }
+  }
+
   return (
     <section className="grid gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.75fr)] lg:items-start">
       <div className="order-2 rounded-2xl border border-vault-border bg-vault-card p-5 shadow-vault lg:order-1">
-        <div className="mb-5 flex items-end justify-between gap-3">
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase text-vault-gold">Your saved radar</p>
             <h2 className="mt-2 text-2xl font-black text-vault-text">Current List</h2>
           </div>
-          <p className="shrink-0 text-sm text-vault-secondaryText">{wishlistItems.length} saved</p>
+          <div className="flex shrink-0 items-center gap-3 rounded-xl border border-vault-border bg-vault-secondary/35 p-1.5">
+            <p className="pl-2 text-sm text-vault-secondaryText">{wishlistItems.length} saved</p>
+            <button
+              aria-label="Copy read-only wishlist share link"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-vault-border bg-vault-card px-3 py-2 text-sm font-semibold text-vault-text shadow-sm transition hover:border-vault-gold hover:bg-vault-elevated hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-gold disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={!sharePath || wishlistItems.length === 0}
+              onClick={handleShareWishlist}
+              title={wishlistItems.length === 0 ? "Add an item before sharing your wishlist" : "Copy read-only wishlist share link"}
+              type="button"
+            >
+              <span aria-hidden="true" className="material-symbols-outlined text-[18px]">
+                share
+              </span>
+              Share
+            </button>
+          </div>
         </div>
 
         {statusMessage ? (

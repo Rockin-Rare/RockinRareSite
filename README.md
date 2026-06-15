@@ -42,6 +42,7 @@ DATABASE_URL=
 COLLECTOR_CLUB_SESSION_SECRET=
 NEON_AUTH_BASE_URL=
 NEON_AUTH_COOKIE_SECRET=
+WISHLIST_SHARE_SECRET=
 NEXT_PUBLIC_SITE_URL=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
@@ -57,7 +58,7 @@ CARD_INTAKE_QUOTE_API_URL=
 CARD_INTAKE_WISHLIST_API_URL=
 ```
 
-The sell/trade and contact forms work locally without webhooks, but submissions are only delivered to Discord when `DISCORD_SELL_TRADE_WEBHOOK_URL` and `DISCORD_CONTACT_WEBHOOK_URL` are set. Collector Club signups are saved to Neon when `DATABASE_URL` is set and can also be mirrored to Discord when `DISCORD_COLLECTOR_CLUB_WAITLIST_WEBHOOK_URL` is set. Set `COLLECTOR_CLUB_SESSION_SECRET` to issue signed Collector Club session cookies after signup. Rare Radar user accounts use Neon Auth; set `NEON_AUTH_BASE_URL` and a 32+ character `NEON_AUTH_COOKIE_SECRET`, then apply `docs/neon-collector-club-schema.sql` so wishlist items can be stored. Supabase values are legacy placeholders from the original v1 plan.
+The sell/trade and contact forms work locally without webhooks, but submissions are only delivered to Discord when `DISCORD_SELL_TRADE_WEBHOOK_URL` and `DISCORD_CONTACT_WEBHOOK_URL` are set. Collector Club signups are saved to Neon when `DATABASE_URL` is set and can also be mirrored to Discord when `DISCORD_COLLECTOR_CLUB_WAITLIST_WEBHOOK_URL` is set. Set `COLLECTOR_CLUB_SESSION_SECRET` to issue signed Collector Club session cookies after signup. Rare Radar user accounts use Neon Auth; set `NEON_AUTH_BASE_URL` and a 32+ character `NEON_AUTH_COOKIE_SECRET`, then apply `docs/neon-collector-club-schema.sql` so wishlist items can be stored. `WISHLIST_SHARE_SECRET` is optional; when set, read-only Rare Radar share links keep working even if the Neon Auth cookie secret rotates. Supabase values are legacy placeholders from the original v1 plan.
 
 ## Current V1 Features
 
