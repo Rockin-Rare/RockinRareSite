@@ -184,11 +184,11 @@ export function WishlistWorkspace({ createAction, deleteAction, items, sharePath
             <p className="text-sm font-semibold uppercase text-vault-gold">Your saved radar</p>
             <h2 className="mt-2 text-2xl font-black text-vault-text">Current List</h2>
           </div>
-          <div className="flex shrink-0 items-center gap-3 rounded-xl border border-vault-border bg-vault-secondary/35 p-1.5">
-            <p className="pl-2 text-sm text-vault-secondaryText">{wishlistItems.length} saved</p>
+          <div className="flex shrink-0 items-center gap-3">
+            <p className="text-sm text-vault-secondaryText">{wishlistItems.length} saved</p>
             <button
               aria-label="Copy read-only wishlist share link"
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-vault-border bg-vault-card px-3 py-2 text-sm font-semibold text-vault-text shadow-sm transition hover:border-vault-gold hover:bg-vault-elevated hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-gold disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-vault-border bg-vault-secondary/80 px-3 py-2 text-sm font-semibold text-vault-text transition hover:border-vault-gold hover:bg-vault-elevated hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-gold disabled:cursor-not-allowed disabled:opacity-50"
               disabled={!sharePath || wishlistItems.length === 0}
               onClick={handleShareWishlist}
               title={wishlistItems.length === 0 ? "Add an item before sharing your wishlist" : "Copy read-only wishlist share link"}
