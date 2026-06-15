@@ -54,7 +54,17 @@ function logCardIntakeInventoryError(action: string, error: unknown) {
   console.warn(`${action}; using available fallback inventory. (${message})`);
 }
 
-export async function getProducts(): Promise<Product[]> {
+let pendingProducts: Promise<Product[]> | null = null;
+
+export function getProducts(): Promise<Product[]> {
+  pendingProducts ??= loadProducts().finally(() => {
+    pendingProducts = null;
+  });
+
+  return pendingProducts;
+}
+
+async function loadProducts(): Promise<Product[]> {
   if (hasCardIntakeApi()) {
     try {
       return withLocalCheckoutTestProduct(await getCardIntakeProducts());

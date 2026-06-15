@@ -10,6 +10,14 @@ type PublicInventoryResponse = {
   updatedAt?: string;
 };
 
+type NextFetchInit = RequestInit & {
+  next?: {
+    revalidate?: number;
+  };
+};
+
+const defaultCardIntakeTimeoutMs = 3500;
+
 export function hasCardIntakeApi() {
   if (process.env.INVENTORY_SOURCE === "mock") return false;
   return Boolean(process.env.CARD_INTAKE_API_BASE_URL);
@@ -34,7 +42,7 @@ export async function getCardIntakeInventoryPage(query?: Partial<InventoryQuery>
   const url = new URL(`${baseUrl.replace(/\/$/, "")}/api/public/inventory`);
   appendInventoryQuery(url.searchParams, query);
 
-  const response = await fetch(url, {
+  const response = await fetchWithTimeout(url, {
     headers: authHeaders(),
     next: { revalidate: 60 }
   });
@@ -60,7 +68,7 @@ export async function getCardIntakeProductBySlug(slug: string): Promise<Product 
   const baseUrl = process.env.CARD_INTAKE_API_BASE_URL;
   if (!baseUrl) return undefined;
 
-  const response = await fetch(`${baseUrl.replace(/\/$/, "")}/api/public/inventory/${encodeURIComponent(slug)}`, {
+  const response = await fetchWithTimeout(`${baseUrl.replace(/\/$/, "")}/api/public/inventory/${encodeURIComponent(slug)}`, {
     headers: authHeaders(),
     next: { revalidate: 60 }
   });
@@ -98,6 +106,33 @@ function normalizePublicProductStatus(product: Product): Product["status"] {
 function authHeaders() {
   const token = process.env.CARD_INTAKE_PUBLIC_API_TOKEN ?? process.env.CARD_INTAKE_API_TOKEN;
   return token ? { authorization: `Bearer ${token}` } : undefined;
+}
+
+async function fetchWithTimeout(input: URL | string, init: NextFetchInit) {
+  const timeoutMs = getCardIntakeTimeoutMs();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(input, {
+      ...init,
+      signal: controller.signal
+    });
+  } catch (error) {
+    if (controller.signal.aborted) {
+      throw new Error(`Card Intake inventory API timed out after ${timeoutMs}ms`);
+    }
+
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function getCardIntakeTimeoutMs() {
+  const configuredTimeout = Number(process.env.CARD_INTAKE_API_TIMEOUT_MS);
+  if (!Number.isFinite(configuredTimeout) || configuredTimeout <= 0) return defaultCardIntakeTimeoutMs;
+  return Math.max(500, Math.floor(configuredTimeout));
 }
 
 function appendInventoryQuery(searchParams: URLSearchParams, query?: Partial<InventoryQuery>) {
