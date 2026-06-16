@@ -29,6 +29,14 @@ const policySections = [
     body: "Customers are responsible for return shipping costs unless the item arrived damaged, materially not as described, or the wrong item was sent. We recommend using tracked shipping and protective packaging for all returns."
   },
   {
+    title: "Exchanges",
+    body: "Exchanges are not accepted. Many trading cards, slabs, sealed products, and collectibles are single-quantity or condition-specific, so approved returns are handled as refunds instead of exchanges."
+  },
+  {
+    title: "Restocking Fees",
+    body: "We do not charge restocking fees for approved returns."
+  },
+  {
     title: "Refunds",
     body: "After we receive and inspect the returned item, approved refunds are issued to the original payment method. Refund timing depends on the payment processor or marketplace, but most refunds appear within 5-10 business days after approval."
   },
