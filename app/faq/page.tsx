@@ -42,7 +42,7 @@ const items = [
   },
   {
     question: "Do you accept returns?",
-    answer: "Return terms depend on the external platform where the item is listed. Contact us before buying if you have condition questions."
+    answer: "Most eligible direct website orders may be returned within 14 days of delivery. Marketplace orders follow the return process for that platform. See the Return Policy page for details."
   },
   {
     question: "Can I trade cards instead of selling?",

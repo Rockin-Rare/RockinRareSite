@@ -56,6 +56,11 @@ export const staticRoutes = [
     changeFrequency: "monthly" as const
   },
   {
+    path: "/return-policy",
+    priority: 0.5,
+    changeFrequency: "monthly" as const
+  },
+  {
     path: "/contact",
     priority: 0.6,
     changeFrequency: "monthly" as const

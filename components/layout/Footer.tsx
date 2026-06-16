@@ -28,6 +28,7 @@ export function Footer() {
             <Link href="/sell-trade">Sell / Trade</Link>
             <Link href="/about">About</Link>
             <Link href="/faq">FAQ</Link>
+            <Link href="/return-policy">Return Policy</Link>
             <Link href="/contact">Contact</Link>
           </div>
         </div>
