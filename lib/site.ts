@@ -11,7 +11,7 @@ export const contactEmail = "rockinrare@gmail.com";
 
 export const instagramHandle = "rockinrarecollectibles";
 
-export const tcgplayerStoreUrl = "https://www.tcgplayer.com/search/all/product?seller=472d0061&view=grid";
+export const tcgplayerStoreUrl = "https://www.tcgplayer.com/sellers/Rockin-Rare-Coll/472d0061";
 
 export const tcgplayerRating = "100% positive";
 
