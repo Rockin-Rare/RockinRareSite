@@ -183,8 +183,8 @@ function estimateQuote({
   const franchiseFactor = franchise === "Pokemon" ? 1.1 : franchise === "One Piece" ? 1.05 : franchise === "Sports" ? 0.95 : 1;
   const baseCents = isSealed ? 7000 : isSlab ? 6000 : isBulk ? 65 : 1800;
   const marketEstimateCents = Math.round(baseCents * quantity * conditionFactor * franchiseFactor);
-  const cashOfferCents = Math.max(500, Math.round(marketEstimateCents * 0.55));
-  const tradeCreditCents = Math.round(marketEstimateCents * 0.7);
+  const cashOfferCents = Math.max(500, Math.round(marketEstimateCents * 0.65));
+  const tradeCreditCents = Math.round(marketEstimateCents * 0.8);
 
   return {
     id: createId(),

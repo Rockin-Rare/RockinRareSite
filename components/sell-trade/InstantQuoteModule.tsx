@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { track } from "@vercel/analytics";
 import { Button } from "@/components/ui/Button";
 import { compressImageFile, compressImageFiles } from "@/lib/browser-image-compression";
 import { createId } from "@/lib/id";
@@ -20,7 +21,7 @@ type InstantQuoteModuleProps = {
   conditionEstimate?: string;
   description?: string;
   onChange?: (state: InstantQuoteModuleState) => void;
-  onContinueWithQuote?: (quote: SellTradeQuote) => void;
+  onContinueWithQuote?: (quote: SellTradeQuote, offerPreference?: "Cash payout" | "Trade credit" | "Decide after final review") => void;
 };
 
 type PhonePhoto = {
@@ -35,6 +36,18 @@ function formatCurrency(cents: number) {
 
 function formatFileSize(size: number) {
   return `${(size / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function getTotalMarketValueCents(quote: SellTradeQuote) {
+  const detectedMarketValueCents = quote.detectedCards.reduce((total, card) => total + Math.max(0, card.marketPriceCents ?? 0), 0);
+  if (detectedMarketValueCents > 0) return detectedMarketValueCents;
+
+  return Math.max(Math.round(quote.cashOfferCents / 0.65), Math.round(quote.tradeCreditCents / 0.8));
+}
+
+function getOfferPercent(offerCents: number, marketValueCents: number) {
+  if (marketValueCents <= 0) return 0;
+  return Math.round((offerCents / marketValueCents) * 100);
 }
 
 function dataUrlToFile(dataUrl: string, name: string) {
@@ -195,6 +208,10 @@ export function InstantQuoteModule({
     files.forEach((file) => payload.append("photos", file));
 
     setIsQuoting(true);
+    track("sell_trade_quote_started", {
+      photoCount: selectedPhotoCount,
+      inputMode: mode
+    });
 
     try {
       const response = await fetch("/api/sell-trade/quote", {
@@ -208,6 +225,15 @@ export function InstantQuoteModule({
       }
 
       setQuote(result.quote);
+      track("sell_trade_quote_completed", {
+        quoteId: result.quote.id,
+        cashOfferCents: result.quote.cashOfferCents,
+        tradeCreditCents: result.quote.tradeCreditCents,
+        marketValueCents: getTotalMarketValueCents(result.quote),
+        matchedCardCount: result.quote.detectedCards.length,
+        confidence: result.quote.confidence,
+        source: result.quote.source
+      });
       setEditingMatchIndex(null);
       setMatchSearchQuery("");
       setMatchSearchResults([]);
@@ -274,7 +300,20 @@ export function InstantQuoteModule({
   }
 
   function continueWithQuote() {
-    if (quote) onContinueWithQuote?.(quote);
+    continueWithQuotePreference("Decide after final review");
+  }
+
+  function continueWithQuotePreference(offerPreference: "Cash payout" | "Trade credit" | "Decide after final review") {
+    if (quote) {
+      track("sell_trade_offer_selected", {
+        quoteId: quote.id,
+        selection: offerPreference,
+        cashOfferCents: quote.cashOfferCents,
+        tradeCreditCents: quote.tradeCreditCents,
+        marketValueCents: getTotalMarketValueCents(quote)
+      });
+      onContinueWithQuote?.(quote, offerPreference);
+    }
 
     const detailsForm = document.getElementById("sell-trade-details");
     detailsForm?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -422,24 +461,35 @@ export function InstantQuoteModule({
 
         {quote ? (
           <div className="grid content-start gap-3 rounded-xl border border-vault-border bg-vault-card p-4" role="status">
+            <div>
+              <p className="text-xs font-semibold uppercase text-vault-gold">Preliminary quote</p>
+              <p className="mt-1 text-sm leading-6 text-vault-secondaryText">No obligation. Final offer is confirmed after card identity and condition are verified.</p>
+            </div>
+            <div className="grid gap-2 rounded-xl border border-vault-border bg-vault-secondary p-3">
+              <p className="text-xs font-semibold uppercase leading-4 text-vault-muted">Estimated market value</p>
+              <p className="text-2xl font-black text-vault-text">{formatCurrency(getTotalMarketValueCents(quote))}</p>
+            </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="grid content-start rounded-xl border border-vault-border bg-vault-secondary p-3">
                 <p className="min-h-8 text-xs font-semibold uppercase leading-4 text-vault-muted">Cash offer</p>
                 <p className="text-xl font-black text-vault-text">{formatCurrency(quote.cashOfferCents)}</p>
+                <p className="text-xs text-vault-muted">{getOfferPercent(quote.cashOfferCents, getTotalMarketValueCents(quote))}% of market</p>
               </div>
               <div className="grid content-start rounded-xl border border-vault-border bg-vault-secondary p-3">
                 <p className="min-h-8 text-xs font-semibold uppercase leading-4 text-vault-muted">Trade credit</p>
                 <p className="text-xl font-black text-vault-text">{formatCurrency(quote.tradeCreditCents)}</p>
+                <p className="text-xs text-vault-muted">{getOfferPercent(quote.tradeCreditCents, getTotalMarketValueCents(quote))}% of market</p>
               </div>
             </div>
             {quote.detectedCards.length > 0 ? (
               <div className="grid gap-2 border-t border-vault-border pt-3">
-                <p className="text-xs font-semibold uppercase text-vault-gold">Matched cards</p>
+                <p className="text-xs font-semibold uppercase text-vault-gold">Card breakdown</p>
                 <ul className="grid gap-2">
                   {quote.detectedCards.map((card, index) => (
                     <li className="grid gap-1 rounded-lg border border-vault-border bg-vault-secondary px-3 py-2 text-xs" key={`${card.name}-${index}`}>
                       <div className="flex items-start justify-between gap-3">
                         <span className="font-semibold text-vault-text">{card.name}</span>
+                        {typeof card.marketPriceCents === "number" && card.marketPriceCents > 0 ? <span className="shrink-0 font-semibold text-vault-text">{formatCurrency(card.marketPriceCents)}</span> : null}
                         {card.catalogCandidates && card.catalogCandidates.length > 0 ? (
                           <button
                             className="shrink-0 font-semibold text-vault-gold hover:text-vault-highlight"
@@ -502,15 +552,42 @@ export function InstantQuoteModule({
                 </ul>
               </div>
             ) : null}
-            {quote.source === "site-estimate" ? <p className="text-xs leading-5 text-vault-muted">Preliminary site estimate until the scan is confirmed.</p> : null}
-            <button
-              className="mt-1 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-vault-gold px-4 py-3 text-sm font-semibold text-[#111318] shadow-vault transition hover:-translate-y-0.5 hover:bg-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-highlight"
-              onClick={continueWithQuote}
-              type="button"
-            >
-              Continue with this quote
-            </button>
-            <p className="text-xs leading-5 text-vault-muted">Moves you to Step 2, where you can choose cash payout, trade credit, or decide after final review.</p>
+            {quote.source === "site-estimate" ? <p className="text-xs leading-5 text-vault-muted">Preliminary estimate until the cards are reviewed.</p> : null}
+            <div className="grid gap-2 rounded-xl border border-vault-border bg-vault-secondary p-3 text-xs leading-5 text-vault-secondaryText">
+              <p className="font-semibold text-vault-text">How offers are calculated</p>
+              <p>Offers are based on estimated market value, card condition, current demand, marketplace costs, and the time needed to review, prepare, and list each card.</p>
+            </div>
+            <div className="grid gap-2 rounded-xl border border-vault-border bg-vault-secondary p-3 text-xs leading-5 text-vault-secondaryText">
+              <p className="font-semibold text-vault-text">What happens next</p>
+              <ol className="grid gap-1 pl-4 [list-style:decimal]">
+                <li>Submit your contact details with the quote.</li>
+                <li>We confirm shipping, drop-off, or follow-up questions.</li>
+                <li>Fast payment or trade credit is issued after cards are received, verified, and approved.</li>
+              </ol>
+            </div>
+            <div className="grid gap-2">
+              <button
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-vault-gold px-4 py-3 text-sm font-semibold text-[#111318] shadow-vault transition hover:-translate-y-0.5 hover:bg-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-highlight"
+                onClick={() => continueWithQuotePreference("Cash payout")}
+                type="button"
+              >
+                Accept Cash Offer
+              </button>
+              <button
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-vault-border bg-vault-secondary/80 px-4 py-3 text-sm font-semibold text-vault-text transition hover:border-vault-gold hover:bg-vault-elevated hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-highlight"
+                onClick={() => continueWithQuotePreference("Trade credit")}
+                type="button"
+              >
+                Accept Trade Credit Offer
+              </button>
+              <button
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold text-vault-secondaryText transition hover:bg-vault-elevated hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-highlight"
+                onClick={continueWithQuote}
+                type="button"
+              >
+                Contact Us With Questions
+              </button>
+            </div>
           </div>
         ) : null}
       </div>

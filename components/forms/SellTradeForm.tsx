@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { track } from "@vercel/analytics";
 import { FileUploadPlaceholder } from "@/components/forms/FileUploadPlaceholder";
 import { FormInput } from "@/components/forms/FormInput";
 import { FormSelect } from "@/components/forms/FormSelect";
@@ -53,10 +54,14 @@ type SellTradeFormProps = {
     text: string;
     requestId: number;
   };
+  quotePreferenceFill?: {
+    value: FormState["offerPreference"];
+    requestId: number;
+  };
   quoteState?: InstantQuoteModuleState;
 };
 
-export function SellTradeForm({ quoteDescriptionFill, quoteState = emptyQuoteState }: SellTradeFormProps) {
+export function SellTradeForm({ quoteDescriptionFill, quotePreferenceFill, quoteState = emptyQuoteState }: SellTradeFormProps) {
   const [form, setForm] = useState(initialState);
   const [errors, setErrors] = useState<Partial<FormState>>({});
   const [submitError, setSubmitError] = useState("");
@@ -76,14 +81,24 @@ export function SellTradeForm({ quoteDescriptionFill, quoteState = emptyQuoteSta
     setForm((current) => ({ ...current, description: quoteDescriptionFill.text }));
   }, [quoteDescriptionFill]);
 
+  useEffect(() => {
+    if (!quotePreferenceFill || quotePreferenceFill.requestId <= 0) return;
+
+    setForm((current) => ({ ...current, offerPreference: quotePreferenceFill.value }));
+  }, [quotePreferenceFill]);
+
   function formatQuoteSummary(currentQuote: InstantQuoteModuleState["quote"]) {
     if (!currentQuote) return "";
 
     const currency = new Intl.NumberFormat("en-US", { currency: "USD", style: "currency" });
+    const totalMarketValueCents = currentQuote.detectedCards.reduce((total, card) => total + Math.max(0, card.marketPriceCents ?? 0), 0);
     return [
+      totalMarketValueCents > 0 ? `Estimated market value: ${currency.format(totalMarketValueCents / 100)}` : "",
       `Cash offer: ${currency.format(currentQuote.cashOfferCents / 100)}`,
       `Trade credit: ${currency.format(currentQuote.tradeCreditCents / 100)}`
-    ].join("\n");
+    ]
+      .filter(Boolean)
+      .join("\n");
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -117,6 +132,12 @@ export function SellTradeForm({ quoteDescriptionFill, quoteState = emptyQuoteSta
     detailFiles.forEach((file) => payload.append("photos", file));
 
     setIsSubmitting(true);
+    track("sell_trade_submission_started", {
+      hasInstantQuote: Boolean(quoteState.quote),
+      offerPreference: form.offerPreference,
+      selectedPhotoCount: quoteState.selectedPhotoCount + detailFiles.length + detailPhonePhotoCount,
+      quoteId: quoteState.quote?.id ?? ""
+    });
 
     try {
       const response = await fetch("/api/sell-trade", {
@@ -130,6 +151,13 @@ export function SellTradeForm({ quoteDescriptionFill, quoteState = emptyQuoteSta
         throw new Error(result.error || "Submission failed. Please try again.");
       }
 
+      track("sell_trade_submission_completed", {
+        hasInstantQuote: Boolean(quoteState.quote),
+        offerPreference: form.offerPreference,
+        quoteId: quoteState.quote?.id ?? "",
+        cashOfferCents: quoteState.quote?.cashOfferCents ?? 0,
+        tradeCreditCents: quoteState.quote?.tradeCreditCents ?? 0
+      });
       setSubmitted(true);
       setForm(initialState);
       setDetailFiles([]);
@@ -164,12 +192,20 @@ export function SellTradeForm({ quoteDescriptionFill, quoteState = emptyQuoteSta
       <input aria-hidden="true" autoComplete="off" className="hidden" name="company" tabIndex={-1} type="text" />
       <div>
         <p className="text-sm font-semibold uppercase text-vault-gold">Step 2</p>
-        <h2 className="mt-2 text-2xl font-black text-vault-text">Send your details</h2>
+        <h2 className="mt-2 text-2xl font-black text-vault-text">Confirm next steps</h2>
         {quoteState.quote ? (
-          <p className="mt-2 text-sm leading-6 text-vault-secondaryText">Your quote will be included with this submission.</p>
+          <p className="mt-2 text-sm leading-6 text-vault-secondaryText">Your no-obligation quote will be included with this submission. The final offer is confirmed after card verification.</p>
         ) : (
-          <p className="mt-2 text-sm leading-6 text-vault-secondaryText">You can submit details with or without a quote.</p>
+          <p className="mt-2 text-sm leading-6 text-vault-secondaryText">You can submit details with or without a quote. We will reply with the next step before you ship or drop off cards.</p>
         )}
+      </div>
+      <div className="grid gap-2 rounded-xl border border-vault-border bg-vault-secondary p-4 text-sm leading-6 text-vault-secondaryText">
+        <p className="font-semibold text-vault-text">Before you submit</p>
+        <ul className="grid gap-1 pl-4 [list-style:disc]">
+          <li>No obligation quote.</li>
+          <li>Final offer confirmed after card verification.</li>
+          <li>Fast payment after cards are received and approved.</li>
+        </ul>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <FormInput error={errors.name} label="Name" maxLength={maxLengths.name} onChange={(event) => update("name", event.target.value)} value={form.name} />
@@ -228,7 +264,7 @@ export function SellTradeForm({ quoteDescriptionFill, quoteState = emptyQuoteSta
         <FormSelect
           label="Franchise/category"
           onChange={(event) => update("franchise", event.target.value)}
-          options={["Mixed collection", "Pokemon", "One Piece", "Riftbound", "Magic: The Gathering", "Yu-Gi-Oh!", "Sports", "Other"]}
+          options={["Mixed collection", "Pokemon", "One Piece", "Lorcana", "Riftbound", "Magic: The Gathering", "Yu-Gi-Oh!", "Sports", "Other"]}
           value={form.franchise}
         />
         <FormInput
