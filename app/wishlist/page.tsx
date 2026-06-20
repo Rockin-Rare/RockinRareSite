@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { Container } from "@/components/layout/Container";
 import { Button } from "@/components/ui/Button";
+import { WishlistReferralTracker } from "@/components/wishlist/WishlistReferralTracker";
 import { WishlistWorkspace } from "@/components/wishlist/WishlistWorkspace";
 import { getCurrentAuthUser } from "@/lib/auth/current";
 import { hasNeonAuth } from "@/lib/auth/server";
@@ -11,6 +12,10 @@ import { createWishlistItemAction, deleteWishlistItemAction, updateWishlistItemA
 
 export const dynamic = "force-dynamic";
 
+type PageProps = {
+  searchParams?: Promise<{ ref?: string | string[] }>;
+};
+
 export const metadata: Metadata = {
   title: "Rare Radar",
   description: "Create and manage your Rockin Rare chase list for cards, slabs, sealed product, and sets.",
@@ -19,7 +24,10 @@ export const metadata: Metadata = {
   }
 };
 
-export default async function WishlistPage() {
+export default async function WishlistPage({ searchParams }: PageProps) {
+  const referralSource = cleanReferralSource((await searchParams)?.ref);
+  const wishlistPath = referralSource ? `/wishlist?ref=${encodeURIComponent(referralSource)}` : "/wishlist";
+  const authRedirect = encodeURIComponent(wishlistPath);
   const user = await getCurrentAuthUser();
   const authConfigured = hasNeonAuth();
   const storageConfigured = rareRadarStorageConfigured();
@@ -29,6 +37,7 @@ export default async function WishlistPage() {
 
   return (
     <Container className="py-14">
+      <WishlistReferralTracker referralSource={referralSource} />
       <section className="max-w-3xl">
         <p className="mb-3 text-sm font-semibold uppercase text-vault-gold">Rare Radar</p>
         <h1 className="text-4xl font-black text-vault-text sm:text-5xl">Tell us what you&apos;re chasing.</h1>
@@ -46,8 +55,8 @@ export default async function WishlistPage() {
             </>
           ) : (
             <>
-              <Button href="/auth/sign-up?redirectTo=/wishlist">Create Account</Button>
-              <Button href="/auth/sign-in?redirectTo=/wishlist" variant="secondary">
+              <Button href={`/auth/sign-up?redirectTo=${authRedirect}`}>Create Account</Button>
+              <Button href={`/auth/sign-in?redirectTo=${authRedirect}`} variant="secondary">
                 Sign In
               </Button>
             </>
@@ -80,14 +89,21 @@ export default async function WishlistPage() {
             createAction={createWishlistItemAction}
             deleteAction={deleteWishlistItemAction}
             items={items}
+            referralSource={referralSource}
             sharePath={sharePath}
             updateAction={updateWishlistItemAction}
           />
         )}
       </div>
-
     </Container>
   );
+}
+
+function cleanReferralSource(value: string | string[] | undefined) {
+  const raw = Array.isArray(value) ? value[0] : value;
+  if (!raw) return "";
+
+  return raw.trim().slice(0, 80).replace(/[^a-zA-Z0-9_-]/g, "");
 }
 
 function SetupNotice({ title, text }: { title: string; text: string }) {

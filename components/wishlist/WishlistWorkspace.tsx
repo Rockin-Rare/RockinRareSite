@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { track } from "@vercel/analytics";
 import { Button } from "@/components/ui/Button";
 import { WishlistItemForm } from "@/components/wishlist/WishlistItemForm";
 import type { RareRadarWishlistItem } from "@/lib/rare-radar/wishlist";
@@ -10,11 +11,12 @@ type WishlistWorkspaceProps = {
   createAction: (formData: FormData) => Promise<WishlistSaveResult>;
   deleteAction: (formData: FormData) => Promise<WishlistDeleteResult>;
   items: RareRadarWishlistItem[];
+  referralSource?: string;
   sharePath: string;
   updateAction: (formData: FormData) => Promise<WishlistSaveResult>;
 };
 
-export function WishlistWorkspace({ createAction, deleteAction, items, sharePath, updateAction }: WishlistWorkspaceProps) {
+export function WishlistWorkspace({ createAction, deleteAction, items, referralSource = "", sharePath, updateAction }: WishlistWorkspaceProps) {
   const [wishlistItems, setWishlistItems] = useState(items);
   const [editingItemId, setEditingItemId] = useState("");
   const [editingInitialUpdatedAt, setEditingInitialUpdatedAt] = useState("");
@@ -128,6 +130,14 @@ export function WishlistWorkspace({ createAction, deleteAction, items, sharePath
           showStatus("Changes saved.", result.item.id);
         } else {
           setWishlistItems((current) => [result.item, ...current]);
+          if (referralSource) {
+            track("wishlist_referral_item_added", {
+              referralSource,
+              game: result.item.game,
+              category: result.item.category,
+              hasMaxPrice: Boolean(result.item.maxPriceCents)
+            });
+          }
         }
       } catch {
         showStatus("Unable to save this wishlist item.");
