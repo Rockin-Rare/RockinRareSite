@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Container } from "@/components/layout/Container";
 import { Button } from "@/components/ui/Button";
 import { compressImageFiles } from "@/lib/browser-image-compression";
@@ -12,16 +12,62 @@ type UploadedPhoto = {
   size: number;
 };
 
+type FilePreview = {
+  key: string;
+  name: string;
+  size: number;
+  url: string;
+};
+
 function formatFileSize(size: number) {
   return `${(size / 1024 / 1024).toFixed(1)} MB`;
 }
 
+function uploadedPhotoPreviewUrl(sessionId: string, photoId: string) {
+  return `/api/sell-trade/photos?session=${encodeURIComponent(sessionId)}&photo=${encodeURIComponent(photoId)}`;
+}
+
 export function PhonePhotoUpload({ sessionId }: { sessionId: string }) {
   const [files, setFiles] = useState<File[]>([]);
+  const [filePreviews, setFilePreviews] = useState<FilePreview[]>([]);
   const [photos, setPhotos] = useState<UploadedPhoto[]>([]);
   const [error, setError] = useState("");
   const [isPreparingPhotos, setIsPreparingPhotos] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    const nextPreviews = files.map((file, index) => ({
+      key: `${file.name}-${file.size}-${file.lastModified}-${index}`,
+      name: file.name,
+      size: file.size,
+      url: URL.createObjectURL(file)
+    }));
+
+    setFilePreviews(nextPreviews);
+
+    return () => {
+      nextPreviews.forEach((preview) => URL.revokeObjectURL(preview.url));
+    };
+  }, [files]);
+
+  function removeFile(indexToRemove: number) {
+    setFiles((currentFiles) => currentFiles.filter((_, index) => index !== indexToRemove));
+  }
+
+  async function removeUploadedPhoto(photoId: string) {
+    setError("");
+
+    try {
+      const query = new URLSearchParams({ session: sessionId, photo: photoId });
+      const response = await fetch(`/api/sell-trade/photos?${query.toString()}`, { method: "DELETE" });
+      const result = (await response.json().catch(() => ({}))) as { error?: string; photos?: UploadedPhoto[] };
+      if (!response.ok) throw new Error(result.error || "Unable to remove photo.");
+
+      setPhotos(result.photos ?? []);
+    } catch (removeError) {
+      setError(removeError instanceof Error ? removeError.message : "Unable to remove photo.");
+    }
+  }
 
   async function handleFilesSelected(selectedFiles: FileList | null) {
     setError("");
@@ -116,11 +162,19 @@ export function PhonePhotoUpload({ sessionId }: { sessionId: string }) {
                 Clear
               </button>
             </div>
-            <ul className="grid gap-1 text-xs text-vault-secondaryText">
-              {files.map((file, index) => (
-                <li className="flex justify-between gap-3" key={`${file.name}-${file.size}-${index}`}>
-                  <span className="truncate">{file.name}</span>
-                  <span className="shrink-0 text-vault-muted">{formatFileSize(file.size)}</span>
+            <ul className="grid grid-cols-2 gap-3">
+              {filePreviews.map((preview, index) => (
+                <li className="overflow-hidden rounded-lg border border-vault-border bg-vault-card" key={preview.key}>
+                  <img alt={`Selected card photo ${index + 1}`} className="aspect-[5/7] w-full bg-vault-secondary object-cover" src={preview.url} />
+                  <div className="grid gap-2 p-2">
+                    <div className="min-w-0 text-xs text-vault-secondaryText">
+                      <p className="truncate">{preview.name}</p>
+                      <p className="text-vault-muted">{formatFileSize(preview.size)}</p>
+                    </div>
+                    <button className="rounded-lg border border-vault-border px-2 py-1 text-xs font-semibold text-vault-secondaryText hover:border-vault-gold hover:text-vault-highlight" onClick={() => removeFile(index)} type="button">
+                      Remove
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -128,9 +182,27 @@ export function PhonePhotoUpload({ sessionId }: { sessionId: string }) {
         ) : null}
 
         {photos.length > 0 ? (
-          <div className="rounded-xl border border-vault-success/30 bg-vault-success/10 p-4">
-            <p className="text-sm font-semibold text-vault-text">{photos.length} phone photo{photos.length === 1 ? "" : "s"} added</p>
-            <p className="mt-1 text-xs text-vault-secondaryText">You can return to the computer form and submit when ready.</p>
+          <div className="grid gap-3 rounded-xl border border-vault-success/30 bg-vault-success/10 p-4">
+            <div>
+              <p className="text-sm font-semibold text-vault-text">{photos.length} phone photo{photos.length === 1 ? "" : "s"} added</p>
+              <p className="mt-1 text-xs text-vault-secondaryText">Review these before returning to the computer form.</p>
+            </div>
+            <ul className="grid grid-cols-2 gap-3">
+              {photos.map((photo, index) => (
+                <li className="overflow-hidden rounded-lg border border-vault-success/20 bg-vault-card" key={photo.id}>
+                  <img alt={`Uploaded phone photo ${index + 1}`} className="aspect-[5/7] w-full bg-vault-secondary object-cover" src={uploadedPhotoPreviewUrl(sessionId, photo.id)} />
+                  <div className="grid gap-2 p-2">
+                    <div className="min-w-0 text-xs text-vault-secondaryText">
+                      <p className="truncate">{photo.name}</p>
+                      <p className="text-vault-muted">{formatFileSize(photo.size)}</p>
+                    </div>
+                    <button className="rounded-lg border border-vault-border px-2 py-1 text-xs font-semibold text-vault-secondaryText hover:border-vault-gold hover:text-vault-highlight" onClick={() => void removeUploadedPhoto(photo.id)} type="button">
+                      Remove
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         ) : null}
 
@@ -147,3 +219,4 @@ export function PhonePhotoUpload({ sessionId }: { sessionId: string }) {
     </Container>
   );
 }
+

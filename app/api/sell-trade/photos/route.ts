@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { createId } from "@/lib/id";
 import { sellTradeAllowedImageTypes, sellTradeMaxPhotoSizeBytes, sellTradeMaxPhotoSizeMb, sellTradeMaxPhotos, sellTradeMaxTotalPhotoSizeBytes, sellTradeMaxTotalPhotoSizeMb } from "@/lib/sell-trade-upload-limits";
-import { getPhotoSession, setPhotoSession, summarizePhotos, type StoredPhoto } from "@/lib/sell-trade-photo-sessions";
+import { clearPhotoSession, getPhotoSession, setPhotoSession, summarizePhotos, type StoredPhoto } from "@/lib/sell-trade-photo-sessions";
 
 function getSessionId(request: Request) {
   return new URL(request.url).searchParams.get("session")?.trim() ?? "";
+}
+
+function getPhotoId(request: Request) {
+  return new URL(request.url).searchParams.get("photo")?.trim() ?? "";
 }
 
 function isValidSessionId(sessionId: string) {
@@ -40,7 +44,26 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Invalid photo session." }, { status: 400 });
   }
 
-  return NextResponse.json({ photos: summarizePhotos(getPhotoSession(sessionId)) });
+  const photos = getPhotoSession(sessionId);
+  const photoId = getPhotoId(request);
+
+  if (photoId) {
+    const photo = photos.find((storedPhoto) => storedPhoto.id === photoId);
+
+    if (!photo) {
+      return NextResponse.json({ error: "Photo not found." }, { status: 404 });
+    }
+
+    return new Response(photo.bytes, {
+      headers: {
+        "Cache-Control": "no-store",
+        "Content-Disposition": `inline; filename="${photo.name.replace(/"/g, "")}"`,
+        "Content-Type": photo.type || "application/octet-stream"
+      }
+    });
+  }
+
+  return NextResponse.json({ photos: summarizePhotos(photos) });
 }
 
 export async function POST(request: Request) {
@@ -81,6 +104,26 @@ export async function POST(request: Request) {
   );
 
   const nextPhotos = [...existingPhotos, ...uploadedPhotos].slice(0, sellTradeMaxPhotos);
+  setPhotoSession(sessionId, nextPhotos);
+
+  return NextResponse.json({ photos: summarizePhotos(nextPhotos) });
+}
+
+export async function DELETE(request: Request) {
+  const sessionId = getSessionId(request);
+
+  if (!isValidSessionId(sessionId)) {
+    return NextResponse.json({ error: "Invalid photo session." }, { status: 400 });
+  }
+
+  const photoId = getPhotoId(request);
+
+  if (!photoId) {
+    clearPhotoSession(sessionId);
+    return NextResponse.json({ photos: [] });
+  }
+
+  const nextPhotos = getPhotoSession(sessionId).filter((photo) => photo.id !== photoId);
   setPhotoSession(sessionId, nextPhotos);
 
   return NextResponse.json({ photos: summarizePhotos(nextPhotos) });

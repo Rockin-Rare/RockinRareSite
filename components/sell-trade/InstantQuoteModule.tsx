@@ -30,6 +30,13 @@ type PhonePhoto = {
   size: number;
 };
 
+type FilePreview = {
+  key: string;
+  name: string;
+  size: number;
+  url: string;
+};
+
 function formatCurrency(cents: number) {
   return new Intl.NumberFormat("en-US", { currency: "USD", style: "currency" }).format(cents / 100);
 }
@@ -48,6 +55,61 @@ function getTotalMarketValueCents(quote: SellTradeQuote) {
 function getOfferPercent(offerCents: number, marketValueCents: number) {
   if (marketValueCents <= 0) return 0;
   return Math.round((offerCents / marketValueCents) * 100);
+}
+
+function cardFromCandidate(candidate: SellTradeQuoteCatalogCandidate) {
+  return {
+    cardReferenceId: candidate.id,
+    name: candidate.name,
+    franchise: candidate.franchise,
+    setName: candidate.setName,
+    cardNumber: candidate.cardNumber,
+    confidence: 1
+  };
+}
+
+function applyCandidateToQuote(quote: SellTradeQuote, index: number, candidate: SellTradeQuoteCatalogCandidate): SellTradeQuote {
+  return {
+    ...quote,
+    detectedCards: quote.detectedCards.map((card, cardIndex) =>
+      cardIndex === index
+        ? {
+            ...card,
+            ...cardFromCandidate(candidate),
+            catalogCandidates: card.catalogCandidates
+          }
+        : card
+    )
+  };
+}
+
+function mergeCorrectedQuote(previousQuote: SellTradeQuote, correctedQuote: SellTradeQuote, correctedIndex: number, candidate: SellTradeQuoteCatalogCandidate): SellTradeQuote {
+  const correctedCardsById = new Map(correctedQuote.detectedCards.map((card) => [card.cardReferenceId, card]));
+
+  return {
+    ...correctedQuote,
+    detectedCards: previousQuote.detectedCards.map((card, index) => {
+      const correctedCard =
+        index === correctedIndex
+          ? correctedQuote.detectedCards.find((item) => item.cardReferenceId === candidate.id) ?? correctedQuote.detectedCards[index]
+          : card.cardReferenceId
+            ? correctedCardsById.get(card.cardReferenceId)
+            : undefined;
+
+      if (!correctedCard && index !== correctedIndex) return card;
+
+      return {
+        ...card,
+        ...(index === correctedIndex ? cardFromCandidate(candidate) : {}),
+        ...(correctedCard ?? {}),
+        catalogCandidates: card.catalogCandidates
+      };
+    })
+  };
+}
+
+function phonePhotoPreviewUrl(sessionId: string, photoId: string) {
+  return `/api/sell-trade/photos?session=${encodeURIComponent(sessionId)}&photo=${encodeURIComponent(photoId)}`;
 }
 
 function dataUrlToFile(dataUrl: string, name: string) {
@@ -70,6 +132,7 @@ export function InstantQuoteModule({
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [files, setFiles] = useState<File[]>([]);
+  const [filePreviews, setFilePreviews] = useState<FilePreview[]>([]);
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState("");
   const [mode, setMode] = useState<"camera" | "computer" | "phone">("camera");
@@ -85,6 +148,8 @@ export function InstantQuoteModule({
   const [isSearchingMatches, setIsSearchingMatches] = useState(false);
   const [isCorrectingMatch, setIsCorrectingMatch] = useState(false);
   const [isPreparingPhotos, setIsPreparingPhotos] = useState(false);
+  const [isDeletingPhonePhoto, setIsDeletingPhonePhoto] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
   const [isQuoting, setIsQuoting] = useState(false);
   const selectedPhotoCount = files.length + phonePhotos.length;
 
@@ -129,6 +194,21 @@ export function InstantQuoteModule({
     onChange?.({ files, photoSession, quote, selectedPhotoCount });
   }, [files, onChange, photoSession, quote, selectedPhotoCount]);
 
+  useEffect(() => {
+    const nextPreviews = files.map((file, index) => ({
+      key: `${file.name}-${file.size}-${file.lastModified}-${index}`,
+      name: file.name,
+      size: file.size,
+      url: URL.createObjectURL(file)
+    }));
+
+    setFilePreviews(nextPreviews);
+
+    return () => {
+      nextPreviews.forEach((preview) => URL.revokeObjectURL(preview.url));
+    };
+  }, [files]);
+
   function updateFiles(nextFiles: File[]) {
     setFiles(nextFiles.slice(0, sellTradeMaxPhotos));
     setQuote(null);
@@ -141,6 +221,33 @@ export function InstantQuoteModule({
       updateFiles(await compressImageFiles(nextFiles.slice(0, sellTradeMaxPhotos)));
     } finally {
       setIsPreparingPhotos(false);
+    }
+  }
+
+  function removeFile(indexToRemove: number) {
+    updateFiles(files.filter((_, index) => index !== indexToRemove));
+  }
+
+  async function deletePhonePhoto(photoId?: string) {
+    if (!photoSession) return;
+
+    setIsDeletingPhonePhoto(true);
+    setQuote(null);
+    setQuoteError("");
+
+    try {
+      const query = new URLSearchParams({ session: photoSession });
+      if (photoId) query.set("photo", photoId);
+
+      const response = await fetch(`/api/sell-trade/photos?${query.toString()}`, { method: "DELETE" });
+      const result = (await response.json().catch(() => ({}))) as { photos?: PhonePhoto[]; error?: string };
+      if (!response.ok) throw new Error(result.error || "Unable to remove phone photo.");
+
+      setPhonePhotos(result.photos ?? []);
+    } catch (error) {
+      setQuoteError(error instanceof Error ? error.message : "Unable to remove phone photo.");
+    } finally {
+      setIsDeletingPhonePhoto(false);
     }
   }
 
@@ -178,17 +285,32 @@ export function InstantQuoteModule({
 
   async function captureFrame() {
     const video = videoRef.current;
-    if (!video || !video.videoWidth || !video.videoHeight) return;
+    if (isCapturing || files.length >= sellTradeMaxPhotos || !video || !video.videoWidth || !video.videoHeight) return;
 
-    const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const context = canvas.getContext("2d");
-    if (!context) return;
+    setIsCapturing(true);
 
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const file = dataUrlToFile(canvas.toDataURL("image/jpeg", 0.88), `seller-scan-${Date.now()}.jpg`);
-    updateFiles([...files, await compressImageFile(file)].slice(0, sellTradeMaxPhotos));
+    try {
+      const targetRatio = 5 / 7;
+      const sourceRatio = video.videoWidth / video.videoHeight;
+      const sourceWidth = sourceRatio > targetRatio ? Math.round(video.videoHeight * targetRatio) : video.videoWidth;
+      const sourceHeight = sourceRatio > targetRatio ? video.videoHeight : Math.round(video.videoWidth / targetRatio);
+      const sourceX = Math.max(0, Math.round((video.videoWidth - sourceWidth) / 2));
+      const sourceY = Math.max(0, Math.round((video.videoHeight - sourceHeight) / 2));
+      const canvas = document.createElement("canvas");
+      canvas.width = sourceWidth;
+      canvas.height = sourceHeight;
+      const context = canvas.getContext("2d");
+      if (!context) return;
+
+      context.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, sourceWidth, sourceHeight);
+      const file = dataUrlToFile(canvas.toDataURL("image/jpeg", 0.9), `seller-scan-${Date.now()}.jpg`);
+      const compressedFile = await compressImageFile(file);
+      setFiles((currentFiles) => [...currentFiles, compressedFile].slice(0, sellTradeMaxPhotos));
+      setQuote(null);
+      setQuoteError("");
+    } finally {
+      setIsCapturing(false);
+    }
   }
 
   async function requestQuote() {
@@ -269,11 +391,17 @@ export function InstantQuoteModule({
   async function applyCatalogMatch(index: number, candidate: SellTradeQuoteCatalogCandidate) {
     if (!quote) return;
 
+    const previousQuote = quote;
+    const optimisticQuote = applyCandidateToQuote(previousQuote, index, candidate);
     setMatchCorrectionError("");
     setIsCorrectingMatch(true);
+    setQuote(optimisticQuote);
+    setEditingMatchIndex(null);
+    setMatchSearchQuery("");
+    setMatchSearchResults([]);
 
     try {
-      const cardReferenceIds = quote.detectedCards
+      const cardReferenceIds = optimisticQuote.detectedCards
         .map((card, cardIndex) => (cardIndex === index ? candidate.id : card.cardReferenceId))
         .filter((id): id is string => Boolean(id));
       const response = await fetch("/api/sell-trade/quote/corrections", {
@@ -284,11 +412,12 @@ export function InstantQuoteModule({
       const result = (await response.json().catch(() => ({}))) as { quote?: SellTradeQuote; error?: string };
       if (!response.ok || !result.quote) throw new Error(result.error || "Unable to update quote.");
 
-      setQuote(result.quote);
+      setQuote(mergeCorrectedQuote(optimisticQuote, result.quote, index, candidate));
       setEditingMatchIndex(null);
       setMatchSearchQuery("");
       setMatchSearchResults([]);
     } catch (error) {
+      setQuote(previousQuote);
       setMatchCorrectionError(error instanceof Error ? error.message : "Unable to update quote.");
     } finally {
       setIsCorrectingMatch(false);
@@ -359,19 +488,21 @@ export function InstantQuoteModule({
         <div className="grid min-w-0 gap-3">
           {mode === "camera" ? (
             <>
-              <div className={`${cameraActive ? "aspect-[4/3]" : "min-h-[220px]"} overflow-hidden rounded-xl border border-vault-border bg-vault-card`}>
+              <div className={`${cameraActive ? "aspect-[5/7]" : "aspect-[5/7] min-h-[320px]"} relative mx-auto w-full max-w-[23rem] overflow-hidden rounded-xl border border-vault-border bg-vault-card`}>
                 <video ref={videoRef} className={cameraActive ? "h-full w-full object-cover" : "hidden"} muted playsInline />
                 {!cameraActive ? (
                   <div className="grid h-full place-items-center px-5 text-center text-sm leading-6 text-vault-secondaryText">
                     Open the camera and capture front photos only.
                   </div>
                 ) : null}
+                {cameraActive ? <div className="pointer-events-none absolute inset-3 rounded-lg border border-vault-gold/45" /> : null}
               </div>
+              <p className="text-center text-xs leading-5 text-vault-muted">Center one card in the frame. Fill as much of the outline as possible and avoid glare.</p>
               <div className="flex flex-wrap gap-2">
                 {cameraActive ? (
                   <>
-                    <Button onClick={captureFrame} type="button">
-                      Capture Front Photo
+                    <Button disabled={isCapturing || files.length >= sellTradeMaxPhotos} onClick={captureFrame} type="button">
+                      {isCapturing ? "Saving Photo..." : files.length >= sellTradeMaxPhotos ? "Photo Limit Reached" : "Capture Front Photo"}
                     </Button>
                     <Button onClick={stopCamera} type="button" variant="secondary">
                       Stop Camera
@@ -422,26 +553,55 @@ export function InstantQuoteModule({
             <div className="grid gap-2 rounded-xl border border-vault-border bg-vault-card p-4">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-xs font-semibold uppercase text-vault-gold">{selectedPhotoCount} selected</span>
-                {files.length > 0 ? (
-                  <button className="text-xs font-semibold text-vault-secondaryText hover:text-vault-highlight" onClick={() => updateFiles([])} type="button">
-                    Clear computer photos
-                  </button>
-                ) : null}
+                <div className="flex flex-wrap justify-end gap-2">
+                  {files.length > 0 ? (
+                    <button className="text-xs font-semibold text-vault-secondaryText hover:text-vault-highlight" onClick={() => updateFiles([])} type="button">
+                      Clear card photos
+                    </button>
+                  ) : null}
+                  {phonePhotos.length > 0 ? (
+                    <button className="text-xs font-semibold text-vault-secondaryText hover:text-vault-highlight disabled:text-vault-muted" disabled={isDeletingPhonePhoto} onClick={() => void deletePhonePhoto()} type="button">
+                      Clear phone photos
+                    </button>
+                  ) : null}
+                </div>
               </div>
-              <ul className="grid gap-1 text-xs text-vault-secondaryText">
-                {files.map((file) => (
-                  <li className="flex justify-between gap-3" key={`${file.name}-${file.size}`}>
-                    <span className="truncate">{file.name}</span>
-                    <span className="shrink-0 text-vault-muted">{formatFileSize(file.size)}</span>
-                  </li>
-                ))}
-                {phonePhotos.map((photo) => (
-                  <li className="flex justify-between gap-3" key={photo.id}>
-                    <span className="truncate">{photo.name} - phone</span>
-                    <span className="shrink-0 text-vault-muted">{formatFileSize(photo.size)}</span>
-                  </li>
-                ))}
-              </ul>
+              {filePreviews.length > 0 ? (
+                <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {filePreviews.map((preview, index) => (
+                    <li className="overflow-hidden rounded-lg border border-vault-border bg-vault-secondary" key={preview.key}>
+                      <img alt={`Selected card photo ${index + 1}`} className="aspect-[5/7] w-full bg-vault-card object-cover" src={preview.url} />
+                      <div className="grid gap-2 p-2">
+                        <div className="min-w-0 text-xs text-vault-secondaryText">
+                          <p className="truncate">{preview.name}</p>
+                          <p className="text-vault-muted">{formatFileSize(preview.size)}</p>
+                        </div>
+                        <button className="rounded-lg border border-vault-border px-2 py-1 text-xs font-semibold text-vault-secondaryText hover:border-vault-gold hover:text-vault-highlight" onClick={() => removeFile(index)} type="button">
+                          Remove
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+              {phonePhotos.length > 0 ? (
+                <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {phonePhotos.map((photo, index) => (
+                    <li className="overflow-hidden rounded-lg border border-vault-border bg-vault-secondary" key={photo.id}>
+                      <img alt={`Phone card photo ${index + 1}`} className="aspect-[5/7] w-full bg-vault-card object-cover" src={phonePhotoPreviewUrl(photoSession, photo.id)} />
+                      <div className="grid gap-2 p-2">
+                        <div className="min-w-0 text-xs text-vault-secondaryText">
+                          <p className="truncate">{photo.name}</p>
+                          <p className="text-vault-muted">{formatFileSize(photo.size)}</p>
+                        </div>
+                        <button className="rounded-lg border border-vault-border px-2 py-1 text-xs font-semibold text-vault-secondaryText hover:border-vault-gold hover:text-vault-highlight disabled:text-vault-muted" disabled={isDeletingPhonePhoto} onClick={() => void deletePhonePhoto(photo.id)} type="button">
+                          Remove
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </div>
           ) : null}
 
@@ -594,3 +754,4 @@ export function InstantQuoteModule({
     </section>
   );
 }
+
