@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createId } from "@/lib/id";
-import type { SellTradeQuote } from "@/lib/types";
+import { calculateTieredSellTradeQuoteValues } from "@/lib/sell-trade-offer-rates";
+import type { SellTradeQuote, SellTradeQuoteDetectedCard } from "@/lib/types";
 
 const rateLimitWindowMs = 10 * 60 * 1000;
 const rateLimitMax = 20;
@@ -63,36 +64,47 @@ function toCents(value: unknown) {
   return 0;
 }
 
+function normalizeDetectedCards(value: unknown): SellTradeQuoteDetectedCard[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object" && !Array.isArray(item))
+    .map((item) => ({
+      cardReferenceId: typeof item.cardReferenceId === "string" ? item.cardReferenceId : undefined,
+      name: typeof item.name === "string" ? item.name : "Selected card",
+      franchise: typeof item.franchise === "string" ? item.franchise : undefined,
+      setName: typeof item.setName === "string" ? item.setName : undefined,
+      cardNumber: typeof item.cardNumber === "string" ? item.cardNumber : undefined,
+      condition: typeof item.condition === "string" ? item.condition : undefined,
+      marketPriceCents: toCents(item.marketPriceCents),
+      confidence: typeof item.confidence === "number" ? item.confidence : undefined
+    }));
+}
+
 function normalizeQuote(value: unknown): SellTradeQuote | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const payload = value as Record<string, unknown>;
   const cashOfferCents = toCents(payload.cashOfferCents);
   if (!cashOfferCents) return null;
 
+  const detectedCards = normalizeDetectedCards(payload.detectedCards);
+  const tieredValues = calculateTieredSellTradeQuoteValues(detectedCards);
+  const hasMarketPrices = tieredValues.marketValueCents > 0;
+  const finalCashOfferCents = hasMarketPrices ? tieredValues.cashOfferCents : cashOfferCents;
+  const finalTradeCreditCents = hasMarketPrices ? tieredValues.tradeCreditCents : toCents(payload.tradeCreditCents) || Math.round(cashOfferCents * 1.15);
+  const notes = Array.isArray(payload.notes) ? payload.notes.filter((note): note is string => typeof note === "string").slice(0, 5) : [];
+
   return {
     id: typeof payload.id === "string" ? payload.id : createId(),
     status: payload.status === "needs_review" ? "needs_review" : "quoted",
     source: "card-intake",
     confidence: payload.confidence === "high" || payload.confidence === "medium" || payload.confidence === "low" ? payload.confidence : "medium",
-    cashOfferCents,
-    tradeCreditCents: toCents(payload.tradeCreditCents) || Math.round(cashOfferCents * 1.15),
-    rangeLowCents: toCents(payload.rangeLowCents) || Math.round(cashOfferCents * 0.85),
-    rangeHighCents: toCents(payload.rangeHighCents) || Math.round(cashOfferCents * 1.15),
-    detectedCards: Array.isArray(payload.detectedCards)
-      ? payload.detectedCards
-          .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object" && !Array.isArray(item))
-          .map((item) => ({
-            cardReferenceId: typeof item.cardReferenceId === "string" ? item.cardReferenceId : undefined,
-            name: typeof item.name === "string" ? item.name : "Selected card",
-            franchise: typeof item.franchise === "string" ? item.franchise : undefined,
-            setName: typeof item.setName === "string" ? item.setName : undefined,
-            cardNumber: typeof item.cardNumber === "string" ? item.cardNumber : undefined,
-            condition: typeof item.condition === "string" ? item.condition : undefined,
-            marketPriceCents: toCents(item.marketPriceCents),
-            confidence: typeof item.confidence === "number" ? item.confidence : undefined
-          }))
-      : [],
-    notes: Array.isArray(payload.notes) ? payload.notes.filter((note): note is string => typeof note === "string").slice(0, 5) : [],
+    cashOfferCents: finalCashOfferCents,
+    tradeCreditCents: finalTradeCreditCents,
+    rangeLowCents: hasMarketPrices ? Math.round(finalCashOfferCents * 0.85) : toCents(payload.rangeLowCents) || Math.round(cashOfferCents * 0.85),
+    rangeHighCents: hasMarketPrices ? Math.round(finalCashOfferCents * 1.15) : toCents(payload.rangeHighCents) || Math.round(cashOfferCents * 1.15),
+    detectedCards,
+    notes: [...notes, ...Array.from(tieredValues.notes)].slice(0, 5),
     createdAt: typeof payload.createdAt === "string" ? payload.createdAt : new Date().toISOString()
   };
 }

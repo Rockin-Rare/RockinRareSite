@@ -5,6 +5,7 @@ import { track } from "@vercel/analytics";
 import { Button } from "@/components/ui/Button";
 import { compressImageFile, compressImageFiles } from "@/lib/browser-image-compression";
 import { createId } from "@/lib/id";
+import { sellTradeOfferTiers } from "@/lib/sell-trade-offer-rates";
 import { sellTradeMaxPhotoSizeMb, sellTradeMaxPhotos } from "@/lib/sell-trade-upload-limits";
 import type { SellTradeQuote, SellTradeQuoteCatalogCandidate } from "@/lib/types";
 
@@ -49,12 +50,16 @@ function getTotalMarketValueCents(quote: SellTradeQuote) {
   const detectedMarketValueCents = quote.detectedCards.reduce((total, card) => total + Math.max(0, card.marketPriceCents ?? 0), 0);
   if (detectedMarketValueCents > 0) return detectedMarketValueCents;
 
-  return Math.max(Math.round(quote.cashOfferCents / 0.65), Math.round(quote.tradeCreditCents / 0.8));
+  return Math.max(Math.round(quote.cashOfferCents / 0.45), Math.round(quote.tradeCreditCents / 0.6));
 }
 
 function getOfferPercent(offerCents: number, marketValueCents: number) {
   if (marketValueCents <= 0) return 0;
   return Math.round((offerCents / marketValueCents) * 100);
+}
+
+function formatRate(rate: number) {
+  return rate > 0 ? `${Math.round(rate * 100)}%` : "Review";
 }
 
 function cardFromCandidate(candidate: SellTradeQuoteCatalogCandidate) {
@@ -715,7 +720,15 @@ export function InstantQuoteModule({
             {quote.source === "site-estimate" ? <p className="text-xs leading-5 text-vault-muted">Preliminary estimate until the cards are reviewed.</p> : null}
             <div className="grid gap-2 rounded-xl border border-vault-border bg-vault-secondary p-3 text-xs leading-5 text-vault-secondaryText">
               <p className="font-semibold text-vault-text">How offers are calculated</p>
-              <p>Offers are based on estimated market value, card condition, current demand, marketplace costs, and the time needed to review, prepare, and list each card.</p>
+              <p>Offers use tiered rates by estimated card value. Lower-value cards have lower rates because sorting, fees, and listing time take up more of the resale value. Higher-value cards may receive manual premium review.</p>
+              <ul className="grid gap-1">
+                {sellTradeOfferTiers.map((tier) => (
+                  <li className="flex justify-between gap-3" key={tier.label}>
+                    <span>{tier.label}</span>
+                    <span className="shrink-0 text-vault-muted">Cash {formatRate(tier.cashRate)} / Trade {formatRate(tier.tradeRate)}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
             <div className="grid gap-2 rounded-xl border border-vault-border bg-vault-secondary p-3 text-xs leading-5 text-vault-secondaryText">
               <p className="font-semibold text-vault-text">What happens next</p>
@@ -754,4 +767,5 @@ export function InstantQuoteModule({
     </section>
   );
 }
+
 

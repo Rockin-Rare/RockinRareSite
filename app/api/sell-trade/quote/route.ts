@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createId } from "@/lib/id";
+import { calculateTieredSellTradeOffers, calculateTieredSellTradeQuoteValues } from "@/lib/sell-trade-offer-rates";
 import { sellTradeAllowedImageTypes, sellTradeMaxPhotoSizeBytes, sellTradeMaxPhotoSizeMb, sellTradeMaxPhotos, sellTradeMaxTotalPhotoSizeBytes, sellTradeMaxTotalPhotoSizeMb } from "@/lib/sell-trade-upload-limits";
 import { getPhotoSession } from "@/lib/sell-trade-photo-sessions";
 import type { SellTradeQuote, SellTradeQuoteCatalogCandidate, SellTradeQuoteDetectedCard } from "@/lib/types";
@@ -111,21 +112,27 @@ function normalizeRouterQuote(value: unknown): SellTradeQuote | null {
 
   if (!cashOfferCents && !tradeCreditCents) return null;
 
+  const detectedCards = normalizeDetectedCards(payload.detectedCards ?? payload.items ?? payload.cards);
+  const tieredValues = calculateTieredSellTradeQuoteValues(detectedCards);
+  const hasMarketPrices = tieredValues.marketValueCents > 0;
+  const finalCashOfferCents = hasMarketPrices ? tieredValues.cashOfferCents : cashOfferCents;
+  const finalTradeCreditCents = hasMarketPrices ? tieredValues.tradeCreditCents : tradeCreditCents || Math.round(cashOfferCents * 1.15);
   const rangeLowCents = toCents(payload.rangeLowCents ?? payload.rangeLow) || Math.round(cashOfferCents * 0.85);
   const rangeHighCents = toCents(payload.rangeHighCents ?? payload.rangeHigh) || Math.round(cashOfferCents * 1.15);
   const confidence = payload.confidence === "high" || payload.confidence === "medium" || payload.confidence === "low" ? payload.confidence : "medium";
+  const notes = Array.isArray(payload.notes) ? payload.notes.filter((note): note is string => typeof note === "string").slice(0, 5) : [];
 
   return {
     id: typeof payload.id === "string" ? payload.id : createId(),
     status: payload.status === "needs_review" ? "needs_review" : "quoted",
     source: "card-intake",
     confidence,
-    cashOfferCents,
-    tradeCreditCents: tradeCreditCents || Math.round(cashOfferCents * 1.15),
-    rangeLowCents,
-    rangeHighCents,
-    detectedCards: normalizeDetectedCards(payload.detectedCards ?? payload.items ?? payload.cards),
-    notes: Array.isArray(payload.notes) ? payload.notes.filter((note): note is string => typeof note === "string").slice(0, 5) : [],
+    cashOfferCents: finalCashOfferCents,
+    tradeCreditCents: finalTradeCreditCents,
+    rangeLowCents: hasMarketPrices ? Math.round(finalCashOfferCents * 0.85) : rangeLowCents,
+    rangeHighCents: hasMarketPrices ? Math.round(finalCashOfferCents * 1.15) : rangeHighCents,
+    detectedCards,
+    notes: [...notes, ...Array.from(tieredValues.notes)].slice(0, 5),
     createdAt: typeof payload.createdAt === "string" ? payload.createdAt : new Date().toISOString()
   };
 }
@@ -183,8 +190,10 @@ function estimateQuote({
   const franchiseFactor = franchise === "Pokemon" ? 1.1 : franchise === "One Piece" ? 1.05 : franchise === "Sports" ? 0.95 : 1;
   const baseCents = isSealed ? 7000 : isSlab ? 6000 : isBulk ? 65 : 1800;
   const marketEstimateCents = Math.round(baseCents * quantity * conditionFactor * franchiseFactor);
-  const cashOfferCents = Math.max(500, Math.round(marketEstimateCents * 0.65));
-  const tradeCreditCents = Math.round(marketEstimateCents * 0.8);
+  const marketValuesCents = files.length > 0 ? files.map(() => Math.round(marketEstimateCents / Math.max(1, files.length))) : [marketEstimateCents];
+  const tieredValues = calculateTieredSellTradeOffers(marketValuesCents);
+  const cashOfferCents = tieredValues.cashOfferCents;
+  const tradeCreditCents = tieredValues.tradeCreditCents;
 
   return {
     id: createId(),
@@ -200,12 +209,13 @@ function estimateQuote({
       franchise,
       condition: conditionEstimate || "Needs review",
       confidence: 0.35,
-      marketPriceCents: Math.round(marketEstimateCents / Math.max(1, files.length))
+      marketPriceCents: marketValuesCents[index] ?? 0
     })),
     notes: [
       "Preliminary estimate from seller-provided photos and details.",
+      ...Array.from(tieredValues.notes),
       "Final offer depends on exact card identity, condition, authenticity, demand, and in-person/photo review."
-    ],
+    ].slice(0, 5),
     createdAt: new Date().toISOString()
   };
 }
