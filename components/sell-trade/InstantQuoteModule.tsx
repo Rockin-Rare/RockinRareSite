@@ -155,6 +155,7 @@ export function InstantQuoteModule({
   const [isPreparingPhotos, setIsPreparingPhotos] = useState(false);
   const [isDeletingPhonePhoto, setIsDeletingPhonePhoto] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [captureFeedbackId, setCaptureFeedbackId] = useState(0);
   const [isQuoting, setIsQuoting] = useState(false);
   const selectedPhotoCount = files.length + phonePhotos.length;
 
@@ -198,6 +199,13 @@ export function InstantQuoteModule({
   useEffect(() => {
     onChange?.({ files, photoSession, quote, selectedPhotoCount });
   }, [files, onChange, photoSession, quote, selectedPhotoCount]);
+
+  useEffect(() => {
+    if (captureFeedbackId === 0) return;
+
+    const timeoutId = window.setTimeout(() => setCaptureFeedbackId(0), 900);
+    return () => window.clearTimeout(timeoutId);
+  }, [captureFeedbackId]);
 
   useEffect(() => {
     const nextPreviews = files.map((file, index) => ({
@@ -311,6 +319,7 @@ export function InstantQuoteModule({
       const file = dataUrlToFile(canvas.toDataURL("image/jpeg", 0.9), `seller-scan-${Date.now()}.jpg`);
       const compressedFile = await compressImageFile(file);
       setFiles((currentFiles) => [...currentFiles, compressedFile].slice(0, sellTradeMaxPhotos));
+      setCaptureFeedbackId(Date.now());
       setQuote(null);
       setQuoteError("");
     } finally {
@@ -326,6 +335,7 @@ export function InstantQuoteModule({
       return;
     }
 
+    if (cameraActive) stopCamera();
     const payload = new FormData();
     payload.append("franchise", franchise);
     payload.append("approximateQuantity", approximateQuantity);
@@ -501,6 +511,13 @@ export function InstantQuoteModule({
                   </div>
                 ) : null}
                 {cameraActive ? <div className="pointer-events-none absolute inset-3 rounded-lg border border-vault-gold/45" /> : null}
+                {captureFeedbackId > 0 ? (
+                  <div className="pointer-events-none absolute inset-0 grid place-items-center bg-white/24 animate-pulse" role="status" aria-live="polite">
+                    <div className="rounded-full border border-vault-success/50 bg-vault-bg/90 px-4 py-2 text-sm font-bold text-vault-text shadow-vault">
+                      Photo saved - {files.length}/{sellTradeMaxPhotos}
+                    </div>
+                  </div>
+                ) : null}
               </div>
               <p className="text-center text-xs leading-5 text-vault-muted">Center one card in the frame. Fill as much of the outline as possible and avoid glare.</p>
               <div className="flex flex-wrap gap-2">
@@ -767,5 +784,4 @@ export function InstantQuoteModule({
     </section>
   );
 }
-
 
