@@ -49,6 +49,12 @@ const emptyQuoteState: InstantQuoteModuleState = {
   selectedPhotoCount: 0
 };
 
+function offerPreferenceNotice(value: FormState["offerPreference"]) {
+  if (value === "Trade credit") return "Trade credit selected. Complete Step 2 to send this preference with your quote.";
+  if (value === "Cash payout") return "Cash payout selected. Complete Step 2 to send this preference with your quote.";
+  return "We will review your details before confirming cash or trade credit. Add any questions below and submit when ready.";
+}
+
 type SellTradeFormProps = {
   quoteDescriptionFill?: {
     text: string;
@@ -70,6 +76,7 @@ export function SellTradeForm({ quoteDescriptionFill, quotePreferenceFill, quote
   const [detailPhonePhotoCount, setDetailPhonePhotoCount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [offerSelectionNotice, setOfferSelectionNotice] = useState("");
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -85,6 +92,7 @@ export function SellTradeForm({ quoteDescriptionFill, quotePreferenceFill, quote
     if (!quotePreferenceFill || quotePreferenceFill.requestId <= 0) return;
 
     setForm((current) => ({ ...current, offerPreference: quotePreferenceFill.value }));
+    setOfferSelectionNotice(offerPreferenceNotice(quotePreferenceFill.value));
   }, [quotePreferenceFill]);
 
   function formatQuoteSummary(currentQuote: InstantQuoteModuleState["quote"]) {
@@ -192,19 +200,25 @@ export function SellTradeForm({ quoteDescriptionFill, quotePreferenceFill, quote
       <input aria-hidden="true" autoComplete="off" className="hidden" name="company" tabIndex={-1} type="text" />
       <div>
         <p className="text-sm font-semibold uppercase text-vault-gold">Step 2</p>
-        <h2 className="mt-2 text-2xl font-black text-vault-text">Confirm next steps</h2>
+        <h2 className="mt-2 text-2xl font-black text-vault-text">Submit your cards for review</h2>
         {quoteState.quote ? (
-          <p className="mt-2 text-sm leading-6 text-vault-secondaryText">Your no-obligation quote will be included with this submission. The final offer is confirmed after card verification.</p>
+          <p className="mt-2 text-sm leading-6 text-vault-secondaryText">You can submit details with or without an instant quote. We will follow up with the next step before you ship or drop off anything, so there is no hard commitment upfront.</p>
         ) : (
-          <p className="mt-2 text-sm leading-6 text-vault-secondaryText">You can submit details with or without a quote. We will reply with the next step before you ship or drop off cards.</p>
+          <p className="mt-2 text-sm leading-6 text-vault-secondaryText">You can submit details with or without an instant quote. We will follow up with the next step before you ship or drop off anything, so there is no hard commitment upfront.</p>
         )}
       </div>
+      {offerSelectionNotice ? (
+        <p className="rounded-xl border border-vault-gold/35 bg-vault-gold/10 px-4 py-3 text-sm font-semibold leading-6 text-vault-text" role="status" aria-live="polite">
+          {offerSelectionNotice}
+        </p>
+      ) : null}
       <div className="grid gap-2 rounded-xl border border-vault-border bg-vault-secondary p-4 text-sm leading-6 text-vault-secondaryText">
         <p className="font-semibold text-vault-text">Before you submit</p>
         <ul className="grid gap-1 pl-4 [list-style:disc]">
-          <li>No obligation quote.</li>
-          <li>Final offer confirmed after card verification.</li>
-          <li>Fast payment after cards are received and approved.</li>
+          <li>Quotes are preliminary and no obligation.</li>
+          <li>Final offers depend on condition, authenticity, and verification.</li>
+          <li>You can choose cash payout or the higher-value trade credit option.</li>
+          <li>Payment happens after cards are received, verified, and approved.</li>
         </ul>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
@@ -243,14 +257,20 @@ export function SellTradeForm({ quoteDescriptionFill, quotePreferenceFill, quote
                 checked={form.offerPreference === option}
                 className="sr-only"
                 name="offerPreference"
-                onChange={() => update("offerPreference", option)}
+                onChange={() => {
+                  update("offerPreference", option);
+                  setOfferSelectionNotice(offerPreferenceNotice(option));
+                }}
                 type="radio"
                 value={option}
               />
             </label>
           ))}
         </div>
-        <p className="text-xs leading-5 text-vault-muted">Final cash payout or trade credit is issued after we receive the cards, verify them, and you approve the final offer.</p>
+        <div className="rounded-xl border border-vault-gold/30 bg-vault-gold/10 px-4 py-3 text-sm leading-6 text-vault-secondaryText">
+          <span className="font-semibold text-vault-text">Want more value?</span> Trade credit offers are usually higher than cash payouts.
+        </div>
+        <p className="text-xs leading-5 text-vault-muted">Trade credit is usually the better value option. Final cash payout or trade credit is issued after we receive the cards, verify them, and you approve the final offer.</p>
       </fieldset>
       <FormTextarea
         error={errors.description}
@@ -294,7 +314,7 @@ export function SellTradeForm({ quoteDescriptionFill, quotePreferenceFill, quote
         </p>
       ) : null}
       <Button disabled={isSubmitting} type="submit">
-        {isSubmitting ? "Submitting..." : quoteState.quote ? "Submit This Quote" : "Submit Collection Details"}
+        {isSubmitting ? "Submitting..." : quoteState.quote ? "Submit This Preliminary Quote" : "Submit Collection Details"}
       </Button>
     </form>
   );

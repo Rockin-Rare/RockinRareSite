@@ -42,9 +42,6 @@ function formatCurrency(cents: number) {
   return new Intl.NumberFormat("en-US", { currency: "USD", style: "currency" }).format(cents / 100);
 }
 
-function formatFileSize(size: number) {
-  return `${(size / 1024 / 1024).toFixed(1)} MB`;
-}
 
 function getTotalMarketValueCents(quote: SellTradeQuote) {
   const detectedMarketValueCents = quote.detectedCards.reduce((total, card) => total + Math.max(0, card.marketPriceCents ?? 0), 0);
@@ -53,10 +50,6 @@ function getTotalMarketValueCents(quote: SellTradeQuote) {
   return Math.max(Math.round(quote.cashOfferCents / 0.45), Math.round(quote.tradeCreditCents / 0.6));
 }
 
-function getOfferPercent(offerCents: number, marketValueCents: number) {
-  if (marketValueCents <= 0) return 0;
-  return Math.round((offerCents / marketValueCents) * 100);
-}
 
 function formatRate(rate: number) {
   return rate > 0 ? `${Math.round(rate * 100)}%` : "Review";
@@ -473,14 +466,14 @@ export function InstantQuoteModule({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold uppercase text-vault-gold">Step 1</p>
-          <h2 className="mt-2 text-2xl font-black text-vault-text">Get an instant quote</h2>
+          <h2 className="mt-2 text-2xl font-black text-vault-text">See what your cards are worth</h2>
         </div>
         <span className="rounded-full border border-vault-gold/30 bg-vault-gold/10 px-3 py-1 text-xs font-semibold uppercase text-vault-gold">
           {selectedPhotoCount}/{sellTradeMaxPhotos} front photos
         </span>
       </div>
-      <p className="min-w-0 break-words border-l-2 border-vault-gold/50 pl-3 text-sm leading-6 text-vault-secondaryText">
-        Instant quotes are for raw singles only. Slabs, sealed product, bulk, binders, and full collections can be uploaded with your details in Step 2.
+      <p className="max-w-2xl text-sm leading-6 text-vault-secondaryText">
+        Upload up to 24 raw singles for a fast preliminary market value, cash offer, and trade credit estimate.
       </p>
       <input name="photoSession" type="hidden" value={photoSession} />
 
@@ -499,7 +492,7 @@ export function InstantQuoteModule({
         ))}
       </div>
 
-      <div className={`grid min-w-0 gap-4 ${quote ? "lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)]" : ""}`}>
+      <div className="grid min-w-0 gap-4">
         <div className="grid min-w-0 gap-3">
           {mode === "camera" ? (
             <>
@@ -507,7 +500,7 @@ export function InstantQuoteModule({
                 <video ref={videoRef} className={cameraActive ? "h-full w-full object-cover" : "hidden"} muted playsInline />
                 {!cameraActive ? (
                   <div className="grid h-full place-items-center px-5 text-center text-sm leading-6 text-vault-secondaryText">
-                    Open the camera and capture front photos only.
+                    Open camera to capture front photos.
                   </div>
                 ) : null}
                 {cameraActive ? <div className="pointer-events-none absolute inset-3 rounded-lg border border-vault-gold/45" /> : null}
@@ -519,7 +512,7 @@ export function InstantQuoteModule({
                   </div>
                 ) : null}
               </div>
-              <p className="text-center text-xs leading-5 text-vault-muted">Center one card in the frame. Fill as much of the outline as possible and avoid glare.</p>
+              {cameraActive ? <p className="text-center text-xs leading-5 text-vault-muted">Center one card in the frame. Fill as much of the outline as possible and avoid glare.</p> : null}
               <div className="flex flex-wrap gap-2">
                 {cameraActive ? (
                   <>
@@ -541,7 +534,7 @@ export function InstantQuoteModule({
 
           {mode === "computer" ? (
             <label className="grid cursor-pointer gap-3 rounded-xl border border-dashed border-vault-border bg-vault-card p-5 text-center transition hover:border-vault-gold">
-              <span className="text-sm font-semibold text-vault-text">Choose front photos</span>
+              <span className="text-sm font-semibold text-vault-text">Choose Photos</span>
               <span className="text-sm text-vault-secondaryText">
                 JPG, PNG, WebP, GIF, HEIC, or HEIF. Up to {sellTradeMaxPhotos} photos, {sellTradeMaxPhotoSizeMb} MB each.
               </span>
@@ -563,8 +556,8 @@ export function InstantQuoteModule({
                 <div className="h-[168px] w-[168px] rounded-lg bg-vault-elevated sm:h-[180px] sm:w-[180px]" />
               )}
               <div className="min-w-0 max-w-[22rem]">
-                <p className="text-sm font-semibold text-vault-text">Scan to add front photos from your phone</p>
-                <p className="mt-2 text-sm leading-6 text-vault-secondaryText">The QR opens a photo-only upload page. Photos added there will appear here automatically.</p>
+                <p className="text-sm font-semibold text-vault-text">Continue on Phone</p>
+                <p className="mt-2 text-sm leading-6 text-vault-secondaryText">Scan the QR code to add front photos from your phone. Photos added there will appear here automatically.</p>
               </div>
             </div>
           ) : null}
@@ -576,6 +569,11 @@ export function InstantQuoteModule({
               <div className="flex items-center justify-between gap-3">
                 <span className="text-xs font-semibold uppercase text-vault-gold">{selectedPhotoCount} selected</span>
                 <div className="flex flex-wrap justify-end gap-2">
+                  {quote ? (
+                    <button className="text-xs font-semibold text-vault-gold hover:text-vault-highlight disabled:text-vault-muted" disabled={isPreparingPhotos || isQuoting} onClick={requestQuote} type="button">
+                      Refresh
+                    </button>
+                  ) : null}
                   {files.length > 0 ? (
                     <button className="text-xs font-semibold text-vault-secondaryText hover:text-vault-highlight" onClick={() => updateFiles([])} type="button">
                       Clear card photos
@@ -589,16 +587,15 @@ export function InstantQuoteModule({
                 </div>
               </div>
               {filePreviews.length > 0 ? (
-                <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                   {filePreviews.map((preview, index) => (
                     <li className="overflow-hidden rounded-lg border border-vault-border bg-vault-secondary" key={preview.key}>
                       <img alt={`Selected card photo ${index + 1}`} className="aspect-[5/7] w-full bg-vault-card object-cover" src={preview.url} />
-                      <div className="grid gap-2 p-2">
+                      <div className="grid gap-1 p-2">
                         <div className="min-w-0 text-xs text-vault-secondaryText">
                           <p className="truncate">{preview.name}</p>
-                          <p className="text-vault-muted">{formatFileSize(preview.size)}</p>
                         </div>
-                        <button className="rounded-lg border border-vault-border px-2 py-1 text-xs font-semibold text-vault-secondaryText hover:border-vault-gold hover:text-vault-highlight" onClick={() => removeFile(index)} type="button">
+                        <button className="rounded-lg border border-vault-border px-2 py-1 text-[11px] font-semibold text-vault-secondaryText hover:border-vault-gold hover:text-vault-highlight" onClick={() => removeFile(index)} type="button">
                           Remove
                         </button>
                       </div>
@@ -607,16 +604,15 @@ export function InstantQuoteModule({
                 </ul>
               ) : null}
               {phonePhotos.length > 0 ? (
-                <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                   {phonePhotos.map((photo, index) => (
                     <li className="overflow-hidden rounded-lg border border-vault-border bg-vault-secondary" key={photo.id}>
                       <img alt={`Phone card photo ${index + 1}`} className="aspect-[5/7] w-full bg-vault-card object-cover" src={phonePhotoPreviewUrl(photoSession, photo.id)} />
-                      <div className="grid gap-2 p-2">
+                      <div className="grid gap-1 p-2">
                         <div className="min-w-0 text-xs text-vault-secondaryText">
                           <p className="truncate">{photo.name}</p>
-                          <p className="text-vault-muted">{formatFileSize(photo.size)}</p>
                         </div>
-                        <button className="rounded-lg border border-vault-border px-2 py-1 text-xs font-semibold text-vault-secondaryText hover:border-vault-gold hover:text-vault-highlight disabled:text-vault-muted" disabled={isDeletingPhonePhoto} onClick={() => void deletePhonePhoto(photo.id)} type="button">
+                        <button className="rounded-lg border border-vault-border px-2 py-1 text-[11px] font-semibold text-vault-secondaryText hover:border-vault-gold hover:text-vault-highlight disabled:text-vault-muted" disabled={isDeletingPhonePhoto} onClick={() => void deletePhonePhoto(photo.id)} type="button">
                           Remove
                         </button>
                       </div>
@@ -627,54 +623,104 @@ export function InstantQuoteModule({
             </div>
           ) : null}
 
-          <div className="flex flex-wrap items-center gap-3 border-t border-vault-border pt-3">
-            <Button
-              className={`${quote ? "w-fit" : "w-full"} disabled:border-vault-border disabled:bg-vault-secondary/70 disabled:text-vault-muted disabled:shadow-none`}
-              disabled={isPreparingPhotos || isQuoting || selectedPhotoCount === 0}
-              onClick={requestQuote}
-              type="button"
-              variant={quote ? "secondary" : "primary"}
-            >
-              {isPreparingPhotos ? "Preparing Photos..." : isQuoting ? "Scanning..." : quote ? "Refresh quote" : "Get Instant Quote"}
-            </Button>
-            {quoteError ? <p className="text-sm text-vault-error">{quoteError}</p> : null}
-          </div>
+          {selectedPhotoCount > 0 && !quote ? (
+            <div className="grid gap-3 border-t border-vault-border pt-3">
+              <p className="text-xs leading-5 text-vault-muted">New to Rockin Rare? We are a small collector-run shop with 100% positive TCGplayer feedback across 83 sales. Quotes are no-obligation and final offers are verified before payment.</p>
+              <div className="flex flex-wrap items-center gap-3">
+                <Button
+                  className="w-full disabled:border-vault-border disabled:bg-vault-secondary/70 disabled:text-vault-muted disabled:shadow-none"
+                  disabled={isPreparingPhotos || isQuoting}
+                  onClick={requestQuote}
+                  type="button"
+                >
+                  {isPreparingPhotos ? "Preparing Photos..." : isQuoting ? "Scanning..." : "See What Your Cards Are Worth"}
+                </Button>
+                {quoteError ? <p className="text-sm text-vault-error">{quoteError}</p> : null}
+              </div>
+            </div>
+          ) : null}
         </div>
 
         {quote ? (
+          <>
           <div className="grid content-start gap-3 rounded-xl border border-vault-border bg-vault-card p-4" role="status">
-            <div>
+            <div className="grid gap-1">
               <p className="text-xs font-semibold uppercase text-vault-gold">Preliminary quote</p>
-              <p className="mt-1 text-sm leading-6 text-vault-secondaryText">No obligation. Final offer is confirmed after card identity and condition are verified.</p>
+              <p className="text-sm leading-6 text-vault-secondaryText">Preliminary estimate. Final offer confirmed after review. No obligation.</p>
             </div>
-            <div className="grid gap-2 rounded-xl border border-vault-border bg-vault-secondary p-3">
-              <p className="text-xs font-semibold uppercase leading-4 text-vault-muted">Estimated market value</p>
-              <p className="text-2xl font-black text-vault-text">{formatCurrency(getTotalMarketValueCents(quote))}</p>
+
+            <div className="grid gap-2 rounded-xl border border-vault-border bg-vault-secondary p-4">
+              <p className="text-xs font-semibold uppercase leading-4 text-vault-muted">Estimated Market Value</p>
+              <p className="text-3xl font-black text-vault-text">{formatCurrency(getTotalMarketValueCents(quote))}</p>
             </div>
-            <div className="grid grid-cols-2 gap-2">
+
+            <div className="grid gap-2 sm:grid-cols-2">
               <div className="grid content-start rounded-xl border border-vault-border bg-vault-secondary p-3">
-                <p className="min-h-8 text-xs font-semibold uppercase leading-4 text-vault-muted">Cash offer</p>
-                <p className="text-xl font-black text-vault-text">{formatCurrency(quote.cashOfferCents)}</p>
-                <p className="text-xs text-vault-muted">{getOfferPercent(quote.cashOfferCents, getTotalMarketValueCents(quote))}% of market</p>
+                <p className="text-xs font-semibold uppercase leading-4 text-vault-muted">Cash Offer</p>
+                <p className="mt-1 text-2xl font-black text-vault-text">{formatCurrency(quote.cashOfferCents)}</p>
               </div>
-              <div className="grid content-start rounded-xl border border-vault-border bg-vault-secondary p-3">
-                <p className="min-h-8 text-xs font-semibold uppercase leading-4 text-vault-muted">Trade credit</p>
-                <p className="text-xl font-black text-vault-text">{formatCurrency(quote.tradeCreditCents)}</p>
-                <p className="text-xs text-vault-muted">{getOfferPercent(quote.tradeCreditCents, getTotalMarketValueCents(quote))}% of market</p>
+              <div className="grid content-start rounded-xl border border-vault-gold/45 bg-vault-gold/10 p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-xs font-semibold uppercase leading-4 text-vault-gold">Trade Credit Offer</p>
+                  <span className="rounded-full border border-vault-gold/40 px-2 py-0.5 text-[11px] font-semibold uppercase text-vault-gold">Better value</span>
+                </div>
+                <p className="mt-1 text-2xl font-black text-vault-text">{formatCurrency(quote.tradeCreditCents)}</p>
               </div>
+            </div>
+
+            <p className="text-xs leading-5 text-vault-muted">Our offer is below estimated market value because we take on verification, listing, marketplace fees, shipping, resale time, and buyer issue risk.</p>
+
+            <div className="grid gap-2">
+              <button
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-vault-gold px-4 py-3 text-sm font-semibold text-[#111318] shadow-vault transition hover:-translate-y-0.5 hover:bg-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-highlight"
+                onClick={() => continueWithQuotePreference("Trade credit")}
+                type="button"
+              >
+                Accept Trade Credit Offer
+              </button>
+              <button
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-vault-border bg-vault-secondary/80 px-4 py-3 text-sm font-semibold text-vault-text transition hover:border-vault-gold hover:bg-vault-elevated hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-highlight"
+                onClick={() => continueWithQuotePreference("Cash payout")}
+                type="button"
+              >
+                Accept Cash Offer
+              </button>
+              <button
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold text-vault-secondaryText transition hover:bg-vault-elevated hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-highlight"
+                onClick={continueWithQuote}
+                type="button"
+              >
+                Ask a Question
+              </button>
+            </div>
+
+          </div>
+          <div className="grid content-start gap-3 rounded-xl border border-vault-border bg-vault-card p-4">
+            <div className="grid gap-1">
+              <p className="text-xs font-semibold uppercase text-vault-gold">Quote details</p>
+              <p className="text-sm leading-6 text-vault-secondaryText">Review matched cards and optional quote details.</p>
             </div>
             {quote.detectedCards.length > 0 ? (
               <div className="grid gap-2 border-t border-vault-border pt-3">
                 <p className="text-xs font-semibold uppercase text-vault-gold">Card breakdown</p>
-                <ul className="grid gap-2">
-                  {quote.detectedCards.map((card, index) => (
-                    <li className="grid gap-1 rounded-lg border border-vault-border bg-vault-secondary px-3 py-2 text-xs" key={`${card.name}-${index}`}>
-                      <div className="flex items-start justify-between gap-3">
-                        <span className="font-semibold text-vault-text">{card.name}</span>
-                        {typeof card.marketPriceCents === "number" && card.marketPriceCents > 0 ? <span className="shrink-0 font-semibold text-vault-text">{formatCurrency(card.marketPriceCents)}</span> : null}
+                <ul className="overflow-hidden rounded-xl border border-vault-border bg-vault-secondary">
+                  {quote.detectedCards.map((card, index) => {
+                    const cardStatus = typeof card.confidence === "number" && card.confidence >= 0.65 ? "Matched" : "Needs review";
+                    const cardDetails = [card.franchise, card.setName, card.cardNumber ? `#${card.cardNumber}` : "", card.condition].filter(Boolean).join(" / ");
+
+                    return (
+                      <li className="grid gap-2 border-b border-vault-border px-3 py-2 text-xs last:border-b-0" key={`${card.name}-${index}`}>
+                        <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-start gap-3">
+                          <div className="min-w-0">
+                            <p className="truncate font-semibold text-vault-text">{card.name}</p>
+                            {cardDetails ? <p className="mt-0.5 truncate text-vault-muted">{cardDetails}</p> : null}
+                          </div>
+                          <span className="shrink-0 font-semibold text-vault-text">{typeof card.marketPriceCents === "number" && card.marketPriceCents > 0 ? formatCurrency(card.marketPriceCents) : "Review"}</span>
+                          <span className="shrink-0 text-vault-muted">{cardStatus}</span>
+                        </div>
                         {card.catalogCandidates && card.catalogCandidates.length > 0 ? (
                           <button
-                            className="shrink-0 font-semibold text-vault-gold hover:text-vault-highlight"
+                            className="w-fit font-semibold text-vault-gold hover:text-vault-highlight"
                             onClick={() => {
                               setEditingMatchIndex(editingMatchIndex === index ? null : index);
                               setMatchSearchQuery(card.name);
@@ -683,105 +729,84 @@ export function InstantQuoteModule({
                             }}
                             type="button"
                           >
-                            Change
+                            Change match
                           </button>
                         ) : null}
-                      </div>
-                      <span className="text-vault-muted">
-                        {[card.franchise, card.setName, card.cardNumber ? `#${card.cardNumber}` : "", card.condition, typeof card.confidence === "number" ? `${Math.round(card.confidence * 100)}% match` : ""].filter(Boolean).join(" / ")}
-                      </span>
-                      {editingMatchIndex === index ? (
-                        <div className="mt-2 grid gap-2 border-t border-vault-border pt-2">
-                          <div className="flex gap-2">
-                            <input
-                              className="min-h-10 min-w-0 flex-1 rounded-lg border border-vault-border bg-vault-card px-3 py-2 text-xs text-vault-text outline-none placeholder:text-vault-muted focus:border-vault-gold"
-                              onChange={(event) => setMatchSearchQuery(event.target.value)}
-                              onKeyDown={(event) => {
-                                if (event.key === "Enter") {
-                                  event.preventDefault();
-                                  void searchCatalogMatches();
-                                }
-                              }}
-                              placeholder="Search catalog"
-                              value={matchSearchQuery}
-                            />
-                            <button className="rounded-lg border border-vault-border px-3 py-2 font-semibold text-vault-text hover:border-vault-gold" disabled={isSearchingMatches} onClick={() => void searchCatalogMatches()} type="button">
-                              {isSearchingMatches ? "..." : "Search"}
-                            </button>
+                        {editingMatchIndex === index ? (
+                          <div className="mt-1 grid gap-2 border-t border-vault-border pt-2">
+                            <div className="flex gap-2">
+                              <input
+                                className="min-h-10 min-w-0 flex-1 rounded-lg border border-vault-border bg-vault-card px-3 py-2 text-xs text-vault-text outline-none placeholder:text-vault-muted focus:border-vault-gold"
+                                onChange={(event) => setMatchSearchQuery(event.target.value)}
+                                onKeyDown={(event) => {
+                                  if (event.key === "Enter") {
+                                    event.preventDefault();
+                                    void searchCatalogMatches();
+                                  }
+                                }}
+                                placeholder="Search catalog"
+                                value={matchSearchQuery}
+                              />
+                              <button className="rounded-lg border border-vault-border px-3 py-2 font-semibold text-vault-text hover:border-vault-gold" disabled={isSearchingMatches} onClick={() => void searchCatalogMatches()} type="button">
+                                {isSearchingMatches ? "..." : "Search"}
+                              </button>
+                            </div>
+                            {matchCorrectionError ? <p className="text-vault-error">{matchCorrectionError}</p> : null}
+                            {matchSearchResults.length > 0 ? (
+                              <ul className="grid gap-1">
+                                {matchSearchResults.map((candidate) => (
+                                  <li key={candidate.id}>
+                                    <button
+                                      className="grid w-full gap-1 rounded-lg border border-vault-border bg-vault-card px-3 py-2 text-left hover:border-vault-gold"
+                                      disabled={isCorrectingMatch}
+                                      onClick={() => void applyCatalogMatch(index, candidate)}
+                                      type="button"
+                                    >
+                                      <span className="font-semibold text-vault-text">{candidate.name}</span>
+                                      {candidateMeta(candidate) ? <span className="text-vault-muted">{candidateMeta(candidate)}</span> : null}
+                                    </button>
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : null}
                           </div>
-                          {matchCorrectionError ? <p className="text-vault-error">{matchCorrectionError}</p> : null}
-                          {matchSearchResults.length > 0 ? (
-                            <ul className="grid gap-1">
-                              {matchSearchResults.map((candidate) => (
-                                <li key={candidate.id}>
-                                  <button
-                                    className="grid w-full gap-1 rounded-lg border border-vault-border bg-vault-card px-3 py-2 text-left hover:border-vault-gold"
-                                    disabled={isCorrectingMatch}
-                                    onClick={() => void applyCatalogMatch(index, candidate)}
-                                    type="button"
-                                  >
-                                    <span className="font-semibold text-vault-text">{candidate.name}</span>
-                                    {candidateMeta(candidate) ? <span className="text-vault-muted">{candidateMeta(candidate)}</span> : null}
-                                  </button>
-                                </li>
-                              ))}
-                            </ul>
-                          ) : null}
-                        </div>
-                      ) : null}
-                    </li>
-                  ))}
+                        ) : null}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             ) : null}
-            {quote.source === "site-estimate" ? <p className="text-xs leading-5 text-vault-muted">Preliminary estimate until the cards are reviewed.</p> : null}
-            <div className="grid gap-2 rounded-xl border border-vault-border bg-vault-secondary p-3 text-xs leading-5 text-vault-secondaryText">
-              <p className="font-semibold text-vault-text">How offers are calculated</p>
-              <p>Offers use tiered rates by estimated card value. Lower-value cards have lower rates because sorting, fees, and listing time take up more of the resale value. Higher-value cards may receive manual premium review.</p>
-              <ul className="grid gap-1">
-                {sellTradeOfferTiers.map((tier) => (
-                  <li className="flex justify-between gap-3" key={tier.label}>
-                    <span>{tier.label}</span>
-                    <span className="shrink-0 text-vault-muted">Cash {formatRate(tier.cashRate)} / Trade {formatRate(tier.tradeRate)}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="grid gap-2 rounded-xl border border-vault-border bg-vault-secondary p-3 text-xs leading-5 text-vault-secondaryText">
-              <p className="font-semibold text-vault-text">What happens next</p>
-              <ol className="grid gap-1 pl-4 [list-style:decimal]">
-                <li>Submit your contact details with the quote.</li>
-                <li>We confirm shipping, drop-off, or follow-up questions.</li>
-                <li>Fast payment or trade credit is issued after cards are received, verified, and approved.</li>
-              </ol>
-            </div>
-            <div className="grid gap-2">
-              <button
-                className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-vault-gold px-4 py-3 text-sm font-semibold text-[#111318] shadow-vault transition hover:-translate-y-0.5 hover:bg-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-highlight"
-                onClick={() => continueWithQuotePreference("Cash payout")}
-                type="button"
-              >
-                Accept Cash Offer
-              </button>
-              <button
-                className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-vault-border bg-vault-secondary/80 px-4 py-3 text-sm font-semibold text-vault-text transition hover:border-vault-gold hover:bg-vault-elevated hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-highlight"
-                onClick={() => continueWithQuotePreference("Trade credit")}
-                type="button"
-              >
-                Accept Trade Credit Offer
-              </button>
-              <button
-                className="inline-flex min-h-11 w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold text-vault-secondaryText transition hover:bg-vault-elevated hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-highlight"
-                onClick={continueWithQuote}
-                type="button"
-              >
-                Contact Us With Questions
-              </button>
+
+            <div className="grid gap-2 border-t border-vault-border pt-3">
+              <details className="rounded-xl border border-vault-border bg-vault-secondary p-3 text-xs leading-5 text-vault-secondaryText">
+                <summary className="cursor-pointer font-semibold text-vault-text">How we calculate offers</summary>
+                <p className="mt-2">Our offer is below estimated market value because we take on the work and risk of verifying condition, processing inventory, listing cards, paying marketplace and payment fees, shipping, handling customer issues, and waiting for the cards to sell. Trade credit pays more than cash because it keeps value in the shop.</p>
+              </details>
+              <details className="rounded-xl border border-vault-border bg-vault-secondary p-3 text-xs leading-5 text-vault-secondaryText">
+                <summary className="cursor-pointer font-semibold text-vault-text">Offer percentage tiers</summary>
+                <ul className="mt-2 grid gap-1">
+                  {sellTradeOfferTiers.map((tier) => (
+                    <li className="flex justify-between gap-3" key={tier.label}>
+                      <span>{tier.label}</span>
+                      <span className="shrink-0 text-vault-muted">Cash {formatRate(tier.cashRate)} / Trade {formatRate(tier.tradeRate)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+              <details className="rounded-xl border border-vault-border bg-vault-secondary p-3 text-xs leading-5 text-vault-secondaryText">
+                <summary className="cursor-pointer font-semibold text-vault-text">What happens next</summary>
+                <ol className="mt-2 grid gap-1 pl-4 [list-style:decimal]">
+                  <li>Submit your contact details with the quote.</li>
+                  <li>We confirm shipping, drop-off, or follow-up questions.</li>
+                  <li>Fast payment or trade credit is issued after cards are received, verified, and approved.</li>
+                </ol>
+              </details>
             </div>
           </div>
+          </>
         ) : null}
       </div>
     </section>
   );
 }
-
