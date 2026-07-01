@@ -46,8 +46,13 @@ function formatCurrency(cents: number) {
 function getTotalMarketValueCents(quote: SellTradeQuote) {
   const detectedMarketValueCents = quote.detectedCards.reduce((total, card) => total + Math.max(0, card.marketPriceCents ?? 0), 0);
   if (detectedMarketValueCents > 0) return detectedMarketValueCents;
+  if (isManualReviewQuote(quote)) return 0;
 
   return Math.max(Math.round(quote.cashOfferCents / 0.45), Math.round(quote.tradeCreditCents / 0.6));
+}
+
+function isManualReviewQuote(quote: SellTradeQuote) {
+  return quote.source === "manual-review" || (quote.status === "needs_review" && quote.cashOfferCents === 0 && quote.tradeCreditCents === 0);
 }
 
 
@@ -461,6 +466,8 @@ export function InstantQuoteModule({
     }, 350);
   }
 
+  const manualReviewMode = quote ? isManualReviewQuote(quote) : false;
+
   return (
     <section className="grid min-w-0 content-start gap-4 rounded-2xl border border-vault-border bg-vault-card p-5 shadow-vault">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -644,65 +651,102 @@ export function InstantQuoteModule({
         {quote ? (
           <>
           <div className="grid content-start gap-3 rounded-xl border border-vault-border bg-vault-card p-4" role="status">
-            <div className="grid gap-1">
-              <p className="text-xs font-semibold uppercase text-vault-gold">Preliminary quote</p>
-              <p className="text-sm leading-6 text-vault-secondaryText">Preliminary estimate. Final offer confirmed after review. No obligation.</p>
-            </div>
-
-            <div className="grid gap-2 rounded-xl border border-vault-border bg-vault-secondary p-4">
-              <p className="text-xs font-semibold uppercase leading-4 text-vault-muted">Estimated Market Value</p>
-              <p className="text-3xl font-black text-vault-text">{formatCurrency(getTotalMarketValueCents(quote))}</p>
-            </div>
-
-            <div className="grid gap-2 sm:grid-cols-2">
-              <div className="grid content-start rounded-xl border border-vault-border bg-vault-secondary p-3">
-                <p className="text-xs font-semibold uppercase leading-4 text-vault-muted">Cash Offer</p>
-                <p className="mt-1 text-2xl font-black text-vault-text">{formatCurrency(quote.cashOfferCents)}</p>
-              </div>
-              <div className="grid content-start rounded-xl border border-vault-gold/45 bg-vault-gold/10 p-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-xs font-semibold uppercase leading-4 text-vault-gold">Trade Credit Offer</p>
-                  <span className="rounded-full border border-vault-gold/40 px-2 py-0.5 text-[11px] font-semibold uppercase text-vault-gold">Better value</span>
+            {manualReviewMode ? (
+              <>
+                <div className="grid gap-1">
+                  <p className="text-xs font-semibold uppercase text-vault-gold">Manual review needed</p>
+                  <h3 className="text-2xl font-black text-vault-text">We received your photos.</h3>
+                  <p className="text-sm leading-6 text-vault-secondaryText">We could not generate a reliable instant estimate, so we will review these cards manually. No obligation.</p>
                 </div>
-                <p className="mt-1 text-2xl font-black text-vault-text">{formatCurrency(quote.tradeCreditCents)}</p>
-              </div>
-            </div>
 
-            <p className="text-xs leading-5 text-vault-muted">Our offer is below estimated market value because we take on verification, listing, marketplace fees, shipping, resale time, and buyer issue risk.</p>
+                <div className="rounded-xl border border-vault-border bg-vault-secondary p-4 text-sm leading-6 text-vault-secondaryText">
+                  No dollar estimate is shown because pricing was unavailable. Submit your details and we will confirm card identity, condition, authenticity, and next steps before you ship or drop off anything.
+                </div>
 
-            <div className="grid gap-2">
-              <button
-                className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-vault-gold px-4 py-3 text-sm font-semibold text-[#111318] shadow-vault transition hover:-translate-y-0.5 hover:bg-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-highlight"
-                onClick={() => continueWithQuotePreference("Trade credit")}
-                type="button"
-              >
-                Accept Trade Credit Offer
-              </button>
-              <button
-                className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-vault-border bg-vault-secondary/80 px-4 py-3 text-sm font-semibold text-vault-text transition hover:border-vault-gold hover:bg-vault-elevated hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-highlight"
-                onClick={() => continueWithQuotePreference("Cash payout")}
-                type="button"
-              >
-                Accept Cash Offer
-              </button>
-              <button
-                className="inline-flex min-h-11 w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold text-vault-secondaryText transition hover:bg-vault-elevated hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-highlight"
-                onClick={continueWithQuote}
-                type="button"
-              >
-                Ask a Question
-              </button>
-            </div>
+                <div className="grid gap-2">
+                  <button
+                    className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-vault-gold px-4 py-3 text-sm font-semibold text-[#111318] shadow-vault transition hover:-translate-y-0.5 hover:bg-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-highlight"
+                    onClick={continueWithQuote}
+                    type="button"
+                  >
+                    Submit for Manual Review
+                  </button>
+                  <button
+                    className="inline-flex min-h-11 w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold text-vault-secondaryText transition hover:bg-vault-elevated hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-highlight"
+                    onClick={continueWithQuote}
+                    type="button"
+                  >
+                    Add a Question
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="grid gap-1">
+                  <p className="text-xs font-semibold uppercase text-vault-gold">Preliminary quote</p>
+                  <p className="text-sm leading-6 text-vault-secondaryText">Preliminary estimate. Final offer confirmed after review. No obligation.</p>
+                </div>
 
+                <div className="grid gap-2 rounded-xl border border-vault-border bg-vault-secondary p-4">
+                  <p className="text-xs font-semibold uppercase leading-4 text-vault-muted">Estimated Market Value</p>
+                  <p className="text-3xl font-black text-vault-text">{formatCurrency(getTotalMarketValueCents(quote))}</p>
+                </div>
+
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="grid content-start rounded-xl border border-vault-border bg-vault-secondary p-3">
+                    <p className="text-xs font-semibold uppercase leading-4 text-vault-muted">Cash Offer</p>
+                    <p className="mt-1 text-2xl font-black text-vault-text">{formatCurrency(quote.cashOfferCents)}</p>
+                  </div>
+                  <div className="grid content-start rounded-xl border border-vault-gold/45 bg-vault-gold/10 p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-xs font-semibold uppercase leading-4 text-vault-gold">Trade Credit Offer</p>
+                      <span className="rounded-full border border-vault-gold/40 px-2 py-0.5 text-[11px] font-semibold uppercase text-vault-gold">Better value</span>
+                    </div>
+                    <p className="mt-1 text-2xl font-black text-vault-text">{formatCurrency(quote.tradeCreditCents)}</p>
+                  </div>
+                </div>
+
+                <p className="text-xs leading-5 text-vault-muted">Our offer is below estimated market value because we take on verification, listing, marketplace fees, shipping, resale time, and buyer issue risk.</p>
+
+                <div className="grid gap-2">
+                  <button
+                    className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-vault-gold px-4 py-3 text-sm font-semibold text-[#111318] shadow-vault transition hover:-translate-y-0.5 hover:bg-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-highlight"
+                    onClick={() => continueWithQuotePreference("Trade credit")}
+                    type="button"
+                  >
+                    Accept Trade Credit Offer
+                  </button>
+                  <button
+                    className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-vault-border bg-vault-secondary/80 px-4 py-3 text-sm font-semibold text-vault-text transition hover:border-vault-gold hover:bg-vault-elevated hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-highlight"
+                    onClick={() => continueWithQuotePreference("Cash payout")}
+                    type="button"
+                  >
+                    Accept Cash Offer
+                  </button>
+                  <button
+                    className="inline-flex min-h-11 w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold text-vault-secondaryText transition hover:bg-vault-elevated hover:text-vault-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-highlight"
+                    onClick={continueWithQuote}
+                    type="button"
+                  >
+                    Ask a Question
+                  </button>
+                </div>
+              </>
+            )}
           </div>
           <div className="grid content-start gap-3 rounded-xl border border-vault-border bg-vault-card p-4">
             <div className="grid gap-1">
               <p className="text-xs font-semibold uppercase text-vault-gold">Quote details</p>
-              <p className="text-sm leading-6 text-vault-secondaryText">Review matched cards and optional quote details.</p>
+              <p className="text-sm leading-6 text-vault-secondaryText">{manualReviewMode ? "Review uploaded scans and next steps." : "Review matched cards and optional quote details."}</p>
             </div>
             {quote.detectedCards.length > 0 ? (
               <div className="grid gap-2 border-t border-vault-border pt-3">
                 <p className="text-xs font-semibold uppercase text-vault-gold">Card breakdown</p>
+                {matchCorrectionError && editingMatchIndex === null ? (
+                  <p className="rounded-lg border border-vault-error/30 bg-vault-error/10 px-3 py-2 text-xs font-semibold text-vault-error" role="alert">
+                    {matchCorrectionError}
+                  </p>
+                ) : null}
                 <ul className="overflow-hidden rounded-xl border border-vault-border bg-vault-secondary">
                   {quote.detectedCards.map((card, index) => {
                     const cardStatus = typeof card.confidence === "number" && card.confidence >= 0.65 ? "Matched" : "Needs review";
@@ -779,6 +823,8 @@ export function InstantQuoteModule({
             ) : null}
 
             <div className="grid gap-2 border-t border-vault-border pt-3">
+              {!manualReviewMode ? (
+                <>
               <details className="rounded-xl border border-vault-border bg-vault-secondary p-3 text-xs leading-5 text-vault-secondaryText">
                 <summary className="cursor-pointer font-semibold text-vault-text">How we calculate offers</summary>
                 <p className="mt-2">Our offer is below estimated market value because we take on the work and risk of verifying condition, processing inventory, listing cards, paying marketplace and payment fees, shipping, handling customer issues, and waiting for the cards to sell. Trade credit pays more than cash because it keeps value in the shop.</p>
@@ -794,10 +840,12 @@ export function InstantQuoteModule({
                   ))}
                 </ul>
               </details>
+                </>
+              ) : null}
               <details className="rounded-xl border border-vault-border bg-vault-secondary p-3 text-xs leading-5 text-vault-secondaryText">
                 <summary className="cursor-pointer font-semibold text-vault-text">What happens next</summary>
                 <ol className="mt-2 grid gap-1 pl-4 [list-style:decimal]">
-                  <li>Submit your contact details with the quote.</li>
+                  <li>{manualReviewMode ? "Submit your contact details with the photos." : "Submit your contact details with the quote."}</li>
                   <li>We confirm shipping, drop-off, or follow-up questions.</li>
                   <li>Fast payment or trade credit is issued after cards are received, verified, and approved.</li>
                 </ol>

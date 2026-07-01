@@ -116,7 +116,7 @@ export type SellTradeQuoteCatalogCandidate = {
 export type SellTradeQuote = {
   id: string;
   status: "quoted" | "needs_review";
-  source: "card-intake" | "site-estimate";
+  source: "card-intake" | "site-estimate" | "manual-review";
   confidence: "high" | "medium" | "low";
   cashOfferCents: number;
   tradeCreditCents: number;

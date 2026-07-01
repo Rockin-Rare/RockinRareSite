@@ -98,6 +98,10 @@ export function SellTradeForm({ quoteDescriptionFill, quotePreferenceFill, quote
   function formatQuoteSummary(currentQuote: InstantQuoteModuleState["quote"]) {
     if (!currentQuote) return "";
 
+    if (currentQuote.source === "manual-review") {
+      return "Manual review requested. Instant pricing was unavailable, so photos need review before any offer is confirmed.";
+    }
+
     const currency = new Intl.NumberFormat("en-US", { currency: "USD", style: "currency" });
     const totalMarketValueCents = currentQuote.detectedCards.reduce((total, card) => total + Math.max(0, card.marketPriceCents ?? 0), 0);
     return [

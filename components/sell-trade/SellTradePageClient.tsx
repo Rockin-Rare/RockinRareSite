@@ -29,6 +29,18 @@ export function SellTradePageClient() {
 
     const totalMarketValueCents = quote.detectedCards.reduce((total, card) => total + Math.max(0, card.marketPriceCents ?? 0), 0);
 
+    if (quote.source === "manual-review") {
+      return [
+        "Manual review requested.",
+        "Instant pricing was unavailable, so Rockin Rare will review these photos manually before confirming any offer.",
+        "",
+        "Uploaded scans:",
+        ...(matchedCards.length > 0 ? matchedCards : ["No matched cards returned."])
+      ]
+        .filter(Boolean)
+        .join("\n");
+    }
+
     return [
       "Matched cards:",
       ...(matchedCards.length > 0 ? matchedCards : ["No matched cards returned."]),

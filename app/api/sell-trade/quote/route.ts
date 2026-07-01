@@ -220,6 +220,37 @@ function estimateQuote({
   };
 }
 
+function manualReviewQuote({
+  files,
+  franchise,
+  conditionEstimate
+}: {
+  files: File[];
+  franchise: string;
+  conditionEstimate: string;
+}): SellTradeQuote {
+  return {
+    id: createId(),
+    status: "needs_review",
+    source: "manual-review",
+    confidence: "low",
+    cashOfferCents: 0,
+    tradeCreditCents: 0,
+    rangeLowCents: 0,
+    rangeHighCents: 0,
+    detectedCards: files.map((file, index) => ({
+      name: `Scan ${index + 1}`,
+      franchise,
+      condition: conditionEstimate || "Needs review",
+      confidence: 0.2
+    })),
+    notes: [
+      "Instant pricing was unavailable, so this submission needs manual review.",
+      "Final offer depends on exact card identity, condition, authenticity, demand, and review."
+    ],
+    createdAt: new Date().toISOString()
+  };
+}
 export async function POST(request: Request) {
   if (!isAllowedOrigin(request)) {
     return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
@@ -253,13 +284,26 @@ export async function POST(request: Request) {
   const routerQuote = await getRouterQuote(formData).catch(() => null);
   if (routerQuote) return NextResponse.json({ quote: routerQuote });
 
+  const fallbackFranchise = cleanString(formData.get("franchise"), 80) || "Mixed collection";
+  const fallbackConditionEstimate = cleanString(formData.get("conditionEstimate"), 120);
+
+  if (process.env.ENABLE_SELL_TRADE_ESTIMATE_FALLBACK === "true") {
+    return NextResponse.json({
+      quote: estimateQuote({
+        files: allFiles,
+        franchise: fallbackFranchise,
+        approximateQuantity: cleanString(formData.get("approximateQuantity"), 120),
+        conditionEstimate: fallbackConditionEstimate,
+        description: cleanString(formData.get("description"), 3000)
+      })
+    });
+  }
+
   return NextResponse.json({
-    quote: estimateQuote({
+    quote: manualReviewQuote({
       files: allFiles,
-      franchise: cleanString(formData.get("franchise"), 80) || "Mixed collection",
-      approximateQuantity: cleanString(formData.get("approximateQuantity"), 120),
-      conditionEstimate: cleanString(formData.get("conditionEstimate"), 120),
-      description: cleanString(formData.get("description"), 3000)
+      franchise: fallbackFranchise,
+      conditionEstimate: fallbackConditionEstimate
     })
   });
 }
